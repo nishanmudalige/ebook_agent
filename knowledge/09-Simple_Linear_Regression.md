@@ -1,0 +1,5194 @@
+<!-- ebook_agent retrieval copy; source: 09-Simple_Linear_Regression.Rmd -->
+<!-- Treat this as course material but independently verify mathematical/statistical claims. -->
+
+# Simple Linear Regression
+
+## Introduction to the Linear Model
+
+A linear model is a function the form
+
+$$y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \ldots + \beta_p x_{ip} + \varepsilon_i, \quad \varepsilon_i \sim N(0, \sigma^2)$$
+
+where $y$ is the _response_ (also called the _outcome_ or _dependent_) variable, $(x_{i1},\dots,x_{ip})$ are the _predictors_ (also called _explanatory_ or _independent_ variables or _covariates_) and $\varepsilon_i$ is random error.
+In practice, the aim of constructing a linear model is usually prediction using the $x_{ij}$ to predict $y$, and to conduct statistical inference to assess whether $y$ is related to the predictors, such as testing for association.
+In this mode, $x_{ij}$ are assumed fixed, $y_i$ are random and the error terms $\varepsilon_i$ is independent Gaussian noise with a constant variance $\sigma^2$.
+The coefficients $\beta_0, \ldots, \beta_p$ are fixed but unknown constants.
+
+A simple linear regression (SLR) model is a linear regression model with just 1 predictor and it has the form
+
+$$y_i = \beta_0 + \beta_1 x_{i} \varepsilon_i, \quad \varepsilon_i \sim N(0, \sigma^2).$$
+
+
+### Least Squares Method {#sec:LeastSquaresMethod}
+
+The method of least squares is an optimization technique used to calculate the coefficients $\beta_0, \ldots, \beta_p$ in regression analysis. Its goal is to determine the parameters of a candidate model that make the model’s predictions as close as possible to the observed data
+based on some minimization criteria.
+
+An important definition which is used in evaluating the fit of a model is the following
+
+::: {.definition name="Residual" #Residual}
+A _residual_ ($e_{i}$) is the distance between an observed data point $y_i$ and a fitted value from a regression model $\hat{y}_{i}$.
+$$
+\begin{aligned}
+\text{residual}  & = (\text{observed data point}) - (\text{fitted value})  \\
+e_{i}            & = y_{i} - \hat{y}_{i}
+\end{aligned}
+$$
+:::
+
+The data points $(x_{i1},\dots,x_{ip}, y_{i})$ are observed values.
+To calculate a residual for an observed $y_{i}$, we would plug in the $x_{i1},\dots,x_{ip}$ values for this measurement into the model to evaluate the corresponding $\hat{y}_{i}$. Once we have this value, we can evaluate the residual as the difference  $e_{i} = y_{i} - \hat{y}_{i}$.
+
+
+Given a sample of $n$ observations, we consider the sum of the square distances between each observed $y_i$ and corresponding predicted $\hat{y}_i$ (i.e. the sum of the square residuals) which is given by the model.
+This quantity which we minimize to find the model of best fit is called the Sum of Square Errors (SSE):
+$$
+\begin{align}
+\mathrm{SSE}  &= \sum_{i=1}^n e_{i}^2  \\
+              &= \sum_{i=1}^n \big(y_i - \hat y_i\big)^2  \\
+              &= \sum_{i=1}^n \bigl(y_i - (\beta_0 + \beta_1 x_{i1} + \cdots + \beta_p x_{ip})\bigr)^2.
+\end{align}
+$$
+The goal of the least‑squares technique is to find $\beta_0,\dots,\beta_p$ such that the SSE is as small as possible.
+This can formally be written as:
+
+$$
+\begin{align}
+& \text{solve}\quad \min_{\beta_0,\beta_1,\dots,\beta_p}\; \frac{1}{2}\sum_{i=1}^{n}\left(y_i - \beta_0 - \sum_{j=1}^{p}\beta_j x_{ij}\right)^2\\
+& \text{such that}\quad \beta_0,\dots,\beta_p \in \mathbb{R}.
+\end{align}
+$$
+This can also be represented in vector-matrix form as
+
+$$
+\begin{align}
+& \text{solve}\quad \min_{\beta\in\mathbb{R}^{p+1}} \;\frac{1}{2}\,(y - X\beta)^{\!\top}(y - X\beta)  \\
+& \text{such that}\quad \beta \in \mathbb{R}^{p+1}.
+\end{align}
+$$
+where
+$$
+\begin{align*}
+&\textbf{y}\in\mathbb{R}^{n}\ \text{is a response vector }(y_1,\dots,y_n)^{\top}.\\
+&\textbf{X}\in\mathbb{R}^{n\times(p+1)}\ \text{is a design matrix }[\,\mathbf{1}\ \ x_1\ \ \cdots\ \ x_p\,],\ \text{with first column of ones (intercept)}.\\
+&\boldsymbol{\beta}\in\mathbb{R}^{p+1}\ \text{is a vector if parameters }(\beta_0,\beta_1,\dots,\beta_p)^{\top}.\\
+\end{align*}
+$$
+Using matrix calculus, we can show the solution for the least squares optimization problem is
+
+$$
+\hat{\beta} = (X^{\top}X)^{-1} X^{\top} y
+$$
+
+
+The resulting fitted values take the form
+$$
+    \hat y_i
+    \;=\;
+    \hat\beta_0 + \hat\beta_1\,x_{i1} + \cdots + \hat\beta_p\,x_{ip}.
+$$
+
+Here, $\hat\beta_0$ is the intercept which is the predicted value of $y$ when $x_{i1}, \ldots, x_{ip}$ are all 0,
+and each $\hat\beta_j$ for $j=1,\dots,p$ is the change in the expected response for a one‑unit increase in the corresponding predictor
+with all other predictor values held fixed.
+
+\bigskip
+
+ In this course, we will focus on the simplest nontrivial case of a single predictor
+$$
+    \hat{y} \;=\; \beta_0 + \beta_1\,x,
+$$
+where $\beta_0$ and $\beta_1$ denote the intercept and slope of the fitted line.
+
+
+
+
+
+### Estimating Parameters for the Simple Linear Model
+
+Let $(x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)$ be pairs of _observed_ data points
+for independent variable $x$ and dependent variable $y$.
+Suppose we plot these points on coordinate axes (See Figure \@ref(fig:PlotPointsOnly)).
+
+```r
+library(ggplot2)
+
+# --- Same 5 points as before ---
+df <- data.frame(
+  x = c(0.5, 1.5, 2.5, 3.5, 4.5),
+  y = c(3.5, 1.0, 5.0, 1.5, 6.5)
+)
+
+# Points-only plot: no line, no legend
+p_points <- ggplot(df, aes(x, y)) +
+  geom_point(size = 3.2, color = "#619CFF") +
+  coord_cartesian(xlim = c(-1.0, 5.5), ylim = c(-0.5, 7)) +
+  labs(x = "x", y = "y") +
+  theme_minimal(base_size = 16) +
+  theme(legend.position = "none")
+
+print(p_points)
+
+```
+
+Our goal is to find the line of best fit for these points. 
+The line of best fit will be of the form
+$$
+\hat{y} = \hat{\beta}_{0} + \hat{\beta}_{1}x
+$$
+where $\hat{y}$ represents all fitted points on the line, $x$ is a value we can input into calculate a predicted $\hat{y}$, $\hat{\beta}_0$ is the estimate of the intercept and $\hat{\beta}_1$ is the estimate of the slope (See Figure \@ref(fig:PlotPointsLine)).
+
+```r
+library(ggplot2)
+
+# --- Reduced to 5 points with reasonably large residuals ---
+df <- data.frame(
+  x = c(0.5, 1.5, 2.5, 3.5, 4.5),
+  y = c(3.5, 1.0, 5.0, 1.5, 6.5)
+)
+
+# Fit linear model
+model <- lm(y ~ x, data = df)
+b0    <- coef(model)[1]
+b1    <- coef(model)[2]
+
+# Predicted values
+df$yhat <- fitted(model)
+
+# Sample mean of y
+ybar  <- mean(df$y)
+
+# --- Bracket placement: put brackets on the LEFT for points ABOVE the line ---
+cap    <- 0.10   # horizontal cap length
+offset <- 0.20   # horizontal offset from the residual line
+
+# sgn = -1 for positive residuals (y > yhat) -> bracket to the LEFT
+# sgn = +1 for negative residuals (y < yhat) -> bracket to the RIGHT
+sgn <- ifelse(df$y > df$yhat, -1, 1)
+
+br <- transform(
+  df,
+  i      = seq_len(nrow(df)),
+  x0     = x + sgn * offset,                # x-location of bracket's vertical bar
+  y0     = pmin(y, yhat),                   # bottom of bracket
+  y1     = pmax(y, yhat),                   # top of bracket
+  ymid   = (pmin(y, yhat) + pmax(y, yhat)) / 2,
+  xlab   = x + sgn * (offset + 0.14),       # label position a bit further from bracket
+  # Labels as e_i = y_i - \hat{y}_i
+  lab    = paste0("e[", seq_len(nrow(df)), "] == y[", seq_len(nrow(df)), "] - hat(y)[", seq_len(nrow(df)), "]")
+)
+
+# Create the plot with ONLY the regression line and points (brackets, residual lines, and e_i legend removed)
+p_sse <- ggplot(df, aes(x, y)) +
+  # Observed points
+  geom_point(size = 3.2, color = "#619CFF") +
+  # Regression line
+  geom_abline(aes(intercept = b0, slope = b1, color = "Regression line"),
+              size = 1.3, key_glyph = draw_key_path) +
+  # Annotate regression equation
+  annotate("text", x = 5.0, y = 4.3,
+           label = "hat(y) == hat(beta)[0] + hat(beta)[1]*x",
+           parse = TRUE, color = "#F8766D", size = 5) +
+  # SINGLE coord_cartesian call: set BOTH x and y limits here
+  coord_cartesian(xlim = c(-1.0, 5.5), ylim = c(-0.5, 7)) +
+  labs(x = "x", y = "y") +
+  # Legend: only the regression line remains
+  scale_color_manual(
+    name   = NULL,
+    values = c("Regression line" = "#F8766D"),
+    breaks = c("Regression line"),
+    labels = c("Regression line")
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position      = c(0.02, 0.98),
+    legend.justification = c(0, 1),
+    legend.background    = element_rect(fill = alpha("white", 0.5), color = NA),
+    legend.key.width     = unit(1.5, "lines")
+  )
+
+# Display the plot
+print(p_sse)
+```
+
+Recall in Section \@ref(sec:LeastSquaresMethod) that we discussed that the technique used to determine the line of best fit is to minimize the sum the squared distances between the observed $y_{i}$'s from our data and the fitter $\hat{y}_{i}$'s which are predicted from the line (See Figure \@ref(fig:PlotPtsLnRes)).
+
+```r
+library(ggplot2)
+
+# --- Reduced to 5 points with reasonably large residuals ---
+df <- data.frame(
+  x = c(0.5, 1.5, 2.5, 3.5, 4.5),
+  y = c(3.5, 1.0, 5.0, 1.5, 6.5)
+)
+
+# Fit linear model
+model <- lm(y ~ x, data = df)
+b0    <- coef(model)[1]
+b1    <- coef(model)[2]
+
+# Predicted values
+df$yhat <- fitted(model)
+
+# Sample mean of y
+ybar  <- mean(df$y)
+
+# --- Bracket placement: put brackets on the LEFT for points ABOVE the line ---
+cap    <- 0.10   # horizontal cap length
+offset <- 0.20   # horizontal offset from the residual line
+
+# sgn = -1 for positive residuals (y > yhat) -> bracket to the LEFT
+# sgn = +1 for negative residuals (y < yhat) -> bracket to the RIGHT
+sgn <- ifelse(df$y > df$yhat, -1, 1)
+
+br <- transform(
+  df,
+  i      = seq_len(nrow(df)),
+  x0     = x + sgn * offset,                # x-location of bracket's vertical bar
+  y0     = pmin(y, yhat),                   # bottom of bracket
+  y1     = pmax(y, yhat),                   # top of bracket
+  ymid   = (pmin(y, yhat) + pmax(y, yhat)) / 2,
+  xlab   = x + sgn * (offset + 0.14),       # label position a bit further from bracket
+  # Labels as e_i = y_i - \hat{y}_i
+  lab    = paste0("e[", seq_len(nrow(df)), "] == y[", seq_len(nrow(df)), "] - hat(y)[", seq_len(nrow(df)), "]")
+)
+
+# Create the SSE plot with square brackets showing |y_i - yhat_i|
+p_sse <- ggplot(df, aes(x, y)) +
+  # Residuals: yi - ŷi (map to legend key "e_i")
+  geom_segment(aes(x = x, xend = x, y = yhat, yend = y, color = "e_i"), size = 0.6) +
+  # Observed points
+  geom_point(size = 3.2, color = "#619CFF") +
+  # Regression line
+  geom_abline(aes(intercept = b0, slope = b1, color = "Regression line"),
+              size = 1.3, key_glyph = draw_key_path) +
+  # Square-bracket lines (drawn without mapping -> not added to legend)
+  geom_segment(data = br, inherit.aes = FALSE,
+               aes(x = x0, xend = x0, y = y0, yend = y1), linewidth = 0.6) +               # vertical bar
+  geom_segment(data = br, inherit.aes = FALSE,
+               aes(x = x0 - sgn * cap, xend = x0, y = y0, yend = y0), linewidth = 0.6) +   # lower cap
+  geom_segment(data = br, inherit.aes = FALSE,
+               aes(x = x0 - sgn * cap, xend = x0, y = y1, yend = y1), linewidth = 0.6) +   # upper cap
+  # Labels for each residual next to its bracket (now "e_i = ...")
+  geom_text(data = br, inherit.aes = FALSE,
+            aes(x = xlab, y = ymid, label = lab),
+            parse = TRUE, size = 4, hjust = ifelse(sgn > 0, 0, 1)) +
+  # Annotate regression equation
+  annotate("text", x = 5.0, y = 4.3,
+           label = "hat(y) == hat(beta)[0] + hat(beta)[1]*x",
+           parse = TRUE, color = "#F8766D", size = 5) +
+  # SINGLE coord_cartesian call: set BOTH x and y limits here
+  coord_cartesian(xlim = c(-1.0, 5.5), ylim = c(-0.5, 7)) +
+  labs(x = "x", y = "y") +
+  # Legend: update label to e[i] = y[i] - \hat{y}[i]
+  scale_color_manual(
+    name   = NULL,
+    values = c("Regression line" = "#F8766D",
+               "e_i"             = "black"),
+    breaks = c("Regression line", "e_i"),
+    labels = c("Regression line",
+               expression(e[i] == y[i] - hat(y)[i]))
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position      = c(0.02, 0.98),
+    legend.justification = c(0, 1),
+    legend.background    = element_rect(fill = alpha("white", 0.5), color = NA),
+    legend.key.width     = unit(1.5, "lines")
+  )
+
+# Display the plot
+print(p_sse)
+```
+
+The square error (SSE) for the simple linear regression model is
+
+$$
+\begin{aligned}
+\mathrm{SSE} 
+  &= \sum_{i=1}^{n} (y_i - \hat{y}_{i})^2\\
+  &= \sum_{i=1}^{n} \big(y_i - (\hat{\beta}_0 + \hat{\beta}_1x_i) \big)^2.
+\end{aligned}
+$$ 
+The find the values of $\hat{\beta}_0$ and $\hat{\beta}_1$ which minimizes the SSSE, we take the partial derivatives of the SSE with respect to $\hat{\beta}_0$ and $\hat{\beta}_1$, setting the expression to 0 and solving for each term, we obtain 
+
+::: {.definition }
+For a model of the form $y = \beta_{0} + \beta_{1}x + \varepsilon, \, \varepsilon \sim N(0, \sigma^2)$, the least square estimates for $\beta_{0}$ and $\beta_{1}$ are given by
+$$
+\begin{aligned}
+\hat{\beta}_1 &= \frac{SS_{xy}}{SS_{xx}} 
+                  = \frac{\displaystyle\sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y}) }{ \displaystyle\sum_{i=1}^{n} (x_i - \bar{x})^2 }
+                  = \frac{\displaystyle\sum_{i=1}^{n}x_iy_i - n\bar{x}\bar{y}}{\displaystyle\sum_{i=1}^{n}x_i^2 - n\bar{x}^2}\\
+\hfill\\
+\text{and}\\
+\hfill\\
+\hat{\beta}_0 &= \bar{y} - \hat{\beta}_1\bar{x}
+\end{aligned}
+$$
+:::
+
+::::: example
+Suppose an appliance store conducts a 5-month experiment to determine
+the effect of advertising on sales revenue. The results are shown in a
+table below. The relationship between sales revenue, $y$, and
+advertising expenditure, $x$, is hypothesized to follow a ﬁrst-order
+linear model, that is, $y = \beta_0 + \beta_1\cdot x + \varepsilon$, where
+$y =$ dependent variable, $x =$ independent variable, $\beta_0$
+y-intercept, $\beta_1 =$ slope of the line and $\varepsilon =$ error
+variable.
+
+::: {.smalltbl}
+| Day | Number of tools (X) | Electricity costs (Y) |
+|:---:|:-------------------:|:---------------------:|
+|  1  |          7          |         23.80         |
+|  2  |          3          |         11.89         |
+|  3  |          2          |         15.89         |
+|  4  |          5          |         26.11         |
+|  5  |          8          |         31.79         |
+|  6  |         11          |         39.93         |
+|  7  |          5          |         12.27         |
+|  8  |         15          |         40.06         |
+|  9  |          3          |         21.38         |
+| 10  |          6          |         18.65         |
+:::
+
+a\) Obtain the least squares estimates of $\beta_0$ and $\beta_1$, and
+state the estimated regression function.
+
+b\) Plot the estimated regression function and the data.
+
+**Solution:**
+
+a\) $\bar{x} = 3$, $\bar{y} = 2$, $S_{xx} = 10$, $S_{xy} = 7$
+
+Then, the slope of the least squares line is
+$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = 0.7$ and
+$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = -0.1$. Thus, the least
+squares line is $\hat{y} = -0.1 + 0.7x$.
+
+b\) R-code
+
+::: tcolorbox
+    plot(x, y, main="Scatterplot: Simple Linear Regression",
+    xlab="x", ylab="y", pch=19,col="blue");
+
+    abline(coef(linear.reg), col="red",lty=2);
+:::
+:::::
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- By taking partial derivatives of the residual sum of squares with respect to $b_0$ and $b_1$ and setting them to zero, one obtains the classical normal equations.   -->
+
+<!-- Their solution yields the familiar closed‑form formulas -->
+<!-- \[ -->
+<!--     b_1 \;=\; r\,\frac{s_y}{s_x}, -->
+<!--     \qquad -->
+<!--     b_0 \;=\; \bar y \;-\; b_1\,\bar x, -->
+<!-- \] -->
+<!-- where $r$ is the sample correlation between $x$ and $y$, and $s_x$, $s_y$ denote their sample standard deviations. -->
+
+
+::: {.remark}
+- The distinction between explanatory and response variables is
+  essential in Least Squares Method.
+
+- The least-squares line (trendline) always passes through the point
+  ($\bar{x}$, $\bar{y}$) on the graph of $y$ against $x$.
+
+- The square of the correlation, $r^2$, is the fraction of the variation
+  in the values of $y$ that is explained by the variation in $x$.
+:::
+
+:::: example
+A tool die maker operates out of a small shop making specialized tools.
+He is considering increasing the size of his business and needs to know
+more about his costs. One such cost is electricity, which he needs to
+operate his machines and lights. He keeps track of his daily electricity
+costs and the number of tools that he made that day. These data are
+listed next. Determine the fixed and variable electricity costs using
+the Least Squares Method.
+
+::: {.smalltl}
+| Day | Number of tools (X) | Electricity costs (Y) |
+|:---:|:-------------------:|:---------------------:|
+|  1  |          7          |         23.80         |
+|  2  |          3          |         11.89         |
+|  3  |          2          |         15.89         |
+|  4  |          5          |         26.11         |
+|  5  |          8          |         31.79         |
+|  6  |         11          |         39.93         |
+|  7  |          5          |         12.27         |
+|  8  |         15          |         40.06         |
+|  9  |          3          |         21.38         |
+| 10  |          6          |         18.65         |
+:::
+
+Solution:
+
+Step 1: Entering Data;
+
+::: tcolorbox
+    tools=c(7,3,2,5,8,11,5,15,3,6);
+
+    cost=c(23.80,11.89,15.98,26.11,31.79, 39.93,12.27,40.06,21.38,18.65);
+:::
+
+Step 2: Finding Slope;
+
+::: tcolorbox
+    Sx=sd(tools); 
+
+    Sy=sd(cost); 
+
+    r=cor(tools,cost); 
+
+    b1=r*(Sy/Sx); 
+
+    b1;
+     
+    ## [1] 2.245882
+:::
+
+Step 3: Finding $y$-intercept;
+
+::: tcolorbox
+    x.bar=mean(tools); 
+
+    y.bar=mean(cost);
+
+    b0=y.bar - b1*x.bar;
+
+    b0; 
+
+    ## [1] 9.587765
+:::
+
+We can also use R-code to draw a graph:
+
+::: tcolorbox
+    plot(tools,cost,pch=19);
+
+    abline(least.squares$coeff,col="red");
+
+    # pch=19 tells R to draw solid circles; 
+
+    # abline tells R to add trendline;
+:::
+
+Interpretation:
+
+The slope measures the marginal rate of change in the dependent
+variable. In this example, the slope is $2.25$, which means that in this
+sample, for each one-unit increase in the number of tools, the marginal
+increase in the electricity cost is $\$ 2.25$ per tool.
+
+The $y$-intercept is $9.57$; that is, the line strikes the $y$-axis at
+$9.57$. However, when $x = 0$, we are producing no tools and hence the
+estimated ﬁxed cost of electricity is $\$9.57$ per day .
+::::
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Measures of Linear Relationship
+
+We begin be introducing a quantitaive measurement to
+measure the linear relationship between variavles
+
+**Covariance (Sample Covariance)**
+
+In probability theory and statistics, covariance is a measure of the
+joint variability of two random variables. The covariance sign shows the
+direction of the linear relationship between two variables. If higher
+values of one variable tend to occur with higher values of the other
+(and lower with lower), the covariance is positive, meaning the
+variables move in the same direction. If higher values of one variable
+tend to occur with lower values of the other, the covariance is
+negative, meaning they move in opposite directions. The size (magnitude)
+of the covariance reflects how much the two variables vary together,
+based on the variances they share.
+
+::: definition
+The sample covariance for 2 variables $X$ and $Y$ is:
+$$s_{xy} = \frac{1}{n-1} \cdot \sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y}) = \frac{\sum_{i = 1}^{n}x_i \cdot y_i}{n -1} - \frac{n\bar{x}\bar{y}}{n-1}.$$
+These are the two ways to compute covariance. Both will give you the
+same answer.
+:::
+
+The covariance is a measures of how two variables move together.
+
+- If covariance of two random variables is greater than $0$,
+  ($cov(x,y) > 0$), then the two random variables show the same trend.
+  That is: if one random variable is increasing, then the other one is
+  also increasing; while if one random variable is decreasing, then the
+  other one is also decreasing.
+
+- If covariance of two random variables is less than $0$,
+  ($cov(x,y) < 0$), then the two random variables show the opposite
+  trend. That is: if one random variable is increasing, then the other
+  one is decreasing; while if one random variable is decreasing, then
+  the other one is increasing.
+
+- If covariance of two random variables is equal to $0$,
+  ($cov(x,y) = 0$), then we say that there is no relationship
+  (systematically linear) between the two random variables.
+
+Note that covariance is not standardized, so it can be difficult to
+interpret directly.
+
+**Coefficient of Correlation**
+
+In statistics, correlation or dependence is any statistical
+relationship, whether causal or not, between two random variables or
+bivariate data. It helps us understand whether and how changes in one
+variable are associated with changes in another. A positive correlation
+means that as one variable increases, the other tends to increase as
+well, while a negative correlation means that one variable tends to
+decrease as the other increases. The degree of correlation is usually
+expressed with a correlation coefficient, which ranges from $-1$ to
+$+1$.
+
+::: definition
+The coefficient of correlation is given by:
+$$r_{xy} = \frac{s_{xy}}{s_x \cdot s_y}.$$ 
+where 
+
+$r_{xy}$ \, is the sample correlation coefficient; <br>
+$s_{xy}$ \, is the sample covariance; <br> 
+$s_{x}$ \, is the sample standard deviation of $x$; <br> 
+$s_{y}$ \, is the sample standard deviation of $y$.
+:::
+
+The correlation r measures the strength and direction of the linear
+association between two quantitative variables $x$ and $y$. Although you
+calculate a correlation for any scatter plot, $r$ measures only
+straight-line relationships. In short, coefficient of correlation is a
+measure of the strength of the linear relationship between two random
+variables.
+
+- If $r_{xy} \approx +1$, then we say that the two random variables have
+  strong positive correlation (See Figure \@ref(fig:examplePositiveCorr)).
+
+```r
+# Load necessary library
+library(plotly)
+
+# -----------------------------
+# Step 1: Simulate example data
+# -----------------------------
+set.seed(123)
+
+# Simulate 30 observations of sleep duration (hours)
+sleep <- seq(4, 10, length.out = 30)
+
+# Simulate memory scores with noise (linearly dependent on sleep)
+memory <- 50 + 5 * sleep + rnorm(30, mean = 0, sd = 5)
+
+# Create a data frame
+data <- data.frame(sleep, memory)
+
+# -----------------------------
+# Step 2: Fit simple linear model
+# -----------------------------
+model <- lm(memory ~ sleep, data = data)
+
+# Add predicted (fitted) values to data frame
+data$fit <- predict(model)
+
+# -----------------------------
+# Step 3: Plot using Plotly
+# -----------------------------
+fig <- plot_ly(data, x = ~sleep, y = ~memory, type = 'scatter', mode = 'markers',
+               marker = list(color = '#619CFF', size = 8),
+               name = 'Data points') %>%
+  # add_lines(y = ~fit, mode = 'lines',
+  #           line = list(color = '#F8766D', width = 2),
+  #           name = 'SLR Line') %>%
+  layout(title = "Example of Positive Correlation",
+         xaxis = list(title = "X"),
+         yaxis = list(title = "Y"),
+         legend = list(x = 0.05, y = 0.95))
+
+# Display the plot
+fig
+```
+  
+
+
+- If $r_{xy} \approx -1$, then we say that the two random variables have
+  strong negative correlation. (See figure \@ref(fig:exampleNegaticeCorr))
+
+
+```r
+# Load required library
+library(plotly)
+
+# -----------------------------
+# Step 1: Simulate data
+# -----------------------------
+set.seed(123)
+
+# Simulate speed (km/h), ranging from 40 to 100
+speed <- seq(40, 100, length.out = 30)
+
+# Assume travel time = distance / speed + some noise
+distance <- 100  # km
+travel_time <- distance / speed + rnorm(30, mean = 0, sd = 0.2)
+
+# Create data frame
+data <- data.frame(speed, travel_time)
+
+# -----------------------------
+# Step 2: Fit linear regression
+# -----------------------------
+model <- lm(travel_time ~ speed, data = data)
+data$fit <- predict(model)
+
+# -----------------------------
+# Step 3: Plot using Plotly
+# -----------------------------
+fig <- plot_ly(data, x = ~speed, y = ~travel_time, type = 'scatter', mode = 'markers',
+               marker = list(color = '#619CFF', size = 8),  # Default Plotly blue
+name = 'Data Points') %>%
+  # add_trace(y = ~fit, mode = 'lines',
+  #           line = list(color = '#F8766D', width = 2),
+  #           name = 'SLR Line') %>%
+  layout(title = "Example of Negative Correlation",
+         xaxis = list(title = "X"),
+         yaxis = list(title = "Y"),
+         legend = list(x = 0.05, y = 0.95))
+
+# Display plot
+fig
+```
+
+
+- If $r_{xy} \approx 0$, then we say that there is essentially no
+  correlation between the two random variables. Note that if
+  $r \approx 0$, then it suggests a linear relationship doesn't exist
+  but other relationship may exist (See Figure \@ref(fig:exampleNoCorr)).
+  
+ 
+```r
+# Load library
+library(plotly)
+
+# -----------------------------
+# Step 1: Simulate no-correlation data
+# -----------------------------
+set.seed(123)
+
+# Simulate coffee consumption (0 to 8 cups/day)
+coffee <- seq(0, 8, length.out = 30)
+
+# Simulate intelligence scores randomly, independent of coffee
+intelligence <- rnorm(30, mean = 100, sd = 10)  # No trend with coffee
+
+# Create data frame
+data <- data.frame(coffee, intelligence)
+
+# -----------------------------
+# Step 2: Plot only data points (no line)
+# -----------------------------
+fig <- plot_ly(data, x = ~coffee, y = ~intelligence, type = 'scatter', mode = 'markers',
+               marker = list(color = 'rgba(0, 100, 255, 0.7)', size = 8),
+               name = 'Data points') %>%
+  layout(title = "Example of No Correlation",
+         xaxis = list(title = "X"),
+         yaxis = list(title = "Y"),
+         legend = list(x = 0.05, y = 0.95))
+
+# Show plot
+fig
+```
+
+The interactive plot below allows us to examine the spatial arrangement of data and the resulting correlation.
+
+<center>
+```r
+knitr::include_app("https://nishan-mudalige.shinyapps.io/Correlation_Shiny_App/", height = "860")
+```
+</center>
+
+Note that correlation doesn't imply causation:
+
+- $cor(x,y) \approx +1$ doesn't necessarily imply on increase in $x$
+  causes increase in $y$.
+
+- $cor(x,y) \approx -1$ doesn't necessarily imply on increase in $x$
+  causes decrease in $y$.
+
+**Properties of Covariance and Correlation**
+
+These two values are symmetric:
+
+- $cov(x,y) = cov(y,x)$;
+
+- $cor(x,y) = cor(y,x)$.
+
+::::::::: example
+Five observations taken for two variables follow.
+
+::: {.smalltbl}
+| \(x_i\) | \(y_i\) |
+|:-------:|:-------:|
+|    4    |   50    |
+|    6    |   50    |
+|   11    |   40    |
+|    3    |   60    |
+|   16    |   30    |
+:::
+
+Compute the sample covariance.
+
+Compute and interpret the sample correlation coefficient.
+
+**Solution:**
+
+Step 1: Compute $\bar{x}$ and $\bar{y}$; $\bar{x} = 8$ and
+$\bar{y} = 46$ (check this by yourself).
+
+Step 2: Find $s_x$ and $s_y$.
+
+$$s_x^2 = \frac{1}{5-1} \cdot \sum_{i = 1}^{5}(x_i - \bar{x})^2 = 29.5 \text{ and } s_y^2 = \frac{1}{5-1} \cdot \sum_{i=1}^{5}(y_i - \bar{y})^2 = 130$$
+Then: $s_x = 5.4313$ and $s_y = 11.4017$.
+
+Step 3: Find $s_{xy}$ and $r$.
+
+$$\sum_{i=1}^{5}x_i \cdot y_i = 1600, \text{ then } s_{xy} = \frac{1600}{5-1} - \frac{5\cdot8\cdot46}{5-1} = -60 \text{ and } r_{xy} = \frac{s_{xy}}{s_x \cdot s_y} = 0.9688.$$
+
+**R code**
+
+Step 1: Entering data;
+
+::: tcolorbox
+    X=c(4,6,11,3,16); 
+
+    Y=c(50,50,40,60,30);
+:::
+
+Step 2: Finding means;
+
+::: tcolorbox
+    mean(X);
+
+    mean(Y);
+:::
+
+Step 3: Finding variances;
+
+::: tcolorbox
+    var(X);
+
+    var(Y);
+:::
+
+Step 4: Finding standard deviations;
+
+::: tcolorbox
+    sd(X);
+
+    sd(Y):
+:::
+
+Step 5: Finding covariance and correlation;
+
+::: tcolorbox
+    cov(X,Y);
+
+    cor(X,Y);
+:::
+:::::::::
+
+
+
+
+
+
+
+### SSE, SSR and SST
+
+The sum squared error (SSE), sum of squares for regression (SSR) 
+and the total sum of square (SST) are components of a model which are
+related to the variation in the data.
+
+
+**SSE (Sum of Squared Error)**
+
+::: definition
+For any simple linear regression model, the sum of square errors SSE
+measures the distance between observed data and estimated data, which is
+given by: 
+$$
+\mathrm{SSE} = \sum_{i=1}^{n} (y_i - \hat{y_i})^2.
+$$
+:::
+
+The SSE is the sum of the squares of residuals (deviations predicted from
+actual empirical values of data). It is a measure of the discrepancy
+between the data and an estimation model. 
+A small SSE indicates a tight fit of the model to the data.
+
+The SSE is the variation which is not explained by the model.
+It is illustrated in Figure \@ref(fig:SSEregression).
+
+```r
+library(ggplot2)
+
+# --- Manually chosen data for clear distances ---
+df <- data.frame(
+  x = c(0.5, 1.0, 1.5, 2.0, 2.5,
+        3.0, 3.5, 4.0, 4.5, 5.0),
+  y = c(3.0, 2.5, 1.0, 4.5, 2.0,
+        5.0, 1.5, 6.0, 4.0, 7.0)
+)
+
+# Fit linear model
+model <- lm(y ~ x, data = df)
+b0    <- coef(model)[1]
+b1    <- coef(model)[2]
+
+# Predicted values
+yhat  <- model$fitted.values
+df    <- cbind(df, yhat)
+
+# Sample mean of y
+ybar  <- mean(df$y)
+
+# (SST segments calculated but not used in this SSE plot)
+df$sst_y0 <- pmin(df$y, ybar)
+df$sst_y1 <- pmax(df$y, ybar)
+
+# Create the SSE plot
+p_sse <- ggplot(df, aes(x, y)) +
+  # Residuals: yi - ŷi
+  geom_segment(aes(x = x, xend = x, y = yhat, yend = y, color = "yi - yhat"),
+               size = 0.6) +
+  # Observed points
+  geom_point(size = 3.2, color = "#619CFF") +
+  # Regression line
+  geom_abline(aes(intercept = b0, slope = b1, color = "Regression line"),
+              size = 1.3,
+              key_glyph = draw_key_path) +
+  # Mean line
+  geom_hline(yintercept = ybar, linetype = "dashed", size = 0.6) +
+  # Annotate ȳ
+  annotate("text", x = 6.05, y = ybar + 0.03,
+           label = "bar(y)", parse = TRUE,
+           hjust = 1, vjust = -0.2) +
+  # Annotate regression equation
+  annotate("text", x = 6, y = max(df$y) - 1.75,
+           label = "hat(y) == hat(beta)[0] + hat(beta)[1]*x",
+           parse = TRUE, color = "#F8766D", size = 5) +
+  # extend x-axis to 6.5
+  coord_cartesian(xlim = c(0, 6.5)) +
+  labs(x = "x", y = "y") +
+  # Manual legend entries for regression and residuals
+  scale_color_manual(
+    name   = NULL,
+    values = c("Regression line" = "#F8766D",
+               "yi - yhat"       = "black"),
+    breaks = c("Regression line", "yi - yhat"),
+    labels = c("Regression line",
+               expression(y[i] - hat(y)[i]))
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position      = c(0.02, 0.98),
+    legend.justification = c(0, 1),
+    legend.background    = element_rect(fill = alpha("white", 0.5), color = NA),
+    legend.key.width     = unit(1.5, "lines")
+  )
+
+# Display the SSE plot
+print(p_sse)
+```
+
+
+
+
+
+**SSR (Sum Square Regression)**
+
+::: definition
+For any simple linear regression, the distance between the mean of
+dependent value and estimated dependent value is called sum square
+regression (SSR), which is given by
+$$
+\mathrm{SSR} = \sum_{i=1}^{n}(\hat{y_i} - \bar{y})^2.
+$$
+:::
+
+The SSR is the variation which is explained by the model.
+It measures the distance between estimated value (estimated dependent
+data) and the mean of dependent data ($\bar{y}$).
+It is illustrated in Figure \@ref(fig:SSRregression).
+
+
+```r
+library(ggplot2)
+
+# --- Manually chosen data for clear distances ---
+df <- data.frame(
+  x = c(0.5, 1.0, 1.5, 2.0, 2.5,
+        3.0, 3.5, 4.0, 4.5, 5.0),
+  y = c(3.0, 2.5, 1.0, 4.5, 2.0,
+        5.0, 1.5, 6.0, 4.0, 7.0)
+)
+
+# Fit linear model
+model <- lm(y ~ x, data = df)
+b0    <- coef(model)[1]
+b1    <- coef(model)[2]
+
+# Predicted values
+yhat  <- model$fitted.values
+df    <- cbind(df, yhat)
+
+# Sample mean of y
+ybar  <- mean(df$y)
+
+# (SST segments computed above but not used here)
+df$sst_y0 <- pmin(df$y, ybar)
+df$sst_y1 <- pmax(df$y, ybar)
+
+# Create the SSR plot
+p_ssr <- ggplot(df, aes(x, y)) +
+  # Explained deviations: ŷi - ȳ
+  geom_segment(aes(x = x, xend = x, y = ybar, yend = yhat, color = "yhat - y-bar"),
+               size = 0.6) +
+  # Observed points
+  geom_point(size = 3.2, color = "#619CFF") +
+  # Regression line
+  geom_abline(aes(intercept = b0, slope = b1, color = "Regression line"),
+              size = 1.3,
+              key_glyph = draw_key_path) +
+  # Mean line
+  geom_hline(yintercept = ybar, linetype = "dashed", size = 0.6) +
+  # Annotate ȳ
+  annotate("text", x = 6.05, y = ybar + 0.03,
+           label = "bar(y)", parse = TRUE,
+           hjust = 1, vjust = -0.2) +
+  # Annotate regression equation
+  annotate("text", x = 6, y = max(df$y) - 1.75,
+           label = "hat(y) == hat(beta)[0] + hat(beta)[1]*x",
+           parse = TRUE, color = "#F8766D", size = 5) +
+  # Extend x-axis to 6.5
+  coord_cartesian(xlim = c(0, 6.5)) +
+  labs(x = "x", y = "y") +
+  # Manual legend entries for regression and explained deviations
+  scale_color_manual(
+    name   = NULL,
+    values = c("Regression line" = "#F8766D",
+               "yhat - y-bar"    = "black"),
+    breaks = c("Regression line", "yhat - y-bar"),
+    labels = c("Regression line",
+               expression(hat(y)[i] - bar(y)))
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position      = c(0.02, 0.98),
+    legend.justification = c(0, 1),
+    legend.background    = element_rect(fill = alpha("white", 0.5), color = NA),
+    legend.key.width     = unit(1.5, "lines")
+  )
+
+# Display the SSR plot
+print(p_ssr)
+```
+
+
+
+
+
+**SST (Total Sum of Squares)**
+
+::: definition
+For any simple linear regression model, SST (Total sum of squares)
+measures the sum over all squared differences between the observations
+and their overall mean $\bar{y}$ is given by:
+$$
+\mathrm{SST} = \sum_{i=1}^{n}(y_i - \bar{y})^2.
+$$
+:::
+
+The SST is the sum of the squared differences between the
+observations and their overall mean $\bar{y}$ in the data. 
+This is illustrated in Figure \@ref(fig:SSTregression).
+
+```r
+library(ggplot2)
+
+# --- Manually chosen data for clear distances ---
+df <- data.frame(
+  x = c(0.5, 1.0, 1.5, 2.0, 2.5,
+        3.0, 3.5, 4.0, 4.5, 5.0),
+  y = c(3.0, 2.5, 1.0, 4.5, 2.0,
+        5.0, 1.5, 6.0, 4.0, 7.0)
+)
+
+# Fit linear model
+model <- lm(y ~ x, data = df)
+b0    <- coef(model)[1]
+b1    <- coef(model)[2]
+
+# Predicted values
+yhat  <- model$fitted.values
+df    <- cbind(df, yhat)
+
+# Sample mean of y
+ybar  <- mean(df$y)
+
+# Segments for total deviation (SST): |y_i - ȳ|
+df$sst_y0 <- pmin(df$y, ybar)
+df$sst_y1 <- pmax(df$y, ybar)
+
+# Create the SST plot
+p_sst <- ggplot(df, aes(x, y)) +
+  # Total deviations: yi - ȳ
+  geom_segment(aes(x = x, xend = x, y = sst_y0, yend = sst_y1, color = "yi - y-bar"),
+               size = 0.6) +
+  # Observed points
+  geom_point(size = 3.2, color = "#619CFF") +
+  # Regression line
+  geom_abline(aes(intercept = b0, slope = b1, color = "Regression line"),
+              size = 1.3,
+              key_glyph = draw_key_path) +
+  # Mean line
+  geom_hline(yintercept = ybar, linetype = "dashed", size = 0.6) +
+  # Annotate ȳ
+  annotate("text", x = 6.05, y = ybar + 0.03,
+           label = "bar(y)", parse = TRUE,
+           hjust = 1, vjust = -0.2) +
+  # Annotate regression equation
+  annotate("text", x = 6, y = max(df$y) - 1.75,
+           label = "hat(y) == hat(beta)[0] + hat(beta)[1]*x",
+           parse = TRUE, color = "#F8766D", size = 5) +
+  # extend x-axis to 6.5
+  coord_cartesian(xlim = c(0, 6.5)) +
+  labs(x = "x", y = "y") +
+  # Manual legend entries for regression and total deviations
+  scale_color_manual(
+    name   = NULL,
+    values = c("Regression line" = "#F8766D",
+               "yi - y-bar"      = "black"),
+    breaks = c("Regression line", "yi - y-bar"),
+    labels = c("Regression line",
+               expression(y[i] - bar(y)))
+  ) +
+  theme_minimal(base_size = 16) +
+  theme(
+    legend.position      = c(0.02, 0.98),
+    legend.justification = c(0, 1),
+    legend.background    = element_rect(fill = alpha("white", 0.5), color = NA),
+    legend.key.width     = unit(1.5, "lines")
+  )
+
+# Display the SST plot
+print(p_sst)
+```
+
+
+
+The app below allows us to show or hide each of these component on one plot.
+
+<center>
+```r
+knitr::include_app("https://nishan-mudalige.shinyapps.io/Regression_Decomposition_of_Variation/", height = "725")
+```
+</center>
+
+**Summary**
+
+The total variation (SST) can be decomposed as the sum of the 
+variation explained by the model (SSR) and the variation which is not explained by the model (SSE):
+
+$$
+\begin{aligned}
+SST &= SSR + SSE  \\
+\sum_{i=1}^{n}(y_i - \bar{y})^2 &= \sum_{i=1}^{n}(\hat{y_i} - \bar{y})^2 + \sum_{i=1}^{n}(y_i - \hat{y_i})^2
+\end{aligned}
+$$.
+
+
+
+```r
+```
+
+
+
+**Coefficient of Determination ($r^2$)**
+
+Moreover, we can use SST, SSE and SSR to calculate another value which
+is important in simple linear regression, that is coefficient of
+determination. It is proportion of variability in $y$ which is explained
+by $x$.
+
+::: definition
+We define the coefficient of determination as the sum of squares due to
+the regression divided by the total sum of squares.
+$$r^2 = \frac{SSR}{SST} = 1 - \frac{SSE}{SST}.$$ The coefficient of
+determination can be interpreted as the proportion of the variation in
+$Y$ that is explained by the regression relationship of $Y$ with $X$ (or
+the proportion of the total corrected sum of squares explained by the
+regression). Note that: $0 \leq r^2 \leq 1.$
+:::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Inference for Simple Linear Regression
+
+In previous chapters, we focused on estimating regression parameters and
+interpreting the fitted line. In this chapter, we take a step further by
+conducting formal inference on the slope and intercept of a simple
+linear regression model. We examine the distribution of errors, assess
+variability, and introduce the idea of using hypothesis tests and
+confidence intervals to evaluate whether the linear relationship
+observed in the data is statistically significant.
+
+We begin by introducing the regression model and exploring the
+assumptions necessary to perform inference on the coefficients,
+particularly the slope.
+
+$$Y = \beta_0 + \beta_1 X + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, \sigma^2)$$
+
+Can perform inference on $\beta_0$ and $\beta_1$, however we are usually
+more interested in $\beta_1$
+
+What does the error term $\varepsilon \sim \mathcal{N}(0, \sigma^2)$
+mean?\
+**At each** value of $X$, the errors are distributed normally with a
+mean of zero and a constant variance.
+
+
+
+Can verify with residual plots (assumptions).
+
+We estimate $\sigma^2$ with a value we call $s^2$ which we use for inference.
+
+### Estimating Variance in Linear Regression {#estimating-variance-in-linear-regression}
+
+$$Y = \beta_0 + \beta_1 X + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, \sigma^2)$$
+
+**Estimate $\sigma^2$ with $S^2$**:
+
+$$s^2 = \frac{\sum_{i=1}^n e_i^2}{n - 2}
+= \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{n - 2}
+= \frac{SSE}{n - 2}$$
+
+<!-- [*notice similarity*]{style="color: red"} -->
+
+<!-- $$S_x^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n - 1} -->
+<!-- \quad {\text{(sample variance, }\bar{x} \text{ estimated)}}$$ -->
+
+<!-- $$S = +\sqrt{S^2} -->
+<!-- \quad {\text{(estimate of standard deviation)}} \\$$ -->
+
+A natural question to ask is why we divide by $n-2$ in the calculation of $s^2$.
+The reason is that we are estimating 2 unknown parameters in the model (both $\beta_0$ and
+$\beta_1$ are unknown) and since the calculation of $s^2$ uses estimates of both parameters, we lose 2 degrees of freedom.
+
+::: {.remark}
+We can use $s{x}, \, s{y}, \, \bar{x}, \, \bar{y}$ and $r$ to calculate the least square estimators using
+
+$$
+\begin{aligned}
+\hat{\beta}_1 & = r \frac{s_y}{s_x} \\
+\text{and}  \\
+\hat{\beta}_0 & = \bar{y} - \hat{\beta}_1 \bar{x}
+\end{aligned}
+$$
+:::
+
+::: example
+Suppose an appliance store conducts a 5-month experiment to determine
+the effect of advertising on sales revenue. The results are shown in a
+table below. The relationship between sales revenue, $y$, and
+advertising expenditure, $x$, is hypothesized to follow a first-order
+linear model, that is,
+
+$$y = \beta_0 + \beta_1 x + \varepsilon$$
+
+where
+
+$$\begin{aligned}
+y & = \text{dependent variable} \\
+x & = \text{independent variable} \\
+\beta_0 & = \text{$y$-intercept} \\
+\beta_1 & = \text{slope of the line} \\
+\varepsilon & = \text{error variable}
+\end{aligned}$$
+
+| Month | Expenditure $x$ (hundreds) | Revenue $y$ (thousands) |
+|-------|-----------------------------|--------------------------|
+| 1     | 1                           | 1                        |
+| 2     | 2                           | 1                        |
+| 3     | 3                           | 2                        |
+| 4     | 4                           | 2                        |
+| 5     | 5                           | 4                        |
+
+
+The question is how can we best use the information in the sample
+of five observations in our table to estimate the unknown $y$-intercept
+$\beta_0$ and slope $\beta_1$?
+
+We are given:
+$$\bar{x} = 3, \quad \bar{y} = 2, \quad S_x = 1.5811, \quad S_y = 1.2247, \quad S_{xy} = 1.75$$
+
+Then, the slope of the least squares line is
+
+$$b_1 = r \frac{S_y}{S_x} = (0.9037) \left( \frac{1.2247}{1.5811} \right) = 0.7$$
+
+and
+
+$$b_0 = \bar{y} - b_1 \bar{x} = 2 - (0.7)(3) = -0.1$$
+
+The least squares line is thus:
+
+$$\hat{y} = -0.1 + 0.7x$$
+:::
+
+### Confidence Intervals and Hypothesis Tests 
+
+We have $n$ observations on an explanatory variable $x$ and a response
+variable $y$. Our goal is to study or predict the behavior of $y$ for
+given values of $x$.
+
+- For any fixed value of $x$, the response $y$ varies according to a
+  Normal distribution. Repeated measures $y$ are independent of each
+  other.
+
+- The mean response $\mu_y$ has a straight-line relationship with $x$:
+  $\mu_y = \beta_0 + \beta_1 x$. The slope $\beta_1$ and intercept
+  $\beta_0$ are **unknown** parameters.
+
+- The standard deviation of $y$ (call it $\sigma$) is the same for all
+  values of $x$. The value of $\sigma$ is **unknown**. The regression
+  model has three parameters, $\beta_0$, $\beta_1$, and $\sigma$.
+
+Thus, if $$\hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i$$ is the
+predicted value of the $i$th $y$ value, then the deviation of the
+observed value $y_i$ from $\hat{y}_i$ is the difference
+$y_i - \hat{y}_i$ and the sum of squares of deviations to be minimized
+is
+
+$$SSE = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 = \sum_{i=1}^{n} [y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i)]^2.$$
+
+The quantity *SSE* is also called the **sum of squares for error**.
+$$\begin{aligned}
+\text{Fitted Value:} \quad & \hat{y}_i = \hat{\beta}_0 + \hat{\beta}_1 x_i \\
+\text{Residual:} \quad & \hat{\varepsilon}_i = y_i - \hat{y}_i
+\end{aligned}$$
+
+The **regression standard error** is
+
+$$s = \sqrt{\frac{1}{n - 2} \sum \text{residual}^2} 
+= \sqrt{\frac{1}{n - 2} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2} 
+= \sqrt{\frac{SSE}{n - 2}}$$
+
+Use $s$ to estimate the **unknown** $\sigma$ in the regression model
+
+
+The standard error of $\hat{\beta}_1$ is the standard deviation of the
+sampling distribution of $\hat{\beta}_1$ (estimate of slope $\beta_1$):
+
+$$SE(\hat{\beta}_1) = \frac{s}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2}} 
+= \frac{s}{\sqrt{(n - 1) s_x^2}}$$
+
+**Confidence Interval for the Slope**
+
+$$\hat{\beta}_1 \pm t_{(n-2, \, \alpha/2)} \cdot SE(\hat{\beta}_1)
+\quad = \quad 
+\hat{\beta}_1 \pm t_{(n-2, \, \alpha/2)} \cdot \frac{s}{\sqrt{\sum_{i=1}^{n} (x_i - \bar{x})^2}}$$
+
+:::: example
+Revisit the example on advertising and sales and construct a 95%
+confidence interval on the slope. Provide an interpretation of the CI.
+
+From earlier: $$\hat{y} = -0.1 + 0.7x$$
+
+::: center
+   **$x$**   **$y$**   **$\hat{y}$**   **$y - \hat{y}$**   **$(y - \hat{y})^2$**   **$(x - \bar{x})^2$**
+  --------- --------- --------------- ------------------- ----------------------- -----------------------
+      1         1           0.6               0.4                  0.16                      4
+      2         1           1.3              -0.3                  0.09                      1
+      3         2           2.0               0.0                  0.00                      0
+      4         2           2.7              -0.7                  0.49                      1
+      5         4           3.4               0.6                  0.36                      4
+:::
+
+We are given:
+$$\sum x_i = 15, \quad \bar{x} = \frac{15}{5} = 3, \quad SSE = 1.10, \quad \sum (x_i - \bar{x})^2 = 10$$
+
+**Step 1: Estimate variance and standard deviation**
+$$s^2 = \frac{SSE}{n-2} = \frac{1.10}{5 - 2} = 0.3667
+\quad \Rightarrow \quad
+s = \sqrt{0.3667} = 0.6055$$
+
+**Step 2: Compute standard error of $\hat{\beta}_1$**
+$$SE(\hat{\beta}_1) = \frac{s}{\sqrt{\sum (x_i - \bar{x})^2}} 
+= \frac{0.6055}{\sqrt{10}} = 0.1914$$
+
+**Step 3: Determine critical $t$-value**
+
+$$n - 2 = 3, \quad \alpha = 0.05, \quad \alpha/2 = 0.025
+\Rightarrow \quad
+t_{(3, 0.025)} = 3.182$$
+
+**Step 4: Construct CI for the slope**
+$$\hat{\beta}_1 \pm t_{(n-2, \alpha/2)} \cdot SE(\hat{\beta}_1)
+= 0.7 \pm 3.182 \cdot 0.1914 = 0.7 \pm 0.6092$$
+
+$$\Rightarrow \text{CI: } (0.0908, \; 1.3092)$$
+
+**Interpretation:** We are 95% confident the slope ($\beta_1$) for this
+model lies between 0.0908 and 1.3092.
+::::
+
+<!-- ### Interpreting Confidence Intervals for $\beta_1$ {#interpreting-confidence-intervals-for-beta_1 .unnumbered} -->
+
+::: center
+  ----------------- ----------------------------------------------------------
+    **Suppose CI:** $(-, -)$
+                    Suggests $\beta_1$ has a **negative** sign.
+                    Suggests negative correlation, potentially good model.
+                    
+    **Suppose CI:** $(+, +)$
+                    Suggests $\beta_1$ has a **positive** sign.
+                    Suggests positive correlation, potentially good model.
+                    
+    **Suppose CI:** $(-, +)$
+                    $\beta_1 = 0$ is plausible.
+                    Suggests **no linear relationship** between $x$ and $y$.
+  ----------------- ----------------------------------------------------------
+:::
+
+In cases where the CI does not contain zero, we can infer the sign of
+the slope (just not the steepness)
+
+
+The **regression standard error** is
+
+$$s = \sqrt{\frac{1}{n - 2} \sum_{i=1}^n (y_i - \hat{y}_i)^2} = \sqrt{\frac{SSE}{n - 2}} = \sqrt{\frac{1.1}{3}} = 0.6055$$
+
+Use $s$ to estimate the **unknown** $\sigma$ in the regression model
+
+
+A level $C$ confidence interval for the slope $\beta_1$ of the true
+regression line is
+
+$$\hat{\beta}_1 \pm t^* SE(\hat{\beta}_1)$$
+
+In this formula, the standard error of the least-squares slope $\beta_{1}$ is
+
+$$SE(\hat{\beta}_1) = \frac{s}{\sqrt{\sum (x_i - \bar{x})^2}} = \frac{s}{\sqrt{(n - 1) SS_{xx} }}$$
+
+and $t^*$ is the critical value for the $t(n - 2)$ density curve with
+area $C$ between $-t^*$ and $t^*$.
+
+::: tcolorbox
+**Hypotheses:** $$\begin{aligned}
+H_0\!: \beta_1 = 0 \quad & \text{vs.} \quad H_a\!: \beta_1 > 0 \\
+H_0\!: \beta_1 = 0 \quad & \text{vs.} \quad H_a\!: \beta_1 < 0 \\
+H_0\!: \beta_1 = 0 \quad & \text{vs.} \quad H_a\!: \beta_1 \neq 0 \quad \text{\textit{(most common)}}
+\end{aligned}$$
+
+**Test Statistic:**
+$$t = \frac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)} = \frac{\hat{\beta}_1}{\dfrac{s}{\sqrt{\sum_{i=1}^n (x_i - \bar{x})^2}}}$$
+
+**Reference distribution:** $t$ distribution with $n - 2$ degrees of
+freedom.
+
+*Note:* A test statistic always follows the form:
+$$\text{test stat} = \frac{\text{statistic} - \text{hypothesized value}}{\text{SE(statistic)}}$$
+:::
+
+::: example
+For the advertising example, perform a two-sided hypothesis test on the
+slope.
+
+**Hypotheses:** $$H_0\!: \beta_1 = 0 
+\qquad 
+H_a\!: \beta_1 \neq 0$$
+
+**Test Statistic:**
+$$t^* = \frac{\hat{\beta}_1 - 0}{\dfrac{s}{\sqrt{\sum (x_i - \bar{x})^2}}}
+= \frac{0.7 - 0}{0.6055 / \sqrt{10}} = 3.6558$$
+
+**Reference Distribution:** $t$ distribution with $n - 2 = 5 - 2 = 3$
+degrees of freedom.
+
+**Decision Rule:**
+
+Using a two-tailed test:
+$$\text{p-value} = 2 \cdot P(T_3 > 3.6558) < 0.01 \Rightarrow \text{p-value} < 0.05$$
+
+**Conclusion:** Since $p$-value $< 0.05$, we reject $H_0$ and conclude
+$H_a\!: \beta_1 \neq 0$.
+
+*Interpretation:* The slope should be included in the model. There is
+significant evidence of a linear relationship between advertising and
+sales revenue
+
+
+For the advertising-sales example, a 95% Confidence Interval for the
+slope $\beta_1$ is
+$$0.7 \pm 3.182 \left( \frac{0.6055}{\sqrt{10}} \right)$$
+$$0.7 \pm 0.6092$$
+
+Thus, we estimate with 95% confidence that the interval from 0.0908 and
+1.3092 includes the parameter $\beta_1$.
+:::
+
+We can also test hypotheses about the slope $\beta_1$. The most common
+hypothesis is
+
+$$H_0 : \beta_1 = 0.$$
+
+A regression line with slope 0 is horizontal. That is, the mean of $y$
+does not change at all when $x$ changes. So this $H_0$ says that there
+is no true linear relationship between $x$ and $y$.
+
+::: tcolorbox
+To test the hypothesis $H_0 : \beta_1 = 0$, compute the $t$ statistic
+$$t = \frac{\hat{\beta}_1}{SE({\hat{\beta}_1})}.$$
+
+In terms of a random variable $T$ having the $t(n - 2)$ distribution,
+the P-value for a test of $H_0$ against: $$\begin{aligned}
+H_a : \beta_1 \ne 0 & \quad \text{is } 2P(T > |t|). \\
+H_a : \beta_1 > 0 & \quad \text{is } P(T > t). \\
+H_a : \beta_1 < 0 & \quad \text{is } P(T < t).
+\end{aligned}$$
+:::
+
+::::: example
+$$\alpha = 0.05$$
+
+1.  $H_0: \beta_1 = 0 \quad \text{vs} \quad H_a: \beta_1 > 0$
+
+2.  $t^* = \displaystyle\frac{\hat{\beta}_1}{SE(\hat{\beta}_1)} = \displaystyle\frac{0.7}{0.1914} = 3.6572$
+
+3.  $P\text{-value} = P(T > t) = P(T > 3.6572) \quad \text{d.f.} = n - 2 = 5 - 2 = 3.$\
+    Using t-distribution table, $0.01 < P\text{ value} < 0.025$
+
+4.  Since $P\text{-value} < \alpha = 0.05$, we reject $H_0$.
+
+Our example (different $H_a$) $$\alpha = 0.05$$
+
+1.  $H_0: \beta_1 = 0 \quad \text{vs} \quad H_a: \beta_1 \neq 0$
+
+2.  $t^* = \frac{b_1}{SE_{b_1}} = \frac{0.7}{0.1914} = 3.6572$
+
+3.  $P\text{-value} = 2P(T > |t|) = 2P(T > 3.6572) \quad \text{d.f.} = n - 2 = 5 - 2 = 3.$\
+    Using Table 3, $0.02 < P\text{ value} < 0.05$
+
+4.  Since $P\text{-value} < \alpha = 0.05$, we reject $H_0$.
+
+**R code**
+
+::: tcolorbox
+    x = c(1, 2, 3, 4, 5);
+    y = c(1, 1, 2, 2, 4);
+    mod = lm(y~x);
+    summary(mod);
+:::
+
+**R Output**
+
+::: tcolorbox
+    ## 
+    ## Call:
+    ## lm(formula = y~x)
+    ## 
+    ## Residuals:
+    ##       1        2        3        4        5 
+    ##  4.000e-01 -3.000e-01 -3.886e-16 -7.000e-01  6.000e-01 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)   
+    ## (Intercept)  -0.1000     0.6351  -0.157  0.8849    
+    ## x             0.7000     0.1915   3.656  0.0354 *  
+    ## ---
+    ## Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+    ## 
+    ## Residual standard error: 0.6055 on 3 degrees of freedom
+:::
+
+$$\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x = -0.10 + 0.70x$$
+$$SE(\hat{\beta}_1) = 0.1915$$
+
+By default, R conducts the following test for each coefficient:
+
+$$\begin{aligned}
+    H_0&: \beta_j = 0 \\
+    H_a&: \beta_j \ne 0 \quad \text{(two sided)}
+\end{aligned}$$
+
+Test statistic: $$t^* = \frac{\hat{\beta}_j - 0}{SE(\hat{\beta}_j)}$$
+
+For advertising and sales data: $$\begin{aligned}
+    H_0&: \beta_1 = 0 \\
+    H_a&: \beta_1 \ne 0
+\end{aligned}$$
+
+$$t^* = \frac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)} = \frac{0.70}{0.1915} = 3.656$$
+:::::
+
+::: nt
+**Review**
+
+$$\begin{aligned}
+y &= \beta_0 + \beta_1 x + \varepsilon, \quad \varepsilon \sim N(0, \sigma^2) \\
+\hat{y} &= \hat{\beta}_0 + \hat{\beta}_1 x \\
+\hat{\beta}_1 &= \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2} = \frac{s_{xy}}{s_{xx}} \\
+\hat{\beta}_0 &= \bar{y} - \hat{\beta}_1 \bar{x} \\
+\end{aligned}$$
+
+**r:** coefficient of correlation (strength)\
+**r$^2$:** coefficient of determination (% variability)
+
+$$\begin{aligned}
+s^2 &= \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{n - 2} = \frac{SSE}{n - 2} \\
+s &= \sqrt{s^2} \\
+SE(\hat{\beta}_1) &= \frac{s}{\sqrt{s_{xx}}} \\
+CI &: \hat{\beta}_1 \pm t_{n - 2, \alpha/2} \cdot SE(\hat{\beta}_1) \\
+\end{aligned}$$ Hypothesis test: $$\begin{aligned}
+H_0 &: \beta_1 = 0 \\
+\text{Test stat:}\quad t &= \frac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)}
+\end{aligned}$$
+:::
+
+We square all three deviations for each one of our data points, and sum
+over all $n$ points. Here, cross terms drop out, and we are left with
+the following equation:
+
+$$\sum_{i=1}^{n}(y_i - \bar{y})^2 = \sum_{i=1}^{n}(y_i - \hat{y}_i)^2 + \sum_{i=1}^{n}(\hat{y}_i - \bar{y})^2$$
+
+$$\text{SST} = \text{SSE} + \text{SSR}$$
+
+Total sum of squares = Sum of squares for error + Sum of squares for
+regression
+
+
+$$\begin{aligned}
+SSE &= \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 \\
+    &= \sum_{i=1}^{n} (y_i - \bar{y})^2 - \hat{\beta}_1 \sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y}) \\
+    &= S_{YY} - \hat{\beta}_1 S_{XY}
+\end{aligned}$$
+
+Notice that this provides an easier computational method of finding
+SSE
+
+
+**R output (Additional example)**
+
+::: tcolorbox
+    > summary(model);
+
+    Call:
+    lm(formula = camrys$Price ~ Odometer, data = camrys)
+
+    Residuals:
+         Min       1Q   Median       3Q      Max 
+    -0.68679 -0.27263  0.00521  0.23210  0.70071 
+
+    Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+    (Intercept)  17.248727   0.182093   94.72   <2e-16 ***
+    Odometer     -0.066861   0.004975  -13.44   <2e-16 ***
+    ---
+    Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+    Residual standard error: 0.3265 on 98 degrees of freedom
+    Multiple R-squared:  0.6483,    Adjusted R-squared:  0.6447 
+    F-statistic: 180.6 on 1 and 98 DF,  p-value: < 2.2e-16
+:::
+
+### ANOVA Table for Simple Linear Regression
+
+Analysis of Variance (ANOVA) is a statistical method used to assess
+whether variation in a response variable can be explained by predictor
+variables in a regression model. It summarizes sources of variation
+using sums of squares, degrees of freedom, and mean squares in a
+structured table format.
+
+  **Source of Variation**    **Sum of Squares**   **Degrees of Freedom**        **Mean Square**                **Computed F**
+  ------------------------- -------------------- ------------------------ ---------------------------- ------------------------------
+  Regression                        SSR                     1                         SSR               $\dfrac{SSR}{SSE / (n - 2)}$
+  Error                             SSE                  $n - 2$           $s^2 = \dfrac{SSE}{n - 2}$  
+  Total                             SST                  $n - 1$                                       
+
+For the general multivariate regression model: $$\begin{aligned}
+    Y &= \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p + \varepsilon, \\
+      &\quad \varepsilon \sim N(0, \sigma^2)
+\end{aligned}$$ with $p$ predictors
+
+
+ANOVA can be used for testing: $$\begin{aligned}
+    H_0&: \beta_1 = \beta_2 = \cdots = \beta_p = 0 \\
+    H_a&: \text{At least one } \beta_j \ne 0, \quad j = 1, \ldots, p
+\end{aligned}$$
+
+**Test Statistic:** $$\begin{aligned}
+    F &= \dfrac{MSR}{MSE} = \dfrac{SSR/p}{SSE / (n - p - 1)} \sim F(p, n - p - 1)
+\end{aligned}$$
+
+**Reference distribution:** $F$ with numerator df = $p$, denominator df
+= $n - p - 1$
+
+::::: example
+We fitted a simple linear regression model using:
+
+::: tcolorbox
+    x = c(1,2,3,4,5);
+    y = c(1,1,2,2,4);
+    mod = lm(y~x);
+    anova(mod);
+:::
+
+The ANOVA output was:
+
+::: tcolorbox
+    ## Analysis of Variance Table
+    ##
+    ## Response: y
+    ##             Df  Sum Sq Mean Sq F value   Pr(>F)
+    ## x            1     4.9    4.9000  13.364  0.03535 *
+    ## Residuals    3     1.1    0.3667
+    ## ---
+    ## Signif. codes:
+    ## 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+:::
+
+**Interpretation:**
+
+- The regression model includes one predictor $x$, so the degrees of
+  freedom for regression is 1.
+
+- The sum of squares for regression is $SSR = 4.9$, and for residuals
+  $SSE = 1.1$.
+
+- Mean squares are calculated as:
+  $$MSR = \frac{SSR}{1} = 4.9, \quad MSE = \frac{SSE}{n - 2} = \frac{1.1}{3} = 0.3667$$
+
+- The F-statistic is:
+  $$F = \frac{MSR}{MSE} = \frac{4.9}{0.3667} \approx 13.364$$
+
+- The p-value is $\approx 0.03535$, indicating that the predictor is
+  significant at the 5% level.
+
+**Conclusion:** Since the p-value is less than 0.05, we reject $H_0$ and
+conclude that $x$ has a statistically significant linear relationship
+with $y$.
+:::::
+
+:::::::::::: example
+We consider data on apartments near UTM, with price (in thousands of
+dollars), area (in 100 square feet), and number of beds and baths.
+
+::: center
+  ----------------- ---------------------- ---------- -----------
+      **Price**            **Area**         **Beds**   **Baths**
+   ($\times 1000$)   ($\times 100$ sq ft)             
+         620                 11.0              2           2
+         590                 6.5               2           1
+         620                 10.0              2           2
+         700                 8.4               2           2
+         680                 8.0               2           2
+         500                 5.7               1           1
+         760                 12.0              2           2
+         800                 14.0              3           1
+         660                 7.3               2           1
+  ----------------- ---------------------- ---------- -----------
+:::
+```r
+library(ggplot2)
+
+# Data
+area <- c(5.5, 6.5, 7.5, 8.0, 8.3, 9.8, 11.0, 12.5, 13.8, 10.2)
+price <- c(490, 590, 660, 700, 710, 630, 630, 760, 810, 680)
+df <- data.frame(area, price)
+
+# Plot
+ggplot(df, aes(x = area, y = price)) +
+  geom_point(size = 3, color = "#000000") +
+  labs(
+    x = "Area (sq ft)",
+    y = "Price (x$1000)",
+    title = "Plot of Price vs Area for Apartments near UTM"
+  ) +
+  theme_minimal(base_size = 14)
+
+```
+
+
+| Price | Area | $(x-\bar{x})$ | $(y-\bar{y})$ | $(x-\bar{x})(y-\bar{y})$ | $(x-\bar{x})^2$ |
+| ----: | ---: | ------------: | ------------: | ------------------------: | --------------: |
+|  620  | 11.0 |          1.8  |        -38.9  |                  -70.02  |           3.24  |
+|  590  |  6.5 |         -2.7  |        -68.9  |                  186.03  |           7.29  |
+|  620  | 10.0 |          0.8  |        -38.9  |                  -31.12  |           0.64  |
+|  700  |  8.4 |         -0.8  |         41.1  |                  -32.88  |           0.64  |
+|  680  |  8.0 |         -1.2  |         21.1  |                  -25.32  |           1.44  |
+|  500  |  5.7 |         -3.5  |       -158.9  |                  556.15  |          12.25  |
+|  760  | 12.0 |          2.8  |        101.1  |                  283.08  |           7.84  |
+|  800  | 14.0 |          4.8  |        141.1  |                  677.28  |          23.04  |
+|  660  |  7.3 |         -1.9  |          1.1  |                   -2.09  |           3.61  |
+| **Sum** | 82.9 |             |               | $\sum (x - \bar{x})(y - \bar{y})$ | $\sum (x - \bar{x})^2$ |
+|       |      |                               | = 1541.11                | = 60.00         |
+Table: Deviation table for computing $\hat{\beta}_1$ and $\hat{\beta}_0$.
+
+
+The sample means are:
+$$
+\begin{aligned}
+\bar{y} &= \frac{\sum y}{n} = \frac{5930}{9} = 658.89\\
+\hfill\\
+\bar{x} &= \frac{\sum x}{n} = \frac{82.9}{9} = 9.21
+\end{aligned}
+$$
+
+#### Finding the Regression Coefficients {#finding-the-regression-coefficients .unnumbered}
+
+To compute the least squares regression line, we calculate the slope and
+intercept using the formulas:
+
+
+$$
+\begin{aligned}
+\hat{\beta}_1 &= \frac{S_{xy}}{S_{xx}} = \frac{1541.11}{60} = 25.69 \\
+\hfill\\
+\hat{\beta}_0 &= \bar{y} - \hat{\beta}_1 \bar{x} = 658.89 - (25.69)(9.21) = 422.28
+\end{aligned}
+$$
+
+
+#### Equation of the Regression Line {#equation-of-the-regression-line .unnumbered}
+
+Using the values above, we write the estimated regression equation as:
+
+$$\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x = 422.28 + 25.69x$$
+
+This equation gives the predicted apartment price (in \$1000s) based on
+area (in 100 sq ft).
+
+#### Interpretation of Coefficients {#interpretation-of-coefficients .unnumbered}
+
+The slope $\hat{\beta}_1 = 25.69$ means that for every additional 100 sq
+ft in area, we expect the apartment price to increase by approximately
+\$25,690 on average
+
+
+The intercept $\hat{\beta}_0 = 422.28$ suggests the predicted price when
+the area is zero. While this has no practical interpretation in this
+context, it is a necessary component of the regression model.
+
+#### Interpolation and Extrapolation {#interpolation-and-extrapolation .unnumbered}
+
+To estimate the price of an apartment with an area of 800 sq ft (i.e.,
+$x = 8$), we compute:
+
+$$\hat{y} = 422.28 + 25.69(8) = 627.8 \quad (\$1000)$$
+
+Since 8 is within the range of observed values, this is an example of
+**interpolation.**
+
+For an apartment with 2,500 sq ft ($x = 25$):
+
+$$\hat{y} = 422.28 + 25.69(25) = 1064.53 \quad (\$1000)$$
+
+This is an example of **extrapolation**, and such predictions should be
+treated with caution since they lie outside the data range
+
+
+We can create a simple linear regression model in R using the `lm`
+command:
+
+**R code**
+
+::: tcolorbox
+    lm(y ~ x, data = data_source)
+:::
+
+The data is available in the `apt_around_utm.csv` file.
+
+**R code**
+
+::: tcolorbox
+    apt = read.csv(file.choose())
+    # apt = read.csv("~/PATH_TO_FILE/apt_around_utm.csv")
+
+    apt_model = lm(price ~ area, data = apt)
+:::
+
+**R output**
+
+::: tcolorbox
+    > apt_model
+
+    Call:
+    lm(formula = price ~ area, data = apt)
+
+    Coefficients:
+    (Intercept)       area  
+         422.26       25.69  
+:::
+
+We can compute the residuals and the sum of squared errors (SSE) using
+the table below:
+
+::: center
+   $y$   $x$    $\hat{y}$   $y - \hat{y}$   $(y - \hat{y})^2$  
+  ----- ------ ----------- --------------- ------------------- --
+   620   11.0    704.85        -84.85            7198.73       
+   590   6.5     589.24         0.76              0.58         
+   620   10.0    679.16        -59.16            3499.36       
+   700   8.4     638.05         61.95            3837.62       
+   680   8.0     627.78         52.22            2727.4        
+   500   5.7     568.69        -68.69            4718.13       
+   760   12.0    730.54         29.46            868.17        
+   800   14.0    781.92         18.08            327.06        
+   660   7.3     609.79         50.21            2520.79       
+:::
+
+Recall our fitted regression model: $$\hat{y} = 25.69x + 422.26$$
+
+$$\text{SSE} = \sum (y_i - \hat{y}_i)^2 = 25,\!697.83$$
+
+We now conduct a hypothesis test on the slope $\beta_1$ at the 5%
+significance level.
+
+**Step 1: Hypotheses**
+$$H_0: \beta_1 = 0 \quad \text{vs.} \quad H_a: \beta_1 \ne 0$$
+
+**Step 2: Test statistic**
+$$s^2 = \frac{SSE}{n - 2} = \frac{25,\!697.83}{7} = 3670.26$$
+$$s = \sqrt{3670.26} = 60.58$$
+$$SE(\hat{\beta}_1) = \frac{s}{\sqrt{S_{xx}}} = \frac{60.58}{\sqrt{60}} = 7.82$$
+$$t = \frac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)} = \frac{25.69}{7.82} = 3.284$$
+
+**Step 3: Conclusion** Using $t$-distribution with 7 degrees of freedom:
+
+$$0.005 < p\text{-value} < 0.01$$
+
+Since $p$-value $< 0.05$, we reject $H_0$ and conclude that there is
+sufficient evidence that $\beta_1 \ne 0$.This suggests there is a
+statistically significant relationship between price and area for
+apartments near UTM.
+
+**Final Check: Total Sum of Squares**
+
+::: center
+   $y$   $x$    $\hat{y}$   $(y - \hat{y})^2$   $(y - \bar{y})^2$   $(\hat{y} - \bar{y})^2$  
+  ----- ------ ----------- ------------------- ------------------- ------------------------- --
+   620   11.0    704.85          7198.73             2112.00                1512.35          
+   590   6.5     589.24           0.58               4850.88                4745.68          
+   620   10.0    679.16          3499.36             410.73                 1512.35          
+   700   8.4     638.05          3837.62             434.20                 1690.12          
+   680   8.0     627.78          2727.4              968.04                 445.68           
+   500   5.7     568.69          4718.13             8136.08                2524.68          
+   760   12.0    730.54          868.17              5133.21               10223.46          
+   800   14.0    781.92          327.06              1513.47               19912.35          
+   660   7.3     609.79          2520.79             2410.45                 1.23            
+:::
+
+$$SSE + SSR = SST = 25,\!697.83 + 39,\!591.06 = 65,\!288.90$$ This
+confirms the ANOVA identity: Total = Explained + Residual
+
+We previously estimated the model:
+
+$$\hat{y} = 25.69x + 422.26$$
+
+**Coefficient of Determination and Correlation**
+
+$$r^2 = \frac{SSR}{SST} = \frac{39591.06}{65288.90} = 0.6063 = 60.63\%$$
+
+Interpretation: Approximately 60.63% of the variability in price is
+explained by the regression model.
+
+$$r = \pm \sqrt{r^2} = \pm \sqrt{0.6063} = \pm 0.779$$
+
+Since $\hat{\beta}_1 > 0$, we choose the positive root:
+
+$$r = 0.779$$
+
+Interpretation: There is a strong positive correlation between apartment
+area and price.
+
+**R code**
+
+::: tcolorbox
+    model = lm(y~x, data = data\_source) 
+    summary(model)
+:::
+
+**R code**
+
+::: tcolorbox
+    apt\_model = lm(price ~ area, data = apt)
+    summary(apt\_model)
+:::
+
+**R code**
+
+::: tcolorbox
+    Call:
+    lm(formula = price ~ area, data = apt)
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)  422.256   74.834     5.643  0.00078 ***
+    area         25.690    7.823      3.284  0.01341 *
+
+    Residual standard error: 60.59 on 7 degrees of freedom
+    Multiple R-squared: 0.6064,    Adjusted R-squared: 0.5502 
+    F-statistic: 10.78 on 1 and 7 DF,  p-value: 0.01341
+:::
+
+**Two-sided Test for Slope Coefficient**
+
+By default, R performs a two-sided test:
+$$H_0: \beta_1 = 0 \quad \text{vs.} \quad H_a: \beta_1 \neq 0$$
+
+Test statistic:
+$$t^* = \frac{\hat{\beta}_1 - 0}{SE(\hat{\beta}_1)} = \frac{25.690 - 0}{7.823} = 3.284$$
+
+$$t^* \sim t_{(n - 2)}  \quad \text{with } df = 9 - 2 = 7$$
+
+**p-value** is the total shaded area in both tails. From R output:
+$$\text{p-value} = 0.01341$$
+::::::::::::
+
+::: definition
+- **Interpolation** is calculating predicted values of $y$ using our
+  linear model while working within the range of $x$ in which data was
+  available to construct our model.
+
+- **Extrapolation** is calculating predicted values of $y$ using our
+  linear model outside the range of $x$ used to obtain the linear model.
+
+- Interpolation is usually safe if we have a good linear model.
+
+- Extrapolation must be performed carefully since extrapolations that
+  are done without any foresight can be very inaccurate.
+:::
+
+### Residual Plots
+
+Residual plots are used to verify assumptions related to the error terms
+in a regression model.
+
+$$Y = \beta_0 + \beta_1 X + \varepsilon, \quad \varepsilon \sim \mathcal{N}(0, \sigma^2)$$
+
+The assumption $\varepsilon \sim \mathcal{N}(0, \sigma^2)$ implies:
+
+- Mean of errors is 0
+
+- Constant variance of errors (homoscedasticity)
+
+We plot the residuals: $$e_i = y_i - \hat{y}_i$$ against the fitted
+values $\hat{y}_i$ to assess these assumptions.
+
+<!-- ### What to Look for in a Good Residual Plot {#what-to-look-for-in-a-good-residual-plot .unnumbered} -->
+
+If the assumption $\varepsilon \sim \mathcal{N}(0, \sigma^2)$ is
+satisfied, the residual plot should have the following features:
+
+1.  **Random scattering:** No obvious pattern in residuals.
+
+    - A pattern (e.g., curve) may indicate a non-linear relationship.
+
+    - Random scattering also suggests independence of errors.
+
+2.  **Constant variance:** Residuals should fall within a horizontal
+    band, roughly half above and half below zero.
+
+    - Suggests constant variance (homoscedasticity).
+
+3.  **No influential points or clustering:** The plot should not show
+    isolated influential observations or clustering.
+
+<!-- # ```{r residual-stack, fig.width=6, fig.height=16, dev="png", out.width="100%", fig.align="center", message=FALSE, warning=FALSE} -->
+
+```r
+# Load libraries
+library(ggplot2)
+library(patchwork)
+
+# Common theme for all plots
+theme_clean <- theme_minimal(base_size = 12)
+
+# 1. Satisfies Assumptions
+set.seed(1)
+x1 <- 1:30
+y1 <- 3 + 0.5 * x1 + rnorm(30, 0, 1)
+model1 <- lm(y1 ~ x1)
+df1 <- data.frame(Fitted = fitted(model1), Residuals = resid(model1))
+
+p1 <- ggplot(df1, aes(Fitted, Residuals)) +
+  geom_point(color = "#E68613", size = 2) +
+  geom_hline(yintercept = 0, color = "#000000") +
+  labs(
+    title = "Satisfies Assumptions",
+    x     = "Fitted Values",
+    y     = "Residuals"
+  ) +
+  theme_clean
+
+# 2. Non-linear Pattern
+x2 <- seq(-2, 2, length.out = 30)
+y2 <- x2^2 + rnorm(30, 0, 0.3)
+model2 <- lm(y2 ~ x2)
+df2 <- data.frame(Fitted = fitted(model2), Residuals = resid(model2))
+
+p2 <- ggplot(df2, aes(Fitted, Residuals)) +
+  geom_point(color = "#E68613", size = 2) +
+  geom_hline(yintercept = 0, color = "#000000") +
+  labs(
+    title = "Non-linear Pattern",
+    x     = "Fitted Values",
+    y     = "Residuals"
+  ) +
+  theme_clean
+
+# 3. Non-constant Variance
+x3 <- 1:30
+y3 <- 2 + 0.2 * x3 + rnorm(30, 0, sd = x3 / 10)
+model3 <- lm(y3 ~ x3)
+df3 <- data.frame(Fitted = fitted(model3), Residuals = resid(model3))
+
+p3 <- ggplot(df3, aes(Fitted, Residuals)) +
+  geom_point(color = "#E68613", size = 2) +
+  geom_hline(yintercept = 0, color = "#000000") +
+  labs(
+    title = "Non-constant Variance",
+    x     = "Fitted Values",
+    y     = "Residuals"
+  ) +
+  theme_clean
+
+# 4. Clustering
+x4 <- c(rnorm(15, 3, 0.2), rnorm(15, 5, 0.2))
+y4 <- 2 + 0.5 * x4 + rnorm(30, 0, 1)
+model4 <- lm(y4 ~ x4)
+df4 <- data.frame(Fitted = fitted(model4), Residuals = resid(model4))
+
+p4 <- ggplot(df4, aes(Fitted, Residuals)) +
+  geom_point(color = "#E68613", size = 2) +
+  geom_hline(yintercept = 0, color = "#000000") +
+  labs(
+    title = "Clustering",
+    x     = "Fitted Values",
+    y     = "Residuals"
+  ) +
+  theme_clean
+
+# Stack all four plots vertically
+final_plot <- p1 / p2 / p3 / p4 +
+  plot_layout(ncol = 1)  # one column
+
+# Render the combined plot
+print(final_plot)
+```
+
+
+::: tcolorbox
+The model is: $Y = \beta_0 + \beta_1 X + \varepsilon$, where
+$\varepsilon \sim \mathcal{N}(0, \sigma^2)$
+
+- The relationship between $X$ and $Y$ is linear.
+
+- Residuals:
+
+  - are independent
+
+  - have constant variance
+
+  - are normally distributed
+
+  These assumptions can be verified using residual plots.
+:::
+
+## Exercises
+
+<!-- Q1 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 1</div>
+
+An agronomist records the amount of rainfall ($x$, in mm) and the corresponding wheat yield ($y$, in tonnes per hectare) for 6 growing seasons:
+
+| Rainfall ($x$) | 200 | 250 | 300 | 350 | 400 | 450 |
+|----------------|-----|-----|-----|-----|-----|-----|
+| Yield ($y$)    | 2.1 | 2.8 | 3.4 | 3.9 | 4.5 | 5.0 |
+
+(a) Compute $\bar{x}$, $\bar{y}$, $S_{xx}$, and $S_{xy}$.
+(b) Find $\hat{\beta}_1$ and $\hat{\beta}_0$. Write the fitted regression equation.
+(c) Predict the wheat yield when rainfall is 320 mm.
+(d) Interpret $\hat{\beta}_1$ in context.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $S_{xx} = \sum x_i^2 - n\bar{x}^2$ and $S_{xy} = \sum x_i y_i - n\bar{x}\bar{y}$
+- $\hat{\beta}_1 = S_{xy}/S_{xx}$ and $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$\bar{x} = \frac{\sum x_i}{n} = \frac{200+250+300+350+400+450}{6} = \frac{1950}{6} = 325$$
+$$\bar{y} = \frac{\sum y_i}{n} = \frac{2.1+2.8+3.4+3.9+4.5+5.0}{6} = \frac{21.7}{6} \approx 3.617$$
+$$S_{xx} = \sum x_i^2 - n\bar{x}^2 = (200^2+250^2+300^2+350^2+400^2+450^2) - 6(325)^2 = 677{,}500 - 633{,}750 = 43{,}750$$
+$$S_{xy} = \sum x_i y_i - n\bar{x}\bar{y} = (420+700+1020+1365+1800+2250) - 6(325)(3.617) = 7{,}555 - 7{,}052.5 = 502.5$$
+
+**(b)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{502.5}{43{,}750} \approx 0.01149$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 3.617 - 0.01149(325) = 3.617 - 3.734 \approx -0.116$$
+$$\hat{y} = -0.116 + 0.01149\,x$$
+
+**(c)**
+$$\hat{y} = -0.116 + 0.01149(320) = -0.116 + 3.677 \approx 3.56 \text{ tonnes/ha}$$
+
+**(d)** For each additional mm of rainfall, the predicted wheat yield increases by approximately 0.0115 tonnes per hectare.
+
+</div>
+</details>
+
+---
+
+<!-- Q2 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 2</div>
+
+A physiologist studying cardiovascular fitness measures resting heart rate ($y$, bpm) and weekly exercise duration ($x$, hours) for 5 participants:
+
+| Exercise ($x$) | 1 | 3 | 5 | 7 | 9 |
+|----------------|---|---|---|---|---|
+| Heart rate ($y$) | 80 | 74 | 70 | 65 | 62 |
+
+(a) Compute $\hat{\beta}_0$ and $\hat{\beta}_1$.
+(b) Compute the residuals $e_i = y_i - \hat{y}_i$ for each observation. Verify $\sum e_i = 0$.
+(c) A participant exercises 6 hours per week and has a heart rate of 68 bpm. Compute their residual and state whether their actual heart rate is above or below the predicted value.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- First find $\bar{x}$, $\bar{y}$, $S_{xx}$, $S_{xy}$, then compute the estimates.
+- Residuals are $e_i = y_i - \hat{y}_i$; for part (c) compute $\hat{y}$ at $x = 6$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+$\bar{x} = \dfrac{1+3+5+7+9}{5} = 5$, $\quad\bar{y} = \dfrac{80+74+70+65+62}{5} = 70.2$
+
+$$S_{xx} = \sum(x_i-\bar{x})^2 = (-4)^2+(-2)^2+0^2+2^2+4^2 = 16+4+0+4+16 = 40$$
+$$S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y}) = (-4)(9.8)+(-2)(3.8)+(0)(-0.2)+(2)(-5.2)+(4)(-8.2) = -39.2-7.6+0-10.4-32.8 = -90$$
+
+**(a)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{-90}{40} = -2.25$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 70.2 - (-2.25)(5) = 70.2 + 11.25 = 81.45$$
+Fitted line: $\hat{y} = 81.45 - 2.25x$
+
+**(b)**
+
+| $x$ | $y$ | $\hat{y} = 81.45 - 2.25x$ | $e_i = y_i - \hat{y}_i$ |
+|-----|-----|---------------------------|--------------------------|
+| 1 | 80 | $81.45-2.25(1)=79.20$ | $80-79.20=0.80$ |
+| 3 | 74 | $81.45-2.25(3)=74.70$ | $74-74.70=-0.70$ |
+| 5 | 70 | $81.45-2.25(5)=70.20$ | $70-70.20=-0.20$ |
+| 7 | 65 | $81.45-2.25(7)=65.70$ | $65-65.70=-0.70$ |
+| 9 | 62 | $81.45-2.25(9)=61.20$ | $62-61.20=0.80$ |
+
+$\sum e_i = 0.80-0.70-0.20-0.70+0.80 = 0$ ✓
+
+**(c)**
+$$\hat{y} = 81.45 - 2.25(6) = 81.45 - 13.50 = 67.95 \text{ bpm}$$
+$$e = y - \hat{y} = 68 - 67.95 = 0.05 \text{ bpm}$$
+The participant's heart rate is (slightly) above the predicted value.
+
+</div>
+</details>
+
+---
+
+<!-- Q3 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 3</div>
+
+The R dataset `women` contains the average height (inches) and weight (pounds) of American women aged 30–39. The data consist of 15 observations.
+
+(a) State the regression model you would fit to predict weight from height.
+(b) Using the summary statistics $\bar{x} = 65$, $\bar{y} \approx 136.73$, $S_{xx} = 280$, $S_{xy} = 966$: find $\hat{\beta}_0$ and $\hat{\beta}_1$.
+(c) Compute $R^2$ given $S_{yy} \approx 3362.93$ and $\text{SSE} \approx 30.23$.
+(d) Interpret $R^2$ in one sentence.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $R^2 = 1 - \text{SSE}/\text{SST}$ where $\text{SST} = S_{yy}$
+- Alternatively, $R^2 = \hat{\beta}_1 S_{xy} / S_{yy}$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\text{weight}_i = \beta_0 + \beta_1 \cdot \text{height}_i + \varepsilon_i$, $\varepsilon_i \sim N(0, \sigma^2)$
+
+**(b)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{966}{280} = 3.45$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 136.73 - 3.45(65) = 136.73 - 224.25 \approx -87.52$$
+
+**(c)**
+$$R^2 = 1 - \frac{\text{SSE}}{\text{SST}} = 1 - \frac{\text{SSE}}{S_{yy}} = 1 - \frac{30.23}{3362.93} \approx 0.991$$
+
+**(d)** About 99.1% of the variability in women's weight is explained by the linear relationship with height — an excellent linear fit.
+
+</div>
+</details>
+
+---
+
+<!-- Q4 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 4</div>
+
+The R dataset `faithful` records eruption duration (minutes) and waiting time to the next eruption (minutes) for Old Faithful geyser in Yellowstone National Park.
+
+Use R to fit a regression of `waiting` on `eruptions`, produce a scatter plot with the regression line, and report the coefficients.
+
+(a) Report $\hat{\beta}_0$ and $\hat{\beta}_1$. Interpret $\hat{\beta}_1$ in context.
+(b) Predict the waiting time after an eruption lasting 3.5 minutes.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="11">data(faithful)
+# Fit the model and extract coefficients
+model <- lm(___ ~ ___, data = faithful)
+coef(___)
+
+# Scatter plot with regression line
+plot(faithful$___, faithful$___,
+     xlab = "Eruption Duration (min)", ylab = "Waiting Time (min)")
+abline(___, col = "blue")
+
+# Predict waiting time for eruption = 3.5 min
+predict(___, newdata = data.frame(___ = 3.5))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `lm(waiting ~ eruptions, data = faithful)` fits the model.
+- `abline(model, col = "blue")` adds the line to the plot.
+- Use `predict(model, newdata = data.frame(eruptions = 3.5))` for part (b).
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+model <- lm(waiting ~ eruptions, data = faithful)
+coef(model)
+plot(faithful$eruptions, faithful$waiting,
+     xlab = "Eruption Duration (min)", ylab = "Waiting Time (min)")
+abline(model, col = "blue")
+predict(model, newdata = data.frame(eruptions = 3.5))
+```
+
+**(a)** $\hat{\beta}_0 \approx 33.47$, $\hat{\beta}_1 \approx 10.73$. For each additional minute of eruption duration, the predicted waiting time increases by about 10.73 minutes.
+
+**(b)** $\hat{y} = 33.47 + 10.73(3.5) \approx 71.0$ minutes.
+
+</div>
+</details>
+
+---
+
+<!-- Q5 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 5</div>
+
+A marketing analyst fits a regression of monthly sales ($y$, \$1000s) on advertising spend ($x$, \$1000s) using $n = 20$ observations. The following summary statistics are available:
+
+$$\bar{x} = 8, \quad \bar{y} = 150, \quad S_{xx} = 400, \quad S_{xy} = 2000, \quad S_{yy} = 12{,}500$$
+
+(a) Find $\hat{\beta}_0$ and $\hat{\beta}_1$.
+(b) Compute SSE, $\hat{\sigma}^2$, and $\hat{\sigma}$.
+(c) Compute $R^2$ and $|r|$.
+(d) Compute $\text{SE}(\hat{\beta}_1) = \hat{\sigma}/\sqrt{S_{xx}}$ and construct a 95% CI for $\beta_1$ using $t_{0.025,\,18} \approx 2.101$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy}$
+- $\hat{\sigma}^2 = \text{SSE}/(n-2)$
+- $R^2 = 1 - \text{SSE}/S_{yy}$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{2000}{400} = 5$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 150 - 5(8) = 150 - 40 = 110$$
+
+**(b)**
+$$\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy} = 12{,}500 - 5(2000) = 12{,}500 - 10{,}000 = 2500$$
+$$\hat{\sigma}^2 = \frac{\text{SSE}}{n-2} = \frac{2500}{20-2} = \frac{2500}{18} \approx 138.9$$
+$$\hat{\sigma} = \sqrt{138.9} \approx 11.79$$
+
+**(c)**
+$$R^2 = 1 - \frac{\text{SSE}}{S_{yy}} = 1 - \frac{2500}{12{,}500} = 0.80$$
+$$|r| = \sqrt{R^2} = \sqrt{0.80} \approx 0.894$$
+
+**(d)**
+$$\text{SE}(\hat{\beta}_1) = \frac{\hat{\sigma}}{\sqrt{S_{xx}}} = \frac{11.79}{\sqrt{400}} = \frac{11.79}{20} \approx 0.589$$
+$$\hat{\beta}_1 \pm t_{0.025,\,18}\cdot\text{SE}(\hat{\beta}_1) = 5 \pm 2.101(0.589) = 5 \pm 1.238 = (3.762,\ 6.238)$$
+
+</div>
+</details>
+
+---
+
+<!-- Q6 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 6</div>
+
+For the data in Question 1 (rainfall and wheat yield):
+
+(a) Compute SSE, SSR, and SST. Verify $\text{SST} = \text{SSR} + \text{SSE}$.
+(b) Fill in the ANOVA table:
+
+| Source | df | SS | MS |
+|--------|----|----|-----|
+| Regression | | | |
+| Error | | | |
+| Total | | | |
+
+(c) Compute $R^2$ and interpret it.
+(d) Compute the F-statistic. State the null and alternative hypotheses being tested.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- SST $= S_{yy}$; SSR $= \hat{\beta}_1 S_{xy}$; SSE $= S_{yy} - \hat{\beta}_1 S_{xy}$
+- In SLR with one predictor: df(Regression) $= 1$, df(Error) $= n - 2$, df(Total) $= n - 1$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+From Q1: $\hat{\beta}_1 \approx 0.01149$, $S_{xy} = 502.5$, $S_{yy} \approx 5.788$
+
+**(a)**
+$$\text{SSR} = \hat{\beta}_1 S_{xy} = 0.01149 \times 502.5 \approx 5.772$$
+$$\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy} = 5.788 - 5.772 \approx 0.017$$
+$$\text{SST} = S_{yy} = 5.788$$
+Verify: $\text{SSR} + \text{SSE} = 5.772 + 0.017 = 5.788 = \text{SST}$ ✓
+
+**(b)**
+
+| Source | df | SS | MS |
+|--------|----|----|-----|
+| Regression | $1$ | $5.772$ | $\text{SSR}/1 = 5.772$ |
+| Error | $n-2=4$ | $0.017$ | $\text{SSE}/(n-2) = 0.017/4 \approx 0.00419$ |
+| Total | $n-1=5$ | $5.788$ | |
+
+**(c)**
+$$R^2 = \frac{\text{SSR}}{\text{SST}} = \frac{5.772}{5.788} \approx 0.997$$
+About 99.7% of the variability in wheat yield is explained by the linear relationship with rainfall.
+
+**(d)**
+$$F = \frac{\text{MSR}}{\text{MSE}} = \frac{5.772}{0.00419} \approx 1377$$
+$H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$. This extremely large F-statistic provides overwhelming evidence of a linear relationship.
+
+</div>
+</details>
+
+---
+
+<!-- Q7 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 7</div>
+
+The R dataset `pressure` records temperature (°C) and vapor pressure of mercury (mm Hg) at various temperatures. A researcher fits a regression of `pressure` on `temperature`.
+
+Use R to:
+
+(a) Fit the model, report $R^2$ and $\hat{\sigma}$, and produce a scatter plot with the fitted line.
+(b) Generate the residuals-vs-fitted plot (`which = 1`). Comment on whether the linearity and constant variance assumptions appear satisfied.
+(c) From the `summary()` output, report $\hat{\sigma}^2$ and $\text{SE}(\hat{\beta}_1)$. Carry out the t-test of $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.05$ and state your conclusion.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="12">data(pressure)
+
+m1 <- lm(___ ~ ___, data = pressure)
+summary(m1)
+
+# Scatter plot with fitted line
+plot(___, ___,
+     xlab = "Temperature (°C)",
+     ylab = "Pressure (mm Hg)")
+abline(___, col = "blue")
+
+# Residuals-vs-fitted plot
+plot(___, which = ___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- If residuals show a systematic curve rather than random scatter, the linearity assumption may be violated. If the spread of residuals increases with fitted values rather than staying in a constant-width band, the constant variance assumption may be violated.
+- The t-statistic and its p-value for `temperature` are reported directly in the `summary()` output.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+data(pressure)
+
+m1 <- lm(pressure ~ temperature, data = pressure)
+summary(m1)
+
+# Scatter plot with fitted line
+plot(pressure$temperature, pressure$pressure,
+     xlab = "Temperature (°C)",
+     ylab = "Pressure (mm Hg)")
+abline(m1, col = "blue")
+
+# Residuals-vs-fitted plot
+plot(m1, which = 1)
+```
+
+**(a)** The fitted model is $\hat{y} = -147.90 + 1.512\,x$. From the `summary()` output: $R^2 \approx 0.574$ and $\hat{\sigma} \approx 150.8$. The scatter plot shows a non-linear pattern — points curve sharply upward at higher temperatures, suggesting that a straight-line model may not be appropriate for these data.
+
+**(b)** The residuals-vs-fitted plot shows a clear curved pattern rather than random scatter, and the spread of residuals increases substantially at higher fitted values. Both the linearity assumption and the constant variance assumption appear to be violated — a straight-line model is not a good description of these data.
+
+**(c)** From the `summary()` output: $\hat{\sigma}^2 = 150.8^2 \approx 22{,}745$; $\text{SE}(\hat{\beta}_1) \approx 0.316$.
+
+$$t = \frac{\hat{\beta}_1 - 0}{\text{SE}(\hat{\beta}_1)} = \frac{1.512}{0.316} \approx 4.79, \quad df = n - 2 = 17, \quad \text{p-value} \approx 0.00017.$$
+
+Since p-value $\approx 0.00017 < 0.05$, we reject $H_0: \beta_1 = 0$ and conclude there is strong evidence that temperature is linearly associated with vapor pressure. However, given the clear model mis-specification observed in (b), this result should be interpreted with caution — the slope estimate is unreliable when the linearity assumption is violated.
+
+</div>
+</details>
+
+---
+
+<!-- Q8 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 8</div>
+
+A regression with $n = 25$ observations produces the following partial ANOVA table:
+
+| Source | df | SS | MS |
+|--------|----|----|-----|
+| Regression | 1 | 640 | |
+| Error | | | |
+| Total | | 800 | |
+
+(a) Fill in all missing entries.
+(b) Compute $R^2$, $\hat{\sigma}$, and the F-statistic.
+(c) Test $H_0: \beta_1 = 0$ at $\alpha = 0.05$ using $F_{0.05,\,1,\,23} \approx 4.28$. State your conclusion.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- SSE $=$ SST $-$ SSR; df(Error) $= n - 2$; df(Total) $= n - 1$
+- $F = \text{MSR}/\text{MSE}$; reject $H_0$ if $F > F_{\alpha,\,1,\,n-2}$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$\text{SSE} = \text{SST} - \text{SSR} = 800 - 640 = 160$$
+$$df(\text{Error}) = n - 2 = 25 - 2 = 23, \qquad df(\text{Total}) = n - 1 = 25 - 1 = 24$$
+$$\text{MSR} = \frac{\text{SSR}}{1} = \frac{640}{1} = 640, \qquad \text{MSE} = \frac{\text{SSE}}{n-2} = \frac{160}{23} \approx 6.96$$
+
+| Source | df | SS | MS |
+|--------|----|----|-----|
+| Regression | $1$ | $640$ | $640$ |
+| Error | $23$ | $160$ | $6.96$ |
+| Total | $24$ | $800$ | |
+
+**(b)**
+$$R^2 = \frac{\text{SSR}}{\text{SST}} = \frac{640}{800} = 0.80$$
+$$\hat{\sigma} = \sqrt{\text{MSE}} = \sqrt{6.96} \approx 2.64$$
+$$F = \frac{\text{MSR}}{\text{MSE}} = \frac{640}{6.96} \approx 92.0$$
+
+**(c)** $F = 92.0 \gg F_{0.05,\,1,\,23} = 4.28$. Reject $H_0$. There is strong evidence of a linear relationship between $x$ and $y$.
+
+</div>
+</details>
+
+---
+
+<!-- Q9 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 9</div>
+
+The R dataset `airquality` contains daily air quality measurements in New York (May–September 1973). Consider predicting ozone concentration (`Ozone`, ppb) from temperature (`Temp`, °F).
+
+Use R to fit the regression, report the full `summary()`, and test whether temperature is a significant predictor of ozone at $\alpha = 0.01$.
+
+(a) State $H_0$ and $H_1$.
+(b) Report the t-statistic and p-value for `Temp` from the output.
+(c) State your conclusion. Interpret $\hat{\beta}_1$ in context.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="5">data(airquality)
+model <- lm(___ ~ ___, data = airquality)
+summary(___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The p-value for `Temp` in `summary()` tests $H_0: \beta_1 = 0$.
+- Reject $H_0$ if p-value $< \alpha = 0.01$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+data(airquality)
+model <- lm(Ozone ~ Temp, data = airquality)
+summary(model)
+```
+
+**(a)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$
+
+**(b)** From the `summary()` output: $\hat{\beta}_1 \approx 2.429$ and $\text{SE}(\hat{\beta}_1) \approx 0.233$.
+$$t = \frac{\hat{\beta}_1 - 0}{\text{SE}(\hat{\beta}_1)} = \frac{2.429}{0.233} \approx 10.42, \quad df = n - 2 = 114, \quad \text{p-value} < 2 \times 10^{-16}$$
+
+**(c)** Reject $H_0$ at $\alpha = 0.01$. There is very strong evidence that temperature is a significant predictor of ozone. Each 1°F increase in temperature is associated with an average increase of about 2.43 ppb in ozone concentration.
+
+</div>
+</details>
+
+---
+
+<!-- Q10 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 10</div>
+
+A forestry researcher records the girth ($x$, inches) and volume ($y$, cubic feet) of 31 black cherry trees (the R dataset `trees`).
+
+(a) Using summary statistics: $\bar{x} = 13.25$, $\bar{y} = 30.17$, $S_{xx} = 295.44$, $S_{xy} = 1496.64$: find $\hat{\beta}_0$ and $\hat{\beta}_1$.
+(b) Compute SSE given $S_{yy} = 8106.08$.
+(c) Compute $\hat{\sigma}^2$, $R^2$, and $\text{SE}(\hat{\beta}_1)$.
+(d) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 > 0$ at $\alpha = 0.05$ using $t_{0.05,\,29} \approx 1.699$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- SSE $= S_{yy} - \hat{\beta}_1 S_{xy}$
+- $\text{SE}(\hat{\beta}_1) = \hat{\sigma}/\sqrt{S_{xx}}$
+- Reject $H_0$ if the observed $t > t_{0.05,\,29}$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{1496.64}{295.44} \approx 5.066$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 30.17 - 5.066(13.25) = 30.17 - 67.12 \approx -36.94$$
+
+**(b)**
+$$\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy} = 8106.08 - 5.066(1496.64) = 8106.08 - 7582.0 \approx 524.1$$
+
+**(c)**
+$$\hat{\sigma}^2 = \frac{\text{SSE}}{n-2} = \frac{524.1}{31-2} = \frac{524.1}{29} \approx 18.07$$
+$$\hat{\sigma} = \sqrt{18.07} \approx 4.251$$
+$$R^2 = 1 - \frac{\text{SSE}}{S_{yy}} = 1 - \frac{524.1}{8106.08} \approx 0.935$$
+$$\text{SE}(\hat{\beta}_1) = \frac{\hat{\sigma}}{\sqrt{S_{xx}}} = \frac{4.251}{\sqrt{295.44}} \approx \frac{4.251}{17.19} \approx 0.247$$
+
+**(d)**
+$$t = \frac{\hat{\beta}_1 - 0}{\text{SE}(\hat{\beta}_1)} = \frac{5.066}{0.247} \approx 20.51$$
+Since $t = 20.51 > t_{0.05,\,29} = 1.699$, reject $H_0$. There is strong evidence that tree girth is positively linearly related to volume.
+
+</div>
+</details>
+
+---
+
+<!-- Q11 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 11</div>
+
+Use R to fit a regression of `Volume` on `Girth` using the `trees` dataset. Verify the results from Question 10 and predict the volume of a tree with girth 14 inches.
+
+(a) Confirm $\hat{\beta}_0$, $\hat{\beta}_1$, and $R^2$ match Question 10.
+(b) Use the fitted equation to predict the volume of a tree with `Girth = 14` inches.
+(c) The `trees` dataset contains girth values ranging from 8.3 to 20.6 inches. Is the prediction at `Girth = 14` interpolation or extrapolation? Explain.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="10">data(trees)
+model <- lm(___ ~ ___, data = trees)
+summary(___)
+
+# Predict volume for a new tree with Girth = 14
+predict(___, newdata = data.frame(Girth = ___))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Use `lm(Volume ~ Girth, data = trees)` and `summary()` to verify the coefficients.
+- For the prediction, compare $x = 14$ against the observed girth range to determine interpolation vs. extrapolation.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+data(trees)
+model <- lm(Volume ~ Girth, data = trees)
+summary(model)
+predict(model, newdata = data.frame(Girth = 14))
+```
+
+**(a)** Output gives $\hat{\beta}_0 \approx -36.94$, $\hat{\beta}_1 \approx 5.066$, $R^2 \approx 0.935$. These agree with the Q10 manual calculations up to normal rounding.
+
+**(b)** $\hat{y} = -36.94 + 5.066(14) \approx 33.98$ cubic feet.
+
+**(c)** This is **interpolation** — $x = 14$ lies within the observed girth range of 8.3 to 20.6 inches, so the prediction is supported by the data.
+
+</div>
+</details>
+
+---
+
+<!-- Q12 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 12</div>
+
+An environmental scientist records annual average temperature ($x$, °C) and the number of glacier advance events ($y$) across 8 mountain ranges:
+
+| Temperature ($x$) | −2 | −1 | 0 | 1 | 2 | 3 | 4 | 5 |
+|-------------------|----|----|---|---|---|---|---|---|
+| Glacier events ($y$) | 18 | 15 | 13 | 10 | 8 | 6 | 4 | 2 |
+
+(a) Compute $\hat{\beta}_0$, $\hat{\beta}_1$, SSE, and $R^2$.
+(b) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 < 0$ at $\alpha = 0.01$ using $t_{0.01,\,6} \approx 3.143$.
+(c) Compute a 99% CI for $\beta_1$ using $t_{0.005,\,6} \approx 3.707$.
+(d) Interpret the CI in the context of climate and glacier retreat.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- For a one-sided test $H_1: \beta_1 < 0$: reject $H_0$ if $t < -t_{\alpha,\,n-2}$.
+- A 99% CI uses $t_{0.005,\,n-2}$ (half of 1% in each tail).
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+$\bar{x} = \dfrac{-2+(-1)+0+1+2+3+4+5}{8} = \dfrac{12}{8} = 1.5$, $\quad\bar{y} = \dfrac{18+15+13+10+8+6+4+2}{8} = \dfrac{76}{8} = 9.5$
+
+$$S_{xx} = \sum(x_i-\bar{x})^2 = (-3.5)^2+(-2.5)^2+(-1.5)^2+(-0.5)^2+(0.5)^2+(1.5)^2+(2.5)^2+(3.5)^2 = 42$$
+$$S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y}) = (-3.5)(8.5)+(-2.5)(5.5)+(-1.5)(3.5)+(-0.5)(0.5)+(0.5)(-1.5)+(1.5)(-3.5)+(2.5)(-5.5)+(3.5)(-7.5) = -95$$
+$$S_{yy} = \sum(y_i-\bar{y})^2 = 8.5^2+5.5^2+3.5^2+0.5^2+(-1.5)^2+(-3.5)^2+(-5.5)^2+(-7.5)^2 = 216$$
+
+**(a)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{-95}{42} \approx -2.262$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 9.5 - (-2.262)(1.5) = 9.5 + 3.393 \approx 12.893$$
+$$\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy} = 216 - (-2.262)(-95) = 216 - 214.881 \approx 1.119$$
+$$R^2 = 1 - \frac{\text{SSE}}{S_{yy}} = 1 - \frac{1.119}{216} \approx 0.995$$
+
+**(b)**
+$$\hat{\sigma}^2 = \frac{\text{SSE}}{n-2} = \frac{1.119}{8-2} = \frac{1.119}{6} \approx 0.187$$
+$$\hat{\sigma} = \sqrt{0.187} \approx 0.432$$
+$$\text{SE}(\hat{\beta}_1) = \frac{\hat{\sigma}}{\sqrt{S_{xx}}} = \frac{0.432}{\sqrt{42}} \approx \frac{0.432}{6.481} \approx 0.0666$$
+$$t = \frac{\hat{\beta}_1 - 0}{\text{SE}(\hat{\beta}_1)} = \frac{-2.262}{0.0666} \approx -33.94$$
+Since $t = -33.94 < -t_{0.01,\,6} = -3.143$, reject $H_0$. Very strong evidence that warmer temperatures are associated with fewer glacier advance events.
+
+**(c)**
+$$\hat{\beta}_1 \pm t_{0.005,\,6}\cdot\text{SE}(\hat{\beta}_1) = -2.262 \pm 3.707(0.0666) = -2.262 \pm 0.247 = (-2.509,\ -2.015)$$
+
+**(d)** We are 99% confident that each 1°C increase in average temperature is associated with between 2.01 and 2.51 fewer glacier advance events per year, consistent with the effects of warming on glacier retreat.
+
+</div>
+</details>
+
+---
+
+<!-- Q13 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 13</div>
+
+Use R to explore Anscombe's quartet, a famous collection of four datasets that have nearly identical simple regression statistics but very different underlying patterns.
+
+(a) Fit `lm(y1 ~ x1)`, `lm(y2 ~ x2)`, `lm(y3 ~ x3)`, and `lm(y4 ~ x4)` from the `anscombe` dataset. Compare $\hat{\beta}_0$, $\hat{\beta}_1$, $R^2$, and $\hat{\sigma}$ across the four models.
+(b) Produce scatter plots with regression lines for all four datasets.
+(c) What does this exercise demonstrate about the importance of looking at the data (and residual plots) rather than relying on summary statistics alone?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="14">data(anscombe)
+# Fit all four models (fill in the variable names)
+m1 <- lm(y1 ~ x1, data = anscombe)
+m2 <- lm(___ ~ ___, data = anscombe)
+m3 <- lm(___ ~ ___, data = anscombe)
+m4 <- lm(___ ~ ___, data = anscombe)
+
+# Compare β₀, β₁, R², σ̂ across all four models
+sapply(list(m1, m2, m3, m4), function(m)
+  c(b0 = coef(m)[1], b1 = coef(m)[2],
+    R2 = summary(m)$___, sigma = summary(m)$___))
+
+# Scatter plots with fitted lines (2×2 grid)
+par(mfrow = c(2, 2))
+for (i in 1:4) {
+  plot(anscombe[, i], anscombe[, i + 4], main = paste("Dataset", i),
+       xlab = paste0("x", i), ylab = paste0("y", i))
+  abline(list(m1, m2, m3, m4)[[i]], col = "blue")
+}
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Despite nearly identical regression statistics, the four datasets have very different structures (linear, curved, outlier-driven, etc.).
+- `sapply()` applies a function across a list and returns a matrix of results.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+data(anscombe)
+m1 <- lm(y1~x1, data=anscombe); m2 <- lm(y2~x2, data=anscombe)
+m3 <- lm(y3~x3, data=anscombe); m4 <- lm(y4~x4, data=anscombe)
+sapply(list(m1,m2,m3,m4), function(m)
+  c(b0=coef(m)[1], b1=coef(m)[2], R2=summary(m)$r.squared, sigma=summary(m)$sigma))
+```
+
+**(a)** All four models give $\hat{\beta}_0 \approx 3.0$, $\hat{\beta}_1 \approx 0.5$, $R^2 \approx 0.667$, $\hat{\sigma} \approx 1.24$ — almost identical.
+
+**(c)** The scatter plots reveal that only Dataset 1 is actually linear; Dataset 2 is curved, Dataset 3 has an outlier distorting an otherwise perfect fit, and Dataset 4 has a vertical cluster with one influential point at an extreme $x$-value. This illustrates that **summary statistics alone are insufficient** — scatter plots and residuals-vs-fitted plots must always be examined.
+
+</div>
+</details>
+
+---
+
+<!-- Q14 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 14</div>
+
+Use R to fit a regression of `Ozone` on `Solar.R` in the `airquality` dataset (remove rows with missing values in either variable).
+
+(a) Report $\hat{\beta}_1$, $R^2$, $\hat{\sigma}$, and the p-value for the slope.
+(b) Compute a 95% CI for $\beta_1$ using `confint()`.
+(c) Generate the residuals-vs-fitted plot and comment on whether the linearity and constant variance assumptions appear satisfied.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="8">data(airquality)
+model <- lm(___ ~ ___, data = airquality)
+summary(___)
+confint(___)
+
+# Residuals-vs-fitted plot
+plot(___, which = ___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- If the residuals show a systematic curve rather than random scatter, the linearity assumption may be violated.
+- If the spread of residuals increases with fitted values rather than staying in a constant-width band, the constant variance assumption may be violated.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+data(airquality)
+model <- lm(Ozone ~ Solar.R, data = airquality)
+summary(model)
+confint(model)
+plot(model, which = 1)
+```
+
+**(a)** $\hat{\beta}_1 \approx 0.127$, $R^2 \approx 0.121$, $\hat{\sigma} \approx 31.3$, p-value $\approx 0.00018$.
+
+**(b)** 95% CI for $\beta_1$: approximately $(0.062,\ 0.192)$.
+
+**(c)** The residuals-vs-fitted plot shows the spread of residuals increasing with fitted values — wider at higher fitted values than at lower ones. The constant variance assumption does not appear satisfied; the linearity assumption is roughly tenable but the relationship is weak ($R^2$ only ~12%).
+
+</div>
+</details>
+
+---
+
+<!-- Q15 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 15</div>
+
+Use R to fit a regression of `Volume` on `Girth` in the `trees` dataset and perform the full ANOVA F-test.
+
+(a) State $H_0$ and $H_1$.
+(b) Report the F-statistic and p-value from `anova()`.
+(c) State your conclusion at $\alpha = 0.01$.
+(d) From `summary()`, write the fitted regression equation and interpret $\hat{\beta}_1$ (the slope for `Girth`) in context.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="8">data(trees)
+model <- lm(___ ~ ___, data = trees)
+anova(___)
+summary(___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Run `anova(model)` for the F-test and `summary(model)` for the coefficient estimates.
+- Reject $H_0$ at $\alpha = 0.01$ if the p-value $< 0.01$.
+- $\hat{\beta}_1$ is the slope: each 1-unit increase in `Girth` is associated with a change of $\hat{\beta}_1$ cubic feet in `Volume`.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+model <- lm(Volume ~ Girth, data = trees)
+anova(model)
+summary(model)
+```
+
+**(a)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$
+
+**(b)** $F \approx 419.4$, p-value $< 2 \times 10^{-16}$
+
+**(c)** Reject $H_0$ at $\alpha = 0.01$. There is very strong evidence that tree girth is linearly associated with volume.
+
+**(d)** From `summary()`: $\hat{\beta}_0 \approx -36.94$ and $\hat{\beta}_1 \approx 5.07$, giving $\widehat{\text{Volume}} = -36.94 + 5.07 \times \text{Girth}$. Each additional inch of girth is associated with an average increase of approximately 5.07 cubic feet in tree volume.
+
+</div>
+</details>
+
+---
+
+<!-- Q16 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 16</div>
+
+A city records the average daily temperature ($x$, °C) and the number of ice cream units sold ($y$, hundreds) at a popular stand over 8 summer days:
+
+| Temperature ($x$) | 18 | 20 | 22 | 24 | 26 | 28 | 30 | 32 |
+|-------------------|----|----|----|----|----|----|----|----|
+| Units sold ($y$)  | 12 | 14 | 15 | 16 | 18 | 20 | 22 | 25 |
+
+(a) Compute $\bar{x}$, $\bar{y}$, $S_{xx}$, $S_{xy}$, $S_{yy}$, $\hat{\beta}_0$, $\hat{\beta}_1$, and $R^2$.
+(b) Compute $\hat{\sigma}^2$ and $\text{SE}(\hat{\beta}_1)$.
+(c) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 > 0$ at $\alpha = 0.05$ using $t_{0.05,\,6} \approx 1.943$.
+(d) Predict the number of ice cream units sold on a day when the temperature is 25°C. Is this prediction interpolation or extrapolation?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Work through parts (a)–(b) systematically; each result is needed for the next.
+- For the prediction, substitute $x^* = 25$ into the fitted equation from part (a).
+- Compare $x^* = 25$ against the observed temperature range to classify interpolation vs. extrapolation.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+$\bar{x} = \dfrac{18+20+22+24+26+28+30+32}{8} = \dfrac{200}{8} = 25$, $\quad\bar{y} = \dfrac{12+14+15+16+18+20+22+25}{8} = \dfrac{142}{8} = 17.75$
+
+$$S_{xx} = \sum(x_i-\bar{x})^2 = (-7)^2+(-5)^2+(-3)^2+(-1)^2+1^2+3^2+5^2+7^2 = 49+25+9+1+1+9+25+49 = 168$$
+$$S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y}) = (-7)(-5.75)+(-5)(-3.75)+(-3)(-2.75)+(-1)(-1.75)+(1)(0.25)+(3)(2.25)+(5)(4.25)+(7)(7.25) = 148$$
+$$S_{yy} = \sum(y_i-\bar{y})^2 = (-5.75)^2+(-3.75)^2+(-2.75)^2+(-1.75)^2+(0.25)^2+(2.25)^2+(4.25)^2+(7.25)^2 = 133.5$$
+
+**(a)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{148}{168} \approx 0.881$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 17.75 - 0.881(25) = 17.75 - 22.025 \approx -4.274$$
+$$\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy} = 133.5 - 0.881(148) = 133.5 - 130.381 \approx 3.119$$
+$$R^2 = 1 - \frac{\text{SSE}}{S_{yy}} = 1 - \frac{3.119}{133.5} \approx 0.977$$
+
+**(b)**
+$$\hat{\sigma}^2 = \frac{\text{SSE}}{n-2} = \frac{3.119}{8-2} = \frac{3.119}{6} \approx 0.520$$
+$$\hat{\sigma} = \sqrt{0.520} \approx 0.721$$
+$$\text{SE}(\hat{\beta}_1) = \frac{\hat{\sigma}}{\sqrt{S_{xx}}} = \frac{0.721}{\sqrt{168}} \approx \frac{0.721}{12.96} \approx 0.0556$$
+
+**(c)**
+$$t = \frac{\hat{\beta}_1 - 0}{\text{SE}(\hat{\beta}_1)} = \frac{0.881}{0.0556} \approx 15.84$$
+Since $t = 15.84 > t_{0.05,\,6} = 1.943$, reject $H_0$. Very strong evidence that temperature is positively associated with ice cream sales.
+
+**(d)** $\hat{y}^* = -4.274 + 0.881(25) = 17.75$ hundred units.
+
+Since $x^* = 25$ lies within the observed temperature range $[18,\ 32]$°C, this is **interpolation**.
+
+</div>
+</details>
+
+---
+
+<!-- Q17 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 17</div>
+
+A horticulturalist measures the age ($x$, years) and trunk diameter ($y$, cm) of 7 olive trees of the same variety planted in similar conditions:
+
+| Age ($x$)      | 5   | 10  | 15   | 20   | 25   | 30   | 35   |
+|----------------|-----|-----|------|------|------|------|------|
+| Diameter ($y$) | 4.1 | 6.8 | 9.2  | 11.0 | 13.8 | 15.5 | 17.2 |
+
+(a) Compute $\hat{\beta}_0$, $\hat{\beta}_1$, and $R^2$.
+(b) Compute the residuals. Verify $\sum e_i = 0$.
+(c) Construct a 95% CI for $\beta_1$ using $t_{0.025,\,5} \approx 2.571$. Compute $\text{SE}(\hat{\beta}_1)$ from $\hat{\sigma}$ and $S_{xx}$.
+(d) Predict the trunk diameter of an olive tree aged 40 years. Comment on whether this is extrapolation.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Use $\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy}$ to find SSE, then $\hat{\sigma}^2 = \text{SSE}/(n-2)$.
+- $\text{SE}(\hat{\beta}_1) = \hat{\sigma}/\sqrt{S_{xx}}$.
+- Extrapolation: any prediction at $x^*$ outside the range of the observed data carries more uncertainty.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+$\bar{x} = \dfrac{5+10+15+20+25+30+35}{7} = \dfrac{140}{7} = 20$, $\quad\bar{y} = \dfrac{4.1+6.8+9.2+11.0+13.8+15.5+17.2}{7} = \dfrac{77.6}{7} \approx 11.086$
+
+$$S_{xx} = \sum(x_i-\bar{x})^2 = (-15)^2+(-10)^2+(-5)^2+0^2+5^2+10^2+15^2 = 225+100+25+0+25+100+225 = 700$$
+$$S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y}) = (-15)(-6.986)+(-10)(-4.286)+(-5)(-1.886)+(0)(-0.086)+(5)(2.714)+(10)(4.414)+(15)(6.114) = 306.5$$
+$$S_{yy} = \sum(y_i-\bar{y})^2 \approx 134.97$$
+
+**(a)**
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{306.5}{700} \approx 0.4379$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 11.086 - 0.4379(20) = 11.086 - 8.757 \approx 2.329$$
+$$\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy} = 134.97 - 0.4379(306.5) = 134.97 - 134.21 \approx 0.765$$
+$$R^2 = 1 - \frac{\text{SSE}}{S_{yy}} = 1 - \frac{0.765}{134.97} \approx 0.994$$
+
+**(b)**
+
+| $x$ | $y$ | $\hat{y} = 2.329 + 0.4379x$ | $e_i = y_i - \hat{y}_i$ |
+|-----|-----|-----------------------------|--------------------------|
+| 5   | 4.1  | $2.329+0.4379(5)=4.519$  | $4.1-4.519=-0.419$  |
+| 10  | 6.8  | $2.329+0.4379(10)=6.708$ | $6.8-6.708=0.092$   |
+| 15  | 9.2  | $2.329+0.4379(15)=8.897$ | $9.2-8.897=0.303$   |
+| 20  | 11.0 | $2.329+0.4379(20)=11.087$| $11.0-11.087=-0.087$|
+| 25  | 13.8 | $2.329+0.4379(25)=13.277$| $13.8-13.277=0.523$ |
+| 30  | 15.5 | $2.329+0.4379(30)=15.466$| $15.5-15.466=0.034$ |
+| 35  | 17.2 | $2.329+0.4379(35)=17.656$| $17.2-17.656=-0.456$|
+
+$\sum e_i \approx -0.419+0.092+0.303-0.087+0.523+0.034-0.456 = -0.010 \approx 0$ ✓ (small rounding discrepancy)
+
+**(c)**
+$$\hat{\sigma}^2 = \frac{\text{SSE}}{n-2} = \frac{0.765}{7-2} = \frac{0.765}{5} \approx 0.153$$
+$$\hat{\sigma} = \sqrt{0.153} \approx 0.391$$
+$$\text{SE}(\hat{\beta}_1) = \frac{\hat{\sigma}}{\sqrt{S_{xx}}} = \frac{0.391}{\sqrt{700}} \approx \frac{0.391}{26.46} \approx 0.0148$$
+$$\hat{\beta}_1 \pm t_{0.025,\,5}\cdot\text{SE}(\hat{\beta}_1) = 0.4379 \pm 2.571(0.0148) = 0.4379 \pm 0.0380 = (0.400,\ 0.476)$$
+
+**(d)**
+$$\hat{y} = 2.329 + 0.4379(40) = 2.329 + 17.516 \approx 19.84 \text{ cm}$$
+Since the oldest observed tree is 35 years, predicting at $x = 40$ is extrapolation — the result should be used with caution.
+
+</div>
+</details>
+
+---
+
+<!-- Q18 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 18</div>
+
+A health researcher records resting heart rate ($y$, bpm) and weekly aerobic exercise duration ($x$, hours/week) for 25 adult volunteers. The data are stored in `heart_rate.csv`, which contains two columns: `exercise` (hours per week) and `heartrate` (bpm).
+
+Use R to carry out a complete regression analysis.
+
+(a) Read the data and fit the model. Report $\hat{\beta}_0$, $\hat{\beta}_1$, $R^2$, $\hat{\sigma}$, and the p-value for $\hat{\beta}_1$.
+(b) Interpret $\hat{\beta}_1$ in context.
+(c) Produce a scatter plot with the regression line.
+(d) Examine the residuals-vs-fitted plot. Does the linearity assumption appear satisfied?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="13">df <- read.csv("heart_rate.csv")
+
+# Fit the model
+model <- lm(___ ~ ___, data = df)
+summary(model)
+
+# Scatter plot with regression line
+plot(df$___, df$___,
+     xlab = "Weekly Exercise (hours)", ylab = "Resting Heart Rate (bpm)")
+abline(___, col = "blue")
+
+# Residuals-vs-fitted plot
+plot(___, which = ___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `read.csv("heart_rate.csv")` loads the data into a data frame; use `df$exercise` and `df$heartrate` to access the columns.
+- `plot(model, which = 1)` gives the residuals-vs-fitted plot.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+df <- read.csv("heart_rate.csv")
+model <- lm(heartrate ~ exercise, data = df)
+summary(model)
+plot(df$exercise, df$heartrate,
+     xlab = "Weekly Exercise (hours)", ylab = "Resting Heart Rate (bpm)")
+abline(model, col = "blue")
+plot(model, which = 1)
+```
+
+**(a)** $\hat{\beta}_0 \approx 85.36$, $\hat{\beta}_1 \approx -2.495$, $R^2 \approx 0.903$, $\hat{\sigma} \approx 2.19$, p-value $\approx 3.9 \times 10^{-13}$.
+
+**(b)** Each additional hour of aerobic exercise per week is associated with a decrease of approximately 2.50 bpm in resting heart rate, on average.
+
+**(c)** The scatterplot shows a strong negative, approximately linear association between weekly exercise duration and resting heart rate — participants who exercise more tend to have noticeably lower resting heart rates.
+
+**(d)** The residuals-vs-fitted plot shows random scatter around zero with no obvious curved pattern, and the spread of residuals is roughly constant across fitted values. The linearity and constant variance assumptions appear reasonably satisfied.
+
+</div>
+</details>
+
+---
+
+<!-- Q19 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 19</div>
+
+An environmental monitoring station records annual mean CO$_2$ concentration ($y$, ppm) starting from the year 2000. The year is coded so that year 2000 $= 0$:
+
+| Year code ($x$) | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|-----------------|---|---|---|---|---|---|---|---|---|---|
+| CO$_2$ ($y$)   | 369.5 | 371.1 | 373.2 | 375.8 | 377.5 | 379.8 | 381.9 | 383.8 | 385.6 | 387.4 |
+
+(a) Compute $\hat{\beta}_0$ and $\hat{\beta}_1$. Interpret each in context.
+(b) Use R to verify your estimates, produce a scatter plot with the regression line, and predict the CO$_2$ concentration in year 2012 ($x = 12$). Is this prediction interpolation or extrapolation?
+(c) $R^2 \approx 0.998$. Does this high value guarantee the linear trend will continue indefinitely? Explain.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="10">df <- read.csv("co2_annual.csv")
+
+# Fit the model and verify your part (a) estimates
+model <- lm(___ ~ ___, data = df)
+summary(___)
+
+plot(df$___, df$___, xlab = "Year (0 = 2000)", ylab = expression(CO[2]~"(ppm)"))
+abline(___, col = "blue")
+
+# Point prediction for x = 12 (year 2012)
+predict(___, newdata = data.frame(year_code = 12))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\hat{\beta}_0$ is the estimated CO$_2$ at $x = 0$ (year 2000); $\hat{\beta}_1$ is the estimated annual increase.
+- Compare $x = 12$ against the observed year code range $[0,\ 9]$ to classify the prediction.
+- Even a very high $R^2$ only reflects fit within the observed range — it does not validate extrapolation.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$\bar{x} = \frac{0+1+2+\cdots+9}{10} = \frac{45}{10} = 4.5$$
+$$\bar{y} = \frac{369.5+371.1+373.2+375.8+377.5+379.8+381.9+383.8+385.6+387.4}{10} = \frac{3785.6}{10} = 378.56$$
+$$S_{xx} = \sum(x_i-\bar{x})^2 = (-4.5)^2+(-3.5)^2+\cdots+(4.5)^2 = 2(20.25+12.25+6.25+2.25+0.25) = 82.5$$
+$$S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y}) = (-4.5)(-9.06)+(-3.5)(-7.46)+\cdots+(4.5)(8.84) = 168.1$$
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{168.1}{82.5} \approx 2.038$$
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 378.56 - 2.038(4.5) = 378.56 - 9.171 \approx 369.39$$
+
+$\hat{\beta}_0 \approx 369.39$ ppm: the estimated CO$_2$ concentration in year 2000. $\hat{\beta}_1 \approx 2.04$ ppm/year: the estimated annual increase in CO$_2$.
+
+**(b)**
+
+```r
+df <- read.csv("co2_annual.csv")
+model <- lm(co2_ppm ~ year_code, data = df)
+summary(model)
+plot(df$year_code, df$co2_ppm, xlab = "Year (0 = 2000)", ylab = expression(CO[2]~"(ppm)"))
+abline(model, col = "blue")
+predict(model, newdata = data.frame(year_code = 12))
+```
+
+R confirms $\hat{\beta}_0 \approx 369.39$, $\hat{\beta}_1 \approx 2.038$.
+
+Point prediction at $x = 12$: $\hat{y} = 369.39 + 2.038(12) \approx 393.8$ ppm.
+
+Since $x = 12$ lies **outside** the observed range of year codes $[0,\ 9]$, this is **extrapolation** — it assumes the linear trend continues beyond the data, which may not hold.
+
+**(c)** No. A high $R^2$ reflects a strong linear fit within the data range (years 0–9). Extrapolating to year 2012 ($x = 12$) and beyond assumes the linear trend continues, which may not hold in the long run — CO$_2$ growth could accelerate or decelerate due to various factors.
+
+</div>
+</details>
+
+---
+
+<!-- Q20 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 20</div>
+
+A real estate analyst records the floor area ($x$, hundreds of sq ft) and selling price ($y$, \$1000s) of 30 recently sold homes in a Toronto suburb. The data are stored in `toronto_homes.csv`, which contains two columns: `size` (hundreds of sq ft) and `price` (\$1000s).
+
+Use R to carry out a complete regression analysis.
+
+(a) Fit the model. Report $\hat{\beta}_0$, $\hat{\beta}_1$, $R^2$, $\hat{\sigma}$, and the p-value for the slope.
+(b) Interpret $\hat{\beta}_1$ and $R^2$ in context.
+(c) Produce a scatter plot with the regression line and generate the residuals-vs-fitted plot.
+(d) Predict the selling price of a home with 1700 sq ft of floor area ($x = 17$). The dataset contains homes with floor areas ranging from 800 to 2500 sq ft. Is this prediction interpolation or extrapolation?
+(e) Based on the residuals-vs-fitted plot, do the linearity and constant variance assumptions appear satisfied?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="14">df <- read.csv("toronto_homes.csv")
+
+# Fit the model
+model <- lm(___ ~ ___, data = df)
+summary(model)
+
+# Scatter plot with regression line
+plot(df$___, df$___, xlab = "Floor Area (100 sq ft)", ylab = "Price ($1000s)")
+abline(___, col = "blue")
+
+# Residuals-vs-fitted plot
+plot(___, which = ___)
+
+# Point prediction for a home at x = 17
+predict(___, newdata = data.frame(size = 17))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Use `lm(price ~ size, data = df)` and check `summary()` for all reported values.
+- Compare $x = 17$ against the observed size range to classify interpolation vs. extrapolation.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+df <- read.csv("toronto_homes.csv")
+model <- lm(price ~ size, data = df)
+summary(model)
+plot(df$size, df$price, xlab = "Floor Area (100 sq ft)", ylab = "Price ($1000s)")
+abline(model, col = "blue")
+plot(model, which = 1)
+predict(model, newdata = data.frame(size = 17))
+```
+
+**(a)** $\hat{\beta}_0 \approx 35.65$, $\hat{\beta}_1 \approx 15.34$, $R^2 \approx 0.997$, $\hat{\sigma} \approx 4.14$, p-value $< 2 \times 10^{-16}$.
+
+**(b)** Each additional 100 sq ft of floor area is associated with an average price increase of approximately \$15,340. The model explains about 99.7% of the variability in selling price — an excellent linear fit for this neighbourhood.
+
+**(d)** $\hat{y}^* = 35.65 + 15.34(17) \approx 296.4$ (\$1000s). Since $x = 17$ lies within the observed size range of 800–2500 sq ft ($x = 8$ to $x = 25$), this is **interpolation**.
+
+**(e)** The residuals-vs-fitted plot shows approximately random scatter around zero, with no obvious curvature or systematic change in spread across the range of fitted values. The linearity and constant variance assumptions appear reasonably satisfied.
+
+</div>
+</details>
+
+---
+
+<!-- Q21 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 21</div>
+
+Figure \@ref(fig:ch9q21scatter) shows a scatterplot of five observations.
+
+```r
+library(ggplot2)
+df22 <- data.frame(x = c(1, 2, 3, 4, 5),
+                   y = c(4, 7, 5, 9, 10))
+ggplot(df22, aes(x, y)) +
+  geom_point(size = 3.5, color = "#619CFF") +
+  scale_x_continuous(breaks = 1:5) +
+  scale_y_continuous(breaks = seq(2, 12, 2), limits = c(2, 12)) +
+  labs(x = "x", y = "y") +
+  theme_minimal(base_size = 14)
+```
+
+Four candidate regression equations are listed below. Which one is the least-squares regression line for the data shown? Explain how you identified the correct equation.
+
+(A) $\hat{y} = 2.8 + 1.4x$
+
+(B) $\hat{y} = 2.8 - 1.4x$
+
+(C) $\hat{y} = 1.4 + 2.8x$
+
+(D) $\hat{y} = 7.0 + 1.4x$
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The scatter shows a positive trend, so the slope must be positive. This rules out one option immediately.
+- The least-squares line passes through $(\bar{x}, \bar{y})$. Compute these from the five points, then check which equation satisfies $\hat{y} = \bar{y}$ when $x = \bar{x}$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(A) is correct:** $\hat{y} = 2.8 + 1.4x$.
+
+**Verification.** From the five points: $\bar{x} = 3$ and $\bar{y} = 7$.
+
+$$S_{xx} = 10, \quad S_{xy} = (-2)(-3)+(-1)(0)+(0)(-2)+(1)(2)+(2)(3) = 14$$
+
+$$\hat{\beta}_1 = 14/10 = 1.4, \qquad \hat{\beta}_0 = 7 - 1.4(3) = 2.8$$
+
+**Ruling out the others:**
+
+- **(B)** has a negative slope, but the scatter shows a positive trend.
+- **(C)** has slope 2.8, which is too steep; plugging $x = \bar{x} = 3$ gives $\hat{y} = 9.8 \neq \bar{y} = 7$.
+- **(D)** has intercept $7.0$; at $x = 3$ it gives $\hat{y} = 11.2 \neq 7$.
+
+</div>
+</details>
+
+---
+
+<!-- Q22 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 22</div>
+
+Five observations on two variables are recorded:
+
+| $x_i$ | 1  | 3  | 5  | 7  | 9  |
+|--------|----|----|----|----|-----|
+| $y_i$ | 3  | 7  | 8  | 11 | 16 |
+
+(a) Compute the sample means $\bar{x}$ and $\bar{y}$, the sample standard deviations $s_x$ and $s_y$, and the sample covariance $s_{xy}$.
+
+(b) Compute the sample correlation coefficient $r_{xy}$ and interpret its value.
+
+(c) Using the relationship $\hat{\beta}_1 = r_{xy}\,(s_y/s_x)$, find the slope and intercept of the least-squares line.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $s_{xy} = \dfrac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})(y_i - \bar{y})$
+- $r_{xy} = s_{xy}/(s_x \cdot s_y)$, and $r_{xy}$ is always between $-1$ and $+1$.
+- Then use $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x}$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\bar{x} = 5$, $\bar{y} = 9$.
+
+$$s_x^2 = \frac{(-4)^2+(-2)^2+0^2+2^2+4^2}{4} = \frac{40}{4} = 10 \quad\Rightarrow\quad s_x = \sqrt{10} \approx 3.162$$
+
+$$s_y^2 = \frac{(-6)^2+(-2)^2+(-1)^2+2^2+7^2}{4} = \frac{94}{4} = 23.5 \quad\Rightarrow\quad s_y = \sqrt{23.5} \approx 4.848$$
+
+$$s_{xy} = \frac{(-4)(-6)+(-2)(-2)+(0)(-1)+(2)(2)+(4)(7)}{4} = \frac{60}{4} = 15$$
+
+**(b)** $r_{xy} = 15/(\sqrt{10}\cdot\sqrt{23.5}) = 15/\sqrt{235} \approx 0.978$.
+
+There is a very strong positive linear association between $x$ and $y$.
+
+**(c)** $\hat{\beta}_1 = 0.978 \times (4.848/3.162) \approx 0.978 \times 1.533 \approx 1.500$.
+
+$\hat{\beta}_0 = 9 - 1.500(5) = 1.5$.
+
+Fitted line: $\hat{y} = 1.5 + 1.5x$.
+
+*(Slight rounding differences may occur; using the exact formula $\hat{\beta}_1 = S_{xy}/S_{xx}$ with $S_{xy} = 60$ and $S_{xx} = 40$ gives $\hat{\beta}_1 = 1.5$ exactly.)*
+
+</div>
+</details>
+
+---
+
+<!-- Q23 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 23</div>
+
+A transportation researcher records the number of traffic signals encountered ($x$) and travel time ($y$, minutes) for 20 trips through a city. The following summary statistics are available:
+
+$$\bar{x} = 8, \quad \bar{y} = 22, \quad s_x = 3, \quad s_y = 6, \quad r = 0.85$$
+
+(a) Use the formula $\hat{\beta}_1 = r\,(s_y/s_x)$ to compute the slope of the least-squares regression line.
+
+(b) Find the intercept $\hat{\beta}_0$.
+
+(c) Write the fitted equation and predict the travel time for a trip that encounters 10 traffic signals.
+
+(d) Interpret $\hat{\beta}_1$ in context.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\hat{\beta}_1 = r \cdot (s_y / s_x)$; the ratio $s_y/s_x$ converts the correlation to the scale of the data.
+- $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x}$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\hat{\beta}_1 = 0.85 \times (6/3) = 0.85 \times 2 = 1.70$
+
+**(b)** $\hat{\beta}_0 = 22 - 1.70(8) = 22 - 13.6 = 8.4$
+
+**(c)** $\hat{y} = 8.4 + 1.70x$. At $x = 10$: $\hat{y} = 8.4 + 17.0 = 25.4$ minutes.
+
+**(d)** For each additional traffic signal encountered, the predicted travel time increases by 1.70 minutes on average.
+
+</div>
+</details>
+
+---
+
+<!-- Q24 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 24</div>
+
+A researcher studies the relationship between daily screen time ($x$, hours) and sleep quality score ($y$, on a 0–100 scale) for $n = 11$ participants. The following summary statistics are available:
+
+$$\bar{x} = 4, \quad \bar{y} = 60, \quad S_{xx} = 100, \quad S_{xy} = -80, \quad S_{yy} = 100$$
+
+(a) Compute the sample correlation coefficient $r = S_{xy}/\sqrt{S_{xx} \cdot S_{yy}}$. Interpret its sign and magnitude.
+
+(b) Compute $\hat{\beta}_1$ using $S_{xy}/S_{xx}$. Then verify the same value using the formula $\hat{\beta}_1 = r\,(s_y/s_x)$, where $s_x = \sqrt{S_{xx}/(n-1)}$ and $s_y = \sqrt{S_{yy}/(n-1)}$.
+
+(c) Compute $\hat{\beta}_0$ and write the fitted regression equation.
+
+(d) Compute $R^2 = r^2$ and interpret it in context. A classmate says "$r = -0.80$ so $R^2 = -0.80$." What is wrong with this statement?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $r$ must lie in $[-1,\, 1]$; $R^2$ is always non-negative since it equals $r^2$.
+- $s_x = \sqrt{S_{xx}/(n-1)}$ uses $n - 1 = 10$ in the denominator.
+- The two formulas for $\hat{\beta}_1$ should give the same answer — use this as a self-check.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$r = \frac{S_{xy}}{\sqrt{S_{xx} \cdot S_{yy}}} = \frac{-80}{\sqrt{100 \times 100}} = \frac{-80}{100} = -0.80$$
+
+The correlation is negative and moderately strong: participants with more daily screen time tend to have lower sleep quality scores.
+
+**(b)**
+
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{-80}{100} = -0.80$$
+
+Verification using $\hat{\beta}_1 = r\,(s_y/s_x)$:
+
+$$s_x = \sqrt{\frac{S_{xx}}{n-1}} = \sqrt{\frac{100}{10}} = \sqrt{10}, \qquad s_y = \sqrt{\frac{S_{yy}}{n-1}} = \sqrt{\frac{100}{10}} = \sqrt{10}$$
+
+$$\hat{\beta}_1 = (-0.80) \times \frac{\sqrt{10}}{\sqrt{10}} = -0.80 \checkmark$$
+
+**(c)**
+
+$$\hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 60 - (-0.80)(4) = 60 + 3.2 = 63.2$$
+
+Fitted equation: $\hat{y} = 63.2 - 0.80x$
+
+**(d)** $R^2 = r^2 = (-0.80)^2 = 0.64$. About 64% of the variability in sleep quality scores is explained by the linear regression on daily screen time.
+
+The classmate's statement is wrong: $R^2$ equals $r^2$, which is always **non-negative**. Here $r^2 = 0.64$, not $-0.80$. The coefficient of determination cannot be negative.
+
+</div>
+</details>
+
+---
+
+<!-- Q25 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 25</div>
+
+A researcher fits a simple linear regression model and produces the residuals-vs-fitted plot shown in Figure \@ref(fig:ch9q25residplot).
+
+```r
+library(ggplot2)
+set.seed(27)
+x27 <- seq(1, 40, length.out = 40)
+y27 <- 5 + 0.8 * x27 + rnorm(40, 0, sd = x27 / 7)
+m27 <- lm(y27 ~ x27)
+df27 <- data.frame(Fitted = fitted(m27), Residuals = resid(m27))
+ggplot(df27, aes(Fitted, Residuals)) +
+  geom_point(color = "#619CFF", size = 2.5) +
+  geom_hline(yintercept = 0, color = "#000000", linewidth = 0.7) +
+  labs(x = "Fitted Values", y = "Residuals") +
+  theme_minimal(base_size = 14)
+```
+
+(a) Based on Figure \@ref(fig:ch9q25residplot), does the constant variance assumption appear satisfied? What do you observe about the spread of residuals across the range of fitted values?
+
+(b) Which regression assumption does this indicate is violated? Explain.
+
+(c) Describe what the residual plot would look like if all model assumptions were satisfied. How does Figure \@ref(fig:ch9q25residplot) differ from that ideal pattern?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- If the model assumptions hold, the residuals should scatter randomly in a horizontal band of roughly constant width around zero.
+- Check whether the width of the residual band stays constant or changes as fitted values increase.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** No, the constant variance assumption does not appear satisfied. The spread of the residuals increases as the fitted values increase — the residuals are tightly clustered at low fitted values but much more spread out at high fitted values, rather than falling in a constant-width horizontal band.
+
+**(b)** This indicates a violation of the **constant variance (homoscedasticity)** assumption: $\text{Var}(\varepsilon_i) = \sigma^2$ for all $i$. Instead, the error variance appears to increase with the fitted value (or equivalently, with $x$).
+
+**(c)** If all model assumptions were satisfied, the residual plot would show points scattered **randomly** around the horizontal zero line, with **roughly constant spread** across the entire range of fitted values — no pattern, no curvature, and no systematic widening or narrowing of the band. In Figure \@ref(fig:ch9q25residplot), by contrast, the spread fans outward as fitted values increase (a "funnel" or "fan" shape), which is a clear sign that the constant variance assumption is violated.
+
+</div>
+</details>
+
+---
+
+<!-- Q26 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 26</div>
+
+The R output below is from a regression of tomato `yield` (kg/plant) on `sunlight` (hours/day) for 18 plants.
+
+::: tcolorbox
+    Call:
+    lm(formula = yield ~ sunlight)
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)   0.4800     0.3120   1.538   0.1430
+    sunlight      0.5900     0.0475  12.421  1.8e-10 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 0.321 on 16 degrees of freedom
+    Multiple R-squared:  0.9061,  Adjusted R-squared:  0.9002
+    F-statistic: 154.3 on 1 and 16 DF,  p-value: 1.8e-10
+:::
+
+(a) Write the fitted regression equation.
+
+(b) What is $\hat{\sigma}$? What does it estimate, and what are its units?
+
+(c) State the hypotheses tested by the $t$-test for `sunlight`, report the $t$-statistic and p-value, and state your conclusion at $\alpha = 0.05$.
+
+(d) Interpret $\hat{\beta}_1$ in context.
+
+(e) Interpret $R^2$ in context.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The "Residual standard error" in R output is $\hat{\sigma} = \sqrt{\text{SSE}/(n-2)}$.
+- The $t$-test for each coefficient tests $H_0: \beta_j = 0$ vs $H_a: \beta_j \neq 0$ (two-sided) by default.
+- Degrees of freedom for residuals = $n - 2$; read $n$ from the df line.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\hat{\text{yield}} = 0.480 + 0.590 \times \text{sunlight}$
+
+**(b)** $\hat{\sigma} = 0.321$ kg/plant. It estimates the standard deviation $\sigma$ of the error terms — the typical size of deviations of individual yields from the fitted line.
+
+**(c)**
+$$H_0: \beta_1 = 0 \quad\text{vs}\quad H_a: \beta_1 \neq 0$$
+$t = 12.421$, p-value $= 1.8 \times 10^{-10} < 0.05$. We reject $H_0$. There is very strong evidence that daily sunlight hours is a significant linear predictor of yield.
+
+**(d)** Each additional hour of sunlight per day is associated with an average increase of $0.590$ kg in tomato yield per plant.
+
+**(e)** $R^2 = 0.9061$: approximately 90.6% of the variation in tomato yield is explained by the linear relationship with daily sunlight hours — an excellent fit.
+
+</div>
+</details>
+
+---
+
+<!-- Q27 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 27</div>
+
+Two researchers each fit a simple linear regression model to predict student GPA (on a 4.0 scale) using the same dataset of $n = 32$ students. Their results are:
+
+|                         | Model 1                   | Model 2              |
+|-------------------------|---------------------------|----------------------|
+| Predictor               | Hours studied per week    | Number of absences   |
+| $\hat{\beta}_1$         | $0.12$                    | $-0.18$              |
+| $R^2$                   | $0.61$                    | $0.29$               |
+| $\hat{\sigma}$          | $0.42$                    | $0.57$               |
+| SSE                     | $5.30$                    | $9.66$               |
+
+(a) Which model explains more of the variation in GPA? How do you know?
+
+(b) Which model produces smaller residuals on average? How do you know?
+
+(c) A student claims: "Both $R^2$ values are less than 1, so neither model is any good." Is this a reasonable conclusion? Explain.
+
+(d) If you had to choose one of these two models for prediction purposes, which would you choose, and why?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- A higher $R^2$ means more variation is explained by the model.
+- $\hat{\sigma}$ is the estimated standard deviation of the residuals — smaller means tighter predictions.
+- $R^2$ is relative: even a moderate $R^2$ may be useful in practice.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** Model 1 explains more variation: $R^2 = 0.61$ vs $R^2 = 0.29$.
+
+**(b)** Model 1 produces smaller residuals on average: $\hat{\sigma} = 0.42$ vs $\hat{\sigma} = 0.57$. (Equivalently, Model 1 has a smaller SSE: $5.30$ vs $9.66$.)
+
+**(c)** Not a reasonable conclusion. An $R^2$ less than 1 simply means the model does not explain all variability in GPA — which is expected, since GPA is influenced by many factors beyond a single predictor. Whether a model is "good" depends on context and purpose; $R^2 = 0.61$ is often considered a reasonable fit for behavioral data.
+
+**(d)** Model 1. It has higher $R^2$, lower $\hat{\sigma}$, and lower SSE, so it produces more accurate predictions of GPA.
+
+</div>
+</details>
+
+---
+
+<!-- Q28 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 28</div>
+
+A regression model predicting monthly rent ($y$, \$/month) from apartment floor area ($x$, in hundreds of sq ft) was fitted using data from apartments with areas ranging from $x = 8$ to $x = 20$ (i.e., 800 to 2000 sq ft). The fitted equation is:
+
+$$\hat{y} = 800 + 40x$$
+
+Classify each of the following predictions as **interpolation** or **extrapolation**, and briefly explain.
+
+(a) Predicting rent for $x = 12$ (1200 sq ft).
+
+(b) Predicting rent for $x = 25$ (2500 sq ft).
+
+(c) Predicting rent for $x = 4$ (400 sq ft).
+
+(d) Predicting rent for $x = 18$ (1800 sq ft).
+
+(e) For which of (a)–(d) should the prediction be used most cautiously? Why?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Interpolation: the $x$-value used for prediction lies **within** the range of the training data $[8, 20]$.
+- Extrapolation: the $x$-value lies **outside** the range $[8, 20]$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $x = 12 \in [8, 20]$: **Interpolation**. The prediction is within the observed data range and can be trusted (assuming the linear model is appropriate).
+
+**(b)** $x = 25 > 20$: **Extrapolation**. This is beyond the largest observed apartment. The linear trend may not hold at such large areas.
+
+**(c)** $x = 4 < 8$: **Extrapolation**. This is below the smallest observed apartment. Very small units may follow a different pricing structure.
+
+**(d)** $x = 18 \in [8, 20]$: **Interpolation**.
+
+**(e)** The predictions in (b) and (c) should be used most cautiously because they involve extrapolation. Among these, (b) extends farthest beyond the observed range relative to the data ($x = 25$ is $25\%$ above the upper boundary), so prediction (b) carries the most risk of being inaccurate.
+
+</div>
+</details>
+
+---
+
+<!-- Q29 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 29</div>
+
+A survey of 40 university students measures the average daily hours spent on social media ($x$) and semester GPA ($y$). The sample correlation between $x$ and $y$ is $r = -0.60$.
+
+(a) Compute $R^2$ and provide a one-sentence interpretation.
+
+(b) What is the sign of $\hat{\beta}_1$? Explain how you know.
+
+(c) A classmate claims: "Since $r = -0.60$, the coefficient of determination $R^2 = -0.60$." Is this correct? Explain.
+
+(d) Another student says: "Because $r$ is negative, $R^2$ must also be negative." Is this correct?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $R^2 = r^2$; squaring always gives a non-negative result.
+- The sign of $\hat{\beta}_1$ equals the sign of $r$ (from $\hat{\beta}_1 = r\,s_y/s_x$ and $s_x, s_y > 0$).
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $R^2 = (-0.60)^2 = 0.36$. About 36% of the variation in GPA is explained by the linear relationship with daily social media use.
+
+**(b)** The sign of $\hat{\beta}_1$ is **negative** (same as $r = -0.60$), since $\hat{\beta}_1 = r\,(s_y/s_x)$ and $s_y/s_x > 0$.
+
+**(c)** Incorrect. $R^2 = r^2 = (-0.60)^2 = 0.36$, not $-0.60$. The coefficient of determination is always between 0 and 1.
+
+**(d)** Incorrect. $R^2 = r^2 \geq 0$ always, regardless of the sign of $r$. Squaring a negative number yields a positive number.
+
+</div>
+</details>
+
+---
+
+<!-- Q30 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 30</div>
+
+A health researcher records the weekly exercise hours ($x$, from 1 to 10 hours per week) and a composite well-being score ($y$, on a 0–10 scale) for ten participants.
+
+| $x$ (hours/week) | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| $y$ (well-being) | 4.23 | 4.80 | 6.60 | 7.96 | 8.61 | 9.14 | 9.98 | 9.43 | 8.98 | 8.88 |
+
+A simple linear regression of $y$ on $x$ was fitted, giving $\hat{\beta}_0 = 4.80$ and $\hat{\beta}_1 = 0.557$. Figure \@ref(fig:ch9q30resid) shows the scatterplot with the fitted regression line **(a)** and the residual plot (residuals vs. fitted values) **(b)**.
+
+```r
+library(ggplot2)
+library(patchwork)
+set.seed(7)
+x_q33 <- 1:10
+y_q33 <- round(1 + 2.5 * x_q33 - 0.18 * x_q33^2 + rnorm(10, 0, 0.4), 2)
+m_q33 <- lm(y_q33 ~ x_q33)
+
+df33 <- data.frame(
+  x     = x_q33,
+  y     = y_q33,
+  fits  = fitted(m_q33),
+  resid = residuals(m_q33)
+)
+
+p_scatter <- ggplot(df33, aes(x, y)) +
+  geom_abline(intercept = coef(m_q33)[1], slope = coef(m_q33)[2],
+              color = "#F8766D", linewidth = 1.2) +
+  geom_point(size = 3.5, color = "#619CFF") +
+  scale_x_continuous(breaks = 1:10) +
+  labs(x = "Weekly exercise hours (x)",
+       y = "Well-being score (y)",
+       title = "(a)") +
+  theme_minimal(base_size = 14)
+
+p_resid <- ggplot(df33, aes(fits, resid)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+  geom_point(size = 3.5, color = "#619CFF") +
+  labs(x = "Fitted values",
+       y = "Residuals",
+       title = "(b)") +
+  theme_minimal(base_size = 14)
+
+p_scatter + p_resid
+```
+
+(a) Based on Panel (a), does a simple linear model appear fully appropriate for these data? What feature of the scatterplot supports your answer?
+
+(b) Based on Panel (b), does the linearity assumption appear satisfied? Which feature of the residual plot supports your conclusion?
+
+(c) The fitted model has $\text{SST} = 35.59$ and $\text{SSE} = 10.03$. Compute $R^2$ and write a one-sentence interpretation in context.
+
+(d) Given $\hat{\beta}_1 = 0.557$ and $\text{SE}(\hat{\beta}_1) = 0.123$, test $H_0\colon \beta_1 = 0$ versus $H_1\colon \beta_1 \neq 0$ at $\alpha = 0.05$. State the test statistic, the approximate $p$-value (use $df = 8$), and your conclusion.
+
+(e) A classmate argues: *"Since $R^2 = 0.72$ and the slope is significant at $\alpha = 0.05$, the linear model fits these data well."* Using evidence from both panels of Figure \@ref(fig:ch9q30resid), explain whether you agree or disagree.
+
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- **(a)** Check whether the data points follow a straight line or show a curved pattern.
+- **(b)** If the residuals show a systematic curve rather than random scatter around zero, the linearity assumption may be violated.
+- **(c)** $R^2 = 1 - \dfrac{\text{SSE}}{\text{SST}}$.
+- **(d)** $t = \hat{\beta}_1 / \text{SE}(\hat{\beta}_1)$. Compare $|t|$ to $t_{0.025,\,8} \approx 2.306$.
+- **(e)** A significant slope and a high $R^2$ tell you that $x$ is a useful linear predictor — but they do *not* confirm that a linear model is the *correct* form. The residual plot provides additional diagnostic information.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** No, a simple linear model does not appear fully appropriate. The scatterplot shows a curved pattern — well-being scores increase up to around $x = 7$ then decline — rather than following a straight line. This curvature suggests the relationship between $x$ and $y$ is non-linear.
+
+**(b)** No, the linearity assumption does not appear satisfied. The residuals show a systematic curved pattern — negative at small fitted values, positive in the middle range, then negative again at large fitted values — rather than random scatter around zero. This indicates the linearity assumption is violated.
+
+**(c)**
+$$R^2 = 1 - \frac{\text{SSE}}{\text{SST}} = 1 - \frac{10.03}{35.59} = 1 - 0.282 = 0.718.$$
+About **71.8%** of the variability in well-being scores is explained by the linear relationship with weekly exercise hours.
+
+**(d)** Test statistic:
+$$t = \frac{\hat{\beta}_1 - 0}{\text{SE}(\hat{\beta}_1)} = \frac{0.557}{0.123} \approx 4.53.$$
+With $df = 8$ and $|t| = 4.53 > t_{0.025,\,8} \approx 2.306$, the $p$-value $\approx 0.002 < 0.05$. We **reject** $H_0$: there is statistically significant evidence of a linear relationship between exercise hours and well-being score.
+
+**(e)** **Disagree.** Although $R^2 = 0.72$ and the slope is statistically significant ($p \approx 0.002$), these measures only confirm that $x$ is a useful *linear* predictor — they do **not** imply the linear model is *appropriate*. Panel (a) shows a clear curved pattern in the data, and Panel (b) reveals a systematic curved pattern in the residuals. Both indicate the linearity assumption is violated. A high $R^2$ and a significant $t$-test cannot substitute for residual diagnostics when assessing model adequacy.
+
+</div>
+</details>
+
+---
+
+<!-- Q32 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 31</div>
+
+For each of the following scenarios, state whether the slope $\hat{\beta}_1$ of a fitted simple linear regression should be **positive** or **negative**. Also state whether the intercept $\hat{\beta}_0$ has a meaningful practical interpretation in context. Briefly justify each answer.
+
+(a) Response $y$ = number of words recalled in a memory test; predictor $x$ = age (years) among participants aged 65–85.
+
+(b) Response $y$ = fuel efficiency (km per litre); predictor $x$ = engine displacement (litres) for passenger vehicles.
+
+(c) Response $y$ = seedling height (cm) measured at 4 weeks; predictor $x$ = amount of fertiliser applied at planting (grams per pot).
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The sign of the slope reflects the direction of the relationship: does $y$ tend to increase or decrease as $x$ increases?
+- The intercept is interpretable when $x = 0$ is a realistic value within or near the data range.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a) Negative slope.** Cognitive recall tends to decline with increasing age in elderly participants. The intercept at $x = 0$ (age = 0 years) has no practical meaning — no participant is aged 0.
+
+**(b) Negative slope.** Larger engines consume more fuel, resulting in lower fuel efficiency. The intercept at $x = 0$ litres of engine displacement is not physically meaningful (there is no car with zero engine size).
+
+**(c) Positive slope.** Up to a point, more fertiliser promotes plant growth, so height tends to increase with fertiliser amount. The intercept at $x = 0$ grams (no fertiliser) is practically meaningful — it represents the predicted seedling height when no fertiliser is applied, which is a realistic condition.
+
+</div>
+</details>
+
+---
+
+<!-- Q33 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 32</div>
+
+A simple linear regression model is fitted to $n = 27$ observations and produces the following:
+
+$$\text{SST} = 3600, \qquad \text{SSR} = 2880$$
+
+(a) Find SSE.
+
+(b) Compute $R^2$ and interpret it.
+
+(c) Compute the estimated error variance $\hat{\sigma}^2 = s^2$.
+
+(d) Compute the regression standard error $\hat{\sigma} = s$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{SST} = \text{SSR} + \text{SSE}$
+- $R^2 = \text{SSR}/\text{SST}$
+- $s^2 = \text{SSE}/(n - 2)$ with degrees of freedom $n - 2 = 25$
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\text{SSE} = \text{SST} - \text{SSR} = 3600 - 2880 = 720$
+
+**(b)** $R^2 = 2880/3600 = 0.80$. About 80% of the variation in $y$ is explained by the linear regression on $x$.
+
+**(c)** $s^2 = \text{SSE}/(n - 2) = 720/25 = 28.8$
+
+**(d)** $s = \sqrt{28.8} \approx 5.37$
+
+</div>
+</details>
+
+---
+
+<!-- Q34 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 33</div>
+
+Figure \@ref(fig:ch9q34extrap) was produced from a dataset in which daily high temperature ($x$, °C) was recorded along with the number of visitors to an outdoor swimming pool ($y$). The vertical dashed lines mark the range of $x$ values in the training data ($x = 15$ to $x = 35$). The fitted regression line is extended beyond this range. Points **A** and **B** show two predictions made using the fitted line.
+
+```r
+library(ggplot2)
+set.seed(37)
+x37 <- c(15, 18, 20, 22, 25, 27, 30, 32, 35)
+y37 <- -80 + 12 * x37 + rnorm(9, 0, 15)
+m37 <- lm(y37 ~ x37)
+b0_37 <- coef(m37)[1]
+b1_37 <- coef(m37)[2]
+
+pred_A <- b0_37 + b1_37 * 25   # inside range
+pred_B <- b0_37 + b1_37 * 45   # outside range
+
+df37 <- data.frame(x = x37, y = y37)
+
+ggplot(df37, aes(x, y)) +
+  geom_rect(aes(xmin = 15, xmax = 35, ymin = -Inf, ymax = Inf),
+            fill = "#619CFF", alpha = 0.06, inherit.aes = FALSE) +
+  geom_vline(xintercept = c(15, 35), linetype = "dashed", color = "#555555", linewidth = 0.7) +
+  geom_abline(intercept = b0_37, slope = b1_37,
+              color = "#F8766D", linewidth = 1.2) +
+  geom_point(size = 3.2, color = "#619CFF") +
+  annotate("point", x = 25, y = pred_A, shape = 17, size = 4.5, color = "#E68613") +
+  annotate("text",  x = 25, y = pred_A + 18, label = "A", size = 5, color = "#E68613") +
+  annotate("point", x = 45, y = pred_B, shape = 17, size = 4.5, color = "#00BFC4") +
+  annotate("text",  x = 45, y = pred_B + 18, label = "B", size = 5, color = "#00BFC4") +
+  scale_x_continuous(breaks = seq(10, 50, 5), limits = c(10, 52)) +
+  labs(x = "Daily High Temperature (°C)", y = "Pool Visitors") +
+  theme_minimal(base_size = 14)
+```
+
+(a) Is the prediction at Point A (at $x = 25$) interpolation or extrapolation?
+
+(b) Is the prediction at Point B (at $x = 45$) interpolation or extrapolation?
+
+(c) Which prediction — A or B — should be treated with greater caution, and why?
+
+(d) A manager uses Point B's predicted value to plan weekend staffing for a heat-wave day forecast at 45°C. Identify one specific risk in relying on this prediction.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Compare the $x$-values of A and B against the shaded data range shown by the dashed lines.
+- Extrapolation assumes the linear trend continues outside the data range — this may not hold.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** Point A at $x = 25$: **Interpolation** — 25°C is within the observed data range $[15, 35]$ (inside the shaded region).
+
+**(b)** Point B at $x = 45$: **Extrapolation** — 45°C is well outside the upper boundary of the training data.
+
+**(c)** Point B should be treated with greater caution. Extrapolation assumes the linear relationship continues unchanged beyond the data range, which may not be true. There may be capacity limits (e.g., maximum pool capacity), nonlinear behaviour, or other factors that cause the actual visitor count at 45°C to deviate substantially from the linear prediction.
+
+**(d)** One risk: at extreme temperatures (45°C), heat-safety advisories might actually reduce visitor numbers, or the pool may have a fixed maximum capacity. The linear model has no information about the response at 45°C, so the prediction could be severely inaccurate — leading to overstaffing or understaffing.
+
+</div>
+</details>
+
+---
+
+<!-- Q35 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 34</div>
+
+A fitness researcher records weekly running distance ($x$, km) and resting heart rate ($y$, bpm) for $n = 18$ adult participants. Simple linear regression gives:
+
+$$\hat{\beta}_1 = -0.80, \qquad \text{SE}(\hat{\beta}_1) = 0.20, \qquad \hat{\beta}_0 = 85.0$$
+
+(a) Compute the $t$-statistic for testing $H_0: \beta_1 = 0$ versus $H_1: \beta_1 \neq 0$. State the degrees of freedom.
+
+(b) At significance level $\alpha = 0.05$, the critical value is $t_{0.025,\,16} = 2.120$. State your conclusion and interpret it in context.
+
+(c) Construct a 95% confidence interval for $\beta_1$. Interpret it in context.
+
+(d) A colleague reads the results and writes: *"Since the p-value is significant, running must cause a lower resting heart rate."* Identify one statistical error in this statement.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $t = \hat{\beta}_1 / \text{SE}(\hat{\beta}_1)$; degrees of freedom for SLR are $n - 2$
+- The 95% CI for $\beta_1$ is $\hat{\beta}_1 \pm t_{0.025,\,n-2} \cdot \text{SE}(\hat{\beta}_1)$
+- A significant slope means we reject $H_0: \beta_1 = 0$ — it does **not** establish causation
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $t = \hat{\beta}_1 / \text{SE}(\hat{\beta}_1) = -0.80 / 0.20 = -4.00$
+
+Degrees of freedom: $df = n - 2 = 18 - 2 = 16$
+
+**(b)** $|t| = 4.00 > t_{0.025,\,16} = 2.120$, so we reject $H_0: \beta_1 = 0$ at $\alpha = 0.05$.
+
+There is statistically significant evidence that weekly running distance is linearly associated with resting heart rate. The negative estimated slope indicates that participants who run more tend to have lower resting heart rates on average.
+
+**(c)** 95% CI for $\beta_1$:
+
+$$\hat{\beta}_1 \pm t_{0.025,\,16} \cdot \text{SE}(\hat{\beta}_1) = -0.80 \pm 2.120 \times 0.20 = -0.80 \pm 0.424$$
+
+$$\Rightarrow (-1.224,\; -0.376)$$
+
+We are 95% confident that each additional kilometre of weekly running is associated with a decrease in mean resting heart rate of between $0.376$ and $1.224$ bpm.
+
+**(d)** The statement confuses **correlation with causation**. A significant p-value means we reject $H_0: \beta_1 = 0$ — it tells us the slope is unlikely to be zero, but it does **not** establish that running *causes* lower heart rates. Other variables (e.g., overall fitness, diet) may be associated with both running habits and heart health. Correlation does not imply causation.
+
+</div>
+</details>
+
+---
+
+<!-- Q36 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 35</div>
+
+A home energy analyst records the outdoor temperature ($x$, °C) and daily gas consumption ($y$, units) for a residential heating system over 5 winter days:
+
+| Day | Temperature ($x$) | Gas ($y$) |
+|:---:|:-----------------:|:---------:|
+|  1  |         1         |    20     |
+|  2  |         2         |    16     |
+|  3  |         3         |    13     |
+|  4  |         4         |     9     |
+|  5  |         5         |     7     |
+
+(a) Compute $\bar{x}$, $\bar{y}$, $S_{xx}$, and $S_{xy}$. Find $\hat{\beta}_1$ and $\hat{\beta}_0$, and write the fitted regression equation.
+
+(b) Interpret $\hat{\beta}_1$ in the context of home energy use.
+
+(c) Compute the residual for Day 3.
+
+(d) Compute SSE and $\hat{\sigma}^2$.
+
+(e) Predict the daily gas consumption on a day when the outdoor temperature is $6$°C. Is this prediction an example of interpolation or extrapolation?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $S_{xx} = \sum(x_i - \bar{x})^2$, $S_{xy} = \sum(x_i - \bar{x})(y_i - \bar{y})$
+- $\hat{\sigma}^2 = \text{SSE}/(n - 2)$; note $n = 5$, so $n - 2 = 3$.
+- Compare $x = 6$ against the observed range $[1, 5]$ to classify the prediction.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\bar{x} = 3$, $\bar{y} = 13$
+
+$$S_{xx} = (-2)^2+(-1)^2+0^2+1^2+2^2 = 10$$
+$$S_{xy} = (-2)(7)+(-1)(3)+(0)(0)+(1)(-4)+(2)(-6) = -14-3+0-4-12 = -33$$
+$$\hat{\beta}_1 = -33/10 = -3.3, \qquad \hat{\beta}_0 = 13-(-3.3)(3) = 22.9$$
+
+Fitted equation: $\hat{y} = 22.9 - 3.3x$
+
+**(b)** For each 1°C increase in outdoor temperature, the predicted daily gas consumption decreases by 3.3 units on average. On warmer days, the heating system uses less gas.
+
+**(c)** Day 3: $\hat{y} = 22.9 - 3.3(3) = 13.0$; residual $= 13 - 13.0 = 0$.
+
+**(d)** Computing all residuals:
+
+| Day | $y$ | $\hat{y}$ | $e_i$ | $e_i^2$ |
+|:---:|:---:|:---------:|:-----:|:-------:|
+| 1 | 20 | 19.6 | 0.4 | 0.16 |
+| 2 | 16 | 16.3 | −0.3 | 0.09 |
+| 3 | 13 | 13.0 | 0 | 0.00 |
+| 4 | 9 | 9.7 | −0.7 | 0.49 |
+| 5 | 7 | 6.4 | 0.6 | 0.36 |
+
+$\text{SSE} = 0.16+0.09+0+0.49+0.36 = 1.10$
+
+$\hat{\sigma}^2 = 1.10/3 \approx 0.367$
+
+**(e)** $\hat{y} = 22.9 - 3.3(6) = 3.1$ units. Since $x = 6$ lies outside the observed range $[1, 5]$, this is **extrapolation** and should be used with caution.
+
+</div>
+</details>
+
+---
+
+<!-- Q37 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 36</div>
+
+A phone manufacturer studies how battery charge remaining ($y$, \% of full charge) declines with hours of continuous video streaming ($x$, hours). Figure \@ref(fig:ch9q37scatter) shows a scatterplot with the fitted regression line $\hat{y} = 100 - 8x$ annotated on the plot. Four measured phones are labelled A, B, C, and D. Their coordinates are:
+
+- **A** = $(1,\; 95)$
+- **B** = $(3,\; 68)$
+- **C** = $(4,\; 68)$
+- **D** = $(6,\; 58)$
+
+```r
+library(ggplot2)
+
+pts <- data.frame(
+  x     = c(1,   3,   4,   6  ),
+  y     = c(95,  68,  68,  58 ),
+  label = c("A", "B", "C", "D")
+)
+
+bg <- data.frame(
+  x = c(0.5, 2, 3.5, 5, 7),
+  y = c(96,  84, 72,  60, 44)
+)
+
+ggplot() +
+  geom_point(data = bg, aes(x, y), size = 3, color = "#619CFF") +
+  geom_abline(intercept = 100, slope = -8, color = "#F8766D", linewidth = 1.2) +
+  geom_point(data = pts, aes(x, y), size = 4, color = "#619CFF") +
+  geom_text(data = pts, aes(x, y, label = label),
+            nudge_y = 2.5, size = 5, color = "#000000") +
+  annotate("text", x = 5, y = 90,
+           label = "hat(y) == 100 - 8*x",
+           parse = TRUE, color = "#F8766D", size = 4.5) +
+  scale_x_continuous(breaks = 0:7, limits = c(0, 7.5)) +
+  scale_y_continuous(breaks = seq(40, 100, 10), limits = c(38, 100)) +
+  labs(x = "Hours of streaming (x)", y = "Battery charge remaining (%, y)") +
+  theme_minimal(base_size = 14)
+```
+
+(a) For each of the four labelled phones A–D, compute the fitted value $\hat{y}$ and the residual $e = y - \hat{y}$.
+
+(b) State the sign (positive, negative, or zero) of the residual for each point, and confirm by looking at whether the point lies above, below, or on the line.
+
+(c) Which point contributes the most to SSE? Compute its contribution $e^2$.
+
+(d) Interpret the slope $\hat{\beta}_1 = -8$ in context, including units. Then use the fitted equation to predict the battery charge remaining after 5 hours of streaming.
+
+(e) Point A currently lies at $(1,\; 95)$. To what $y$-value would A need to be moved so that its residual equals exactly zero? Then, in one sentence, explain why a negative slope makes sense in this context.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Fitted value: $\hat{y} = 100 - 8x$.
+- Residual $e = y - \hat{y}$: positive if the point is above the line, negative if below, zero if on the line.
+- The slope $\hat{\beta}_1 = -8$ means $y$ (battery \%) is predicted to change by $-8$ for each 1-unit increase in $x$ (hours).
+- To make the residual zero, the observed $y$ must equal the fitted $\hat{y}$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** Using $\hat{y} = 100 - 8x$:
+
+| Point | $x$ | $y$ | $\hat{y}$ | $e = y - \hat{y}$ |
+|:-----:|:---:|:---:|:---------:|:-----------------:|
+| A | 1 | 95 | $100-8=92$ | $+3$ |
+| B | 3 | 68 | $100-24=76$ | $-8$ |
+| C | 4 | 68 | $100-32=68$ | $0$ |
+| D | 6 | 58 | $100-48=52$ | $+6$ |
+
+**(b)**
+
+- A: residual $= +3$ (positive — A is **above** the line).
+- B: residual $= -8$ (negative — B is well **below** the line).
+- C: residual $= 0$ (zero — C lies **on** the line).
+- D: residual $= +6$ (positive — D is **above** the line).
+
+**(c)** Point B contributes the most to SSE: $e_B^2 = (-8)^2 = 64$ (compared to $e_A^2 = 9$ and $e_D^2 = 36$).
+
+**(d)** For each additional hour of continuous video streaming, the predicted battery charge remaining **decreases** by 8 percentage points on average. At $x = 5$ hours: $\hat{y} = 100 - 8(5) = 100 - 40 = 60\%$.
+
+**(e)** For A's residual to be zero, we need $y_A = \hat{y}_A = 100 - 8(1) = 92$. Point A would need to be moved down to $(1,\; 92)$. A negative slope makes sense here because streaming video continuously consumes battery power, so the percentage of charge remaining can only go down (never up) the longer the phone streams.
+
+</div>
+</details>
+
+---
+
+<!-- Q38 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 37</div>
+
+A sleep researcher records the average nightly sleep duration ($x$, hours) and mean reaction time ($y$, milliseconds) for 20 adults. The R output from the regression of `reaction` on `sleep` is shown below, with two values masked.
+
+::: tcolorbox
+    Call:
+    lm(formula = reaction ~ sleep)
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)  457.50     22.20   20.61   <2e-16 ***
+    sleep          [A]       3.00   -6.00   <0.001 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 15.0 on [B] degrees of freedom
+    Multiple R-squared:  0.667,   Adjusted R-squared:  0.648
+    F-statistic: 36.0 on 1 and [B] DF,  p-value: 1.05e-05
+:::
+
+(a) Fill in **[A]** ($\hat{\beta}_1$) and **[B]** (residual degrees of freedom). Show all calculations.
+
+(b) Write the fitted regression equation and interpret $\hat{\beta}_1$ in context.
+
+(c) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.01$. State your conclusion using the $t$-statistic shown in the output.
+
+(d) Compute a 95% confidence interval for $\beta_1$. Use $t_{0.025,\, 18} = 2.101$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\hat{\beta}_1 = t \times \text{SE}(\hat{\beta}_1)$; use the $t$-value and SE shown in the slope row.
+- Residual degrees of freedom $= n - 2$; read $n$ from the problem statement.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$[\mathbf{A}]\ \hat{\beta}_1 = t \times \text{SE}(\hat{\beta}_1) = -6.00 \times 3.00 = -18.00$$
+$$[\mathbf{B}]\ \text{df} = n - 2 = 20 - 2 = 18$$
+
+**[A]** $= -18.00$; **[B]** $= 18$.
+
+**(b)** $\hat{\text{reaction}} = 457.50 - 18.00 \times \text{sleep}$. Each additional hour of nightly sleep is associated with an average decrease of 18 ms in reaction time — better-rested adults respond more quickly.
+
+**(c)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$. The $t$-statistic is $-6.00$, with p-value $= 1.05 \times 10^{-5} < 0.01$. We **reject** $H_0$ at $\alpha = 0.01$. There is very strong evidence that nightly sleep duration is a significant linear predictor of reaction time.
+
+**(d)**
+$$\hat{\beta}_1 \pm t_{0.025,\,18} \times \text{SE}(\hat{\beta}_1) = -18.00 \pm 2.101 \times 3.00 = -18.00 \pm 6.30$$
+$$95\%\ \text{CI for}\ \beta_1:\ (-24.30,\ -11.70)$$
+We are 95% confident that each additional hour of sleep is associated with a decrease of between 11.70 and 24.30 ms in mean reaction time.
+
+</div>
+</details>
+
+---
+
+<!-- Q39 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 38</div>
+
+A retail analyst fits a simple linear regression of weekly sales ($y$, \$1000s) on weekly advertising spend ($x$, \$100s) for $n = 25$ stores. The partial ANOVA table is given below, with several entries masked.
+
+| Source     | SS      | df   | MS    | $F$   |
+|:-----------|--------:|-----:|------:|------:|
+| Regression | 3 840   |  1   | **[A]** | **[B]** |
+| Residual   | **[C]** | **[D]** | **[E]** |       |
+| Total      | 5 120   | 24   |       |       |
+
+Additional output: $\hat{\beta}_0 = 38.6$, $\hat{\beta}_1 = 4.80$.
+
+(a) Fill in entries **[A]** through **[E]** in the ANOVA table. Show all calculations.
+
+(b) Compute $R^2$ from the table and interpret it in context.
+
+(c) Compute $\hat{\sigma}$ from the table.
+
+(d) State $H_0$ and $H_1$ for the $F$-test and conduct the test at $\alpha = 0.05$. The critical value is $F_{0.05,\,1,\,23} \approx 4.28$.
+
+(e) A new store spends $x = 8$ (\$100s) on advertising in a given week. Predict its weekly sales.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{SSE} = \text{SST} - \text{SSR}$; $\text{df}_{\text{error}} = n - 2$.
+- $\text{MSR} = \text{SSR}/1$; $\text{MSE} = \text{SSE}/\text{df}_{\text{error}}$; $F = \text{MSR}/\text{MSE}$.
+- $R^2 = \text{SSR}/\text{SST}$; $\hat{\sigma} = \sqrt{\text{MSE}}$.
+- Prediction: substitute $x$ into $\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$[\mathbf{C}]\ \text{SSE} = 5120 - 3840 = 1280$$
+$$[\mathbf{D}]\ \text{df}_{\text{error}} = 25 - 2 = 23$$
+$$[\mathbf{A}]\ \text{MSR} = \frac{3840}{1} = 3840$$
+$$[\mathbf{E}]\ \text{MSE} = \frac{1280}{23} \approx 55.65$$
+$$[\mathbf{B}]\ F = \frac{3840}{55.65} \approx 69.0$$
+
+**(b)** $R^2 = \dfrac{\text{SSR}}{\text{SST}} = \dfrac{3840}{5120} = 0.750$. About 75% of the variability in weekly sales is explained by the linear relationship with advertising spend.
+
+**(c)** $\hat{\sigma} = \sqrt{\text{MSE}} = \sqrt{55.65} \approx 7.46$ (\$1000s per store).
+
+**(d)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$. Since $F = 69.0 > F_{0.05,\,1,\,23} = 4.28$, we **reject** $H_0$ at $\alpha = 0.05$. There is very strong evidence of a significant linear relationship between advertising spend and weekly sales.
+
+**(e)** $\hat{y} = 38.6 + 4.80(8) = 38.6 + 38.4 = 77.0$ (\$1000s). The predicted weekly sales for a store spending \$800 on advertising is \$77,000.
+
+</div>
+</details>
+
+---
+
+<!-- Q40 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 39</div>
+
+A pharmacologist investigates the relationship between caffeine dose ($x$, mg) and an alertness score ($y$, on a 0–100 scale) in $n = 28$ volunteers. The mean caffeine dose is $\bar{x} = 80$ mg and the mean alertness score is $\bar{y} = 70.60$. The R output is shown below, with three values masked.
+
+::: tcolorbox
+    Call:
+    lm(formula = alertness ~ caffeine)
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)   [A]       5.18    6.68   <2e-16 ***
+    caffeine       0.45     [B]     9.00   <2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 7.2 on [C] degrees of freedom
+    Multiple R-squared:  0.757,   Adjusted R-squared:  0.745
+    F-statistic: 81.0 on 1 and [C] DF,  p-value: < 2e-16
+:::
+
+(a) Fill in **[A]** ($\hat{\beta}_0$), **[B]** ($\text{SE}(\hat{\beta}_1)$), and **[C]** (residual degrees of freedom). Show all calculations.
+
+(b) Write the fitted regression equation and interpret $\hat{\beta}_1$ in context.
+
+(c) Predict the alertness score for a volunteer given a caffeine dose of 120 mg.
+
+(d) Compute a 95% CI for $\beta_1$. Use $t_{0.025,\,26} = 2.056$.
+
+(e) Interpret $R^2 = 0.757$ in context.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$; use the summary statistics given in the problem.
+- $\text{SE}(\hat{\beta}_1) = \hat{\beta}_1 / t$; use $\hat{\beta}_1 = 0.45$ and $t = 9.00$ shown in the output.
+- Residual degrees of freedom $= n - 2$; read $n$ from the problem statement.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$[\mathbf{A}]\ \hat{\beta}_0 = \bar{y} - \hat{\beta}_1\bar{x} = 70.60 - 0.45 \times 80 = 70.60 - 36.00 = 34.60$$
+$$[\mathbf{B}]\ \text{SE}(\hat{\beta}_1) = \frac{\hat{\beta}_1}{t} = \frac{0.45}{9.00} = 0.050$$
+$$[\mathbf{C}]\ \text{df} = n - 2 = 28 - 2 = 26$$
+
+**[A]** $= 34.60$; **[B]** $= 0.050$; **[C]** $= 26$.
+
+**(b)** $\hat{\text{alertness}} = 34.60 + 0.45 \times \text{caffeine}$. Each additional mg of caffeine is associated with an average increase of 0.45 points on the alertness scale.
+
+**(c)** $\hat{y} = 34.60 + 0.45 \times 120 = 34.60 + 54.00 = 88.60$ points.
+
+**(d)**
+$$0.45 \pm 2.056 \times 0.050 = 0.45 \pm 0.103$$
+$$95\%\ \text{CI for}\ \beta_1:\ (0.347,\ 0.553)$$
+
+**(e)** $R^2 = 0.757$: approximately 75.7% of the variability in alertness scores is explained by the linear relationship with caffeine dose.
+
+</div>
+</details>
+
+---
+
+<!-- Q41 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 40</div>
+
+A sports scientist records the average weekly training distance ($x$, miles/week) and marathon finish time ($y$, minutes) for 35 recreational runners. The data are stored in `marathon_training.csv`, which has two columns: `miles` and `finish_time`.
+
+Use R to carry out a complete regression analysis.
+
+(a) Read the data and fit the model. Report $\hat{\beta}_0$, $\hat{\beta}_1$, $R^2$, and $\hat{\sigma}$.
+(b) Interpret $\hat{\beta}_1$ in context. Does the sign match your expectation? Explain.
+(c) Produce a scatter plot with the regression line.
+(d) Examine the residuals-vs-fitted plot and comment on whether the model assumptions appear satisfied.
+(e) Predict the finish time for a runner who trains 50 miles per week.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="14">df <- read.csv("marathon_training.csv")
+
+# Fit the model
+model <- lm(___ ~ ___, data = df)
+summary(___)
+
+# Scatter plot with regression line
+plot(df$___, df$___,
+     xlab = "Weekly Training (miles)", ylab = "Finish Time (min)")
+abline(___, col = "blue")
+
+# Residuals-vs-fitted plot
+plot(___, which = ___)
+
+# Predict finish time for x = 50 miles/week
+predict(___, newdata = data.frame(___ = 50))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- More training typically leads to faster (lower) finish times — expect a negative slope.
+- `plot(model, which = 1)` gives the residuals-vs-fitted plot.
+- For part (e), use `data.frame(miles = 50)` in `predict()`.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+df <- read.csv("marathon_training.csv")
+model <- lm(finish_time ~ miles, data = df)
+summary(model)
+plot(df$miles, df$finish_time,
+     xlab = "Weekly Training (miles)", ylab = "Finish Time (min)")
+abline(model, col = "blue")
+plot(model, which = 1)
+predict(model, newdata = data.frame(miles = 50))
+```
+
+**(a)** $\hat{\beta}_0 \approx 340.24$, $\hat{\beta}_1 \approx -2.208$, $R^2 \approx 0.992$, $\hat{\sigma} \approx 2.71$ minutes.
+
+**(b)** Each additional mile per week of training is associated with an average decrease of about 2.21 minutes in marathon finish time. The negative sign is expected — more training improves fitness and leads to faster race times.
+
+**(c)** The scatterplot shows a strong negative, approximately linear relationship: runners with higher weekly mileage tend to finish considerably faster.
+
+**(d)** The residuals-vs-fitted plot shows approximately random scatter around zero with no clear curved pattern, and the spread of residuals remains roughly constant across fitted values. The linearity and constant variance assumptions appear reasonably satisfied.
+
+**(e)** $\hat{y} = 340.24 - 2.208(50) \approx 229.8$ minutes (about 3 hours 50 minutes).
+
+</div>
+</details>
+
+---
+
+<!-- Q42 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 41</div>
+
+A quality engineer records the age ($x$, years) and efficiency rating ($y$, %) of $n = 22$ industrial machines. The mean age is $\bar{x} = 10$ years and the mean efficiency rating is $\bar{y} = 67.20\%$. The R output from the regression of `efficiency` on `age` is shown below, with three values masked.
+
+::: tcolorbox
+    Call:
+    lm(formula = efficiency ~ age)
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)   [A]        6.30    15.11   <2e-16 ***
+    age           -2.80      0.28    [B]     <2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 4.5 on [C] degrees of freedom
+    Multiple R-squared:  0.833,   Adjusted R-squared:  0.825
+    F-statistic: 100 on 1 and [C] DF,  p-value: < 2e-16
+:::
+
+(a) Fill in **[A]** ($\hat{\beta}_0$), **[B]** ($t$-statistic for `age`), and **[C]** (residual degrees of freedom). Show all calculations.
+
+(b) Write the fitted regression equation and interpret $\hat{\beta}_1$ in context. Does the sign make sense? Explain.
+
+(c) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.01$ using the $t$-statistic shown in the output.
+
+(d) Compute a 95% confidence interval for $\beta_1$. Use $t_{0.025,\, 20} = 2.086$.
+
+(e) Predict the efficiency rating of a machine that is 12 years old.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$; use the summary statistics given in the problem.
+- $t = \hat{\beta}_1 / \text{SE}(\hat{\beta}_1)$; use $\hat{\beta}_1 = -2.80$ and $\text{SE} = 0.28$ shown in the output.
+- Residual degrees of freedom $= n - 2$; read $n$ from the problem statement.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$[\mathbf{A}]\ \hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} = 67.20 - (-2.80)(10) = 67.20 + 28.00 = 95.20$$
+$$[\mathbf{B}]\ t = \frac{\hat{\beta}_1}{\text{SE}(\hat{\beta}_1)} = \frac{-2.80}{0.28} = -10.0$$
+$$[\mathbf{C}]\ \text{df} = n - 2 = 22 - 2 = 20$$
+
+**[A]** $= 95.20$; **[B]** $= -10.0$; **[C]** $= 20$.
+
+**(b)** $\widehat{\text{efficiency}} = 95.20 - 2.80 \times \text{age}$. Each additional year of machine age is associated with an average decrease of 2.80 percentage points in efficiency rating. The negative sign makes sense — older machines tend to wear down and operate less efficiently.
+
+**(c)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$. The $t$-statistic $[\mathbf{B}] = -10.0$, with $p < 0.001 < 0.01$. We **reject** $H_0$ at $\alpha = 0.01$. There is very strong evidence that machine age is a significant linear predictor of efficiency.
+
+**(d)**
+$$\hat{\beta}_1 \pm t_{0.025,\,20} \times \text{SE}(\hat{\beta}_1) = -2.80 \pm 2.086 \times 0.28 = -2.80 \pm 0.584$$
+$$95\%\ \text{CI for}\ \beta_1:\ (-3.384,\ -2.216)$$
+
+**(e)** $\hat{y} = 95.20 - 2.80(12) = 95.20 - 33.60 = 61.60\%$.
+
+</div>
+</details>
+
+---
+
+<!-- Q43 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 42</div>
+
+A utility company models the relationship between the average daily high temperature ($x$, °C) and the monthly household heating bill ($y$, \$) for $n = 16$ homes. The R output is shown below, with two values masked.
+
+::: tcolorbox
+    Call:
+    lm(formula = heating_bill ~ temperature)
+
+    Coefficients:
+                  Estimate Std. Error t value Pr(>|t|)
+    (Intercept)   280.00     14.20   19.72   <2e-16 ***
+    temperature    -4.50      [A]    -9.00   3.1e-07 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 3.8 on [B] degrees of freedom
+    Multiple R-squared:  0.853,   Adjusted R-squared:  0.843
+    F-statistic: 81.0 on 1 and [B] DF,  p-value: 3.1e-07
+:::
+
+(a) Fill in **[A]** ($\text{SE}(\hat{\beta}_1)$) and **[B]** (residual degrees of freedom). Show all calculations.
+
+(b) Write the fitted regression equation and interpret $\hat{\beta}_1$ in context. Does the sign make sense? Explain.
+
+(c) Compute a 95% confidence interval for $\beta_1$. Use $t_{0.025,\, 14} = 2.145$.
+
+(d) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.01$ using the $F$-statistic shown in the output. The critical value is $F_{0.01,\,1,\,14} \approx 8.86$.
+
+(e) Predict the monthly heating bill for a home in a month where the average daily high temperature is 5°C.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{SE}(\hat{\beta}_1) = |\hat{\beta}_1| / |t|$; use $\hat{\beta}_1 = -4.50$ and $t = -9.00$ shown in the output.
+- Residual degrees of freedom $= n - 2$; read $n$ from the problem statement.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$[\mathbf{A}]\ \text{SE}(\hat{\beta}_1) = \frac{|\hat{\beta}_1|}{|t|} = \frac{4.50}{9.00} = 0.50$$
+$$[\mathbf{B}]\ \text{df} = n - 2 = 16 - 2 = 14$$
+
+**[A]** $= 0.50$; **[B]** $= 14$.
+
+**(b)** $\widehat{\text{heating\_bill}} = 280.00 - 4.50 \times \text{temperature}$. Each additional degree Celsius in average daily high temperature is associated with an average decrease of \$4.50 in the monthly heating bill. The negative sign makes sense — warmer weather reduces the need for home heating.
+
+**(c)** Using $\text{SE}(\hat{\beta}_1) = [\mathbf{A}] = 0.50$ from part (a), with $t_{0.025,\,14} = 2.145$:
+$$\hat{\beta}_1 \pm t_{0.025,\,14} \times \text{SE}(\hat{\beta}_1) = -4.50 \pm 2.145 \times 0.50 = -4.50 \pm 1.073$$
+$$95\%\ \text{CI for}\ \beta_1:\ (-5.573,\ -3.427)$$
+
+**(d)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$. The $F$-statistic from the output is $81.0 > F_{0.01,\,1,\,14} = 8.86$, so we **reject** $H_0$ at $\alpha = 0.01$. There is very strong evidence that temperature is a significant linear predictor of monthly heating costs.
+
+**(e)** $\hat{y} = 280.00 - 4.50(5) = 280.00 - 22.50 = \$257.50$.
+
+</div>
+</details>
+
+---
+
+<!-- Q44 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 43</div>
+
+A real estate analyst models the relationship between distance from the city centre ($x$, km) and monthly rent ($y$, \$1000s) for $n = 20$ apartments. The mean distance is $\bar{x} = 10$ km and the mean monthly rent is $\bar{y} = 2.60$ (\$1000s). The R output is shown below, with two values masked.
+
+::: tcolorbox
+    Call:
+    lm(formula = rent ~ distance)
+
+    Coefficients:
+                Estimate Std. Error t value Pr(>|t|)
+    (Intercept)   [B]        0.45     8.44   <2e-16 ***
+    distance      [A]        0.020   -6.00   <2e-16 ***
+    ---
+    Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+    Residual standard error: 0.35 on 18 degrees of freedom
+    Multiple R-squared:  0.667,   Adjusted R-squared:  0.648
+    F-statistic: 36.0 on 1 and 18 DF,  p-value: < 2e-16
+:::
+
+(a) Fill in **[A]** ($\hat{\beta}_1$) and **[B]** ($\hat{\beta}_0$). Show all calculations.
+
+(b) Write the fitted regression equation and interpret $\hat{\beta}_1$ in context. Does the sign make sense? Explain.
+
+(c) Compute a 95% confidence interval for $\beta_1$. Use $t_{0.025,\, 18} = 2.101$.
+
+(d) Test $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$ at $\alpha = 0.05$. State your conclusion.
+
+(e) Predict the monthly rent for an apartment located 25 km from the city centre.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\hat{\beta}_1 = t \times \text{SE}(\hat{\beta}_1)$; use the $t$-value and SE shown in the slope row.
+- $\hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x}$; use [A] from the first step and the summary statistics given.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)**
+$$[\mathbf{A}]\ \hat{\beta}_1 = t \times \text{SE}(\hat{\beta}_1) = -6.00 \times 0.020 = -0.12$$
+$$[\mathbf{B}]\ \hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} = 2.60 - (-0.12)(10) = 2.60 + 1.20 = 3.80$$
+
+**[A]** $= -0.12$; **[B]** $= 3.80$.
+
+**(b)** $\widehat{\text{rent}} = 3.80 - 0.12 \times \text{distance}$. Each additional km from the city centre is associated with an average decrease of \$120 in monthly rent. The negative sign makes sense — apartments farther from the city centre are generally less expensive due to reduced convenience and longer commute times.
+
+**(c)**
+$$\hat{\beta}_1 \pm t_{0.025,\,18} \times \text{SE}(\hat{\beta}_1) = -0.12 \pm 2.101 \times 0.020 = -0.12 \pm 0.042$$
+$$95\%\ \text{CI for}\ \beta_1:\ (-0.162,\ -0.078)$$
+
+**(d)** $H_0: \beta_1 = 0$ vs $H_1: \beta_1 \neq 0$. The $t$-statistic is $-6.00$ with $p < 0.001 < 0.05$. We **reject** $H_0$ at $\alpha = 0.05$. There is strong evidence that distance from the city centre is a significant linear predictor of monthly rent.
+
+**(e)** $\hat{y} = 3.80 - 0.12(25) = 3.80 - 3.00 = 0.80$ (\$1000s), i.e., \$800/month.
+
+</div>
+</details>
+
+---
+
+<!-- Q45 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 44</div>
+
+A researcher lights an identical candle and records its height ($y$, cm) at five points in time after being lit ($x$, minutes):
+
+| Time lit ($x$, min) | 10 | 20 | 30 | 40 | 50 |
+|-----------------------|----|----|----|----|----|
+| Candle height ($y$, cm) | 25 | 20 | 17 | 12 | 11 |
+
+**(a)** Compute $\bar{x}$, $\bar{y}$, $S_{xx}$, and $S_{xy}$. Find $\hat{\beta}_1$ and $\hat{\beta}_0$, and write the fitted least-squares regression equation.
+
+**(b)** On graph paper (or a hand-drawn set of axes), plot the scatterplot of the five $(x,y)$ pairs. Then compute two points on the fitted line from part (a) — for example, at $x=10$ and $x=50$ — and sketch the fitted regression line through them on the same axes. Describe the direction and general form of the relationship you see.
+
+**(c)** Interpret $\hat{\beta}_1$ in context, including units. Then use the fitted equation to predict the candle's height after 35 minutes, and separately after 90 minutes. Which of these two predictions is more reliable? Explain, referring to interpolation and extrapolation.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $S_{xx} = \sum(x_i-\bar{x})^2$ and $S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y})$; then $\hat{\beta}_1 = S_{xy}/S_{xx}$ and $\hat{\beta}_0 = \bar{y}-\hat{\beta}_1\bar{x}$.
+- To sketch the line by hand, compute $\hat{y}$ at the smallest and largest observed $x$-values and draw a straight edge between the two resulting points.
+- A prediction is interpolation if $x^*$ lies inside the observed range of $x$ (10 to 50 minutes), and extrapolation if it lies outside.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\bar{x} = \dfrac{10+20+30+40+50}{5} = 30$, $\quad\bar{y} = \dfrac{25+20+17+12+11}{5} = \dfrac{85}{5} = 17$
+
+$$S_{xx} = \sum(x_i-\bar{x})^2 = (-20)^2+(-10)^2+0^2+10^2+20^2 = 400+100+0+100+400 = 1000$$
+$$S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y}) = (-20)(8)+(-10)(3)+(0)(0)+(10)(-5)+(20)(-6) = -160-30+0-50-120 = -360$$
+
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{-360}{1000} = -0.36, \qquad \hat{\beta}_0 = \bar{y}-\hat{\beta}_1\bar{x} = 17-(-0.36)(30) = 17+10.8 = 27.8$$
+
+Fitted equation: $\hat{y} = 27.8 - 0.36x$
+
+**(b)** Two convenient points on the fitted line: at $x=10$, $\hat{y}=27.8-0.36(10)=24.2$; at $x=50$, $\hat{y}=27.8-0.36(50)=9.8$. Plotting the five data points and drawing a straight line through $(10,\,24.2)$ and $(50,\,9.8)$ should produce a sketch similar to the reference plot below. The relationship is **negative and approximately linear**: as burning time increases, candle height decreases fairly steadily, with the points scattered closely but not exactly on the line.
+
+```r
+library(ggplot2)
+df45 <- data.frame(x = c(10,20,30,40,50), y = c(25,20,17,12,11))
+m45  <- lm(y ~ x, data = df45)
+ggplot(df45, aes(x, y)) +
+  geom_abline(intercept = coef(m45)[1], slope = coef(m45)[2],
+              color = "#F8766D", linewidth = 1.2) +
+  geom_point(size = 3.5, color = "#619CFF") +
+  scale_x_continuous(breaks = seq(0, 50, 10), limits = c(0, 55)) +
+  labs(x = "Time lit (minutes, x)", y = "Candle height (cm, y)") +
+  theme_minimal(base_size = 14)
+```
+
+**(c)** For each additional minute the candle burns, its predicted height **decreases** by 0.36 cm on average.
+
+At $x=35$: $\hat{y} = 27.8-0.36(35) = 27.8-12.6 = 15.2$ cm.
+At $x=90$: $\hat{y} = 27.8-0.36(90) = 27.8-32.4 = -4.6$ cm.
+
+The prediction at $x=35$ is more reliable: it is **interpolation**, since 35 minutes lies within the observed range $[10,50]$. The prediction at $x=90$ is **extrapolation** — no candle in the data was observed anywhere near 90 minutes after being lit, and the fitted line is only reliable within the range of data used to build it. This extrapolated prediction is also physically impossible (a negative height), which vividly illustrates why extrapolating far beyond the observed data should be avoided.
+
+</div>
+</details>
+
+---
+
+<!-- Q46 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 45</div>
+
+A used-car dealer records the age ($x$, years) and resale value ($y$, \$1000s) of 5 comparable sedans:
+
+| Age ($x$, years)     | 1  | 2  | 3  | 4  | 5  |
+|----------------------|----|----|----|----|----|
+| Resale value ($y$)   | 20 | 17 | 15 | 11 | 10 |
+
+(a) Compute $\bar{x}$, $\bar{y}$, $S_{xx}$, and $S_{xy}$. Find $\hat{\beta}_1$ and $\hat{\beta}_0$, and write the fitted regression equation.
+
+(b) Interpret $\hat{\beta}_1$ in the context of car age and resale value.
+
+(c) Predict the resale value of a car that is 7 years old. The data only include cars aged 1 to 5 years — is this prediction interpolation or extrapolation?
+
+(d) Given $S_{yy} = 69.2$, compute $R^2$ and use it to describe the strength and direction of the linear relationship between age and resale value.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $S_{xx} = \sum(x_i-\bar{x})^2$, $S_{xy} = \sum(x_i-\bar{x})(y_i-\bar{y})$.
+- A negative $\hat{\beta}_1$ means $y$ tends to decrease as $x$ increases.
+- $R^2 = 1 - \text{SSE}/S_{yy}$, where $\text{SSE} = S_{yy} - \hat{\beta}_1 S_{xy}$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\bar{x} = \dfrac{1+2+3+4+5}{5} = 3$, $\quad\bar{y} = \dfrac{20+17+15+11+10}{5} = \dfrac{73}{5} = 14.6$
+
+$$S_{xx} = (-2)^2+(-1)^2+0^2+1^2+2^2 = 10$$
+$$S_{xy} = (-2)(5.4)+(-1)(2.4)+(0)(0.4)+(1)(-3.6)+(2)(-4.6) = -10.8-2.4+0-3.6-9.2 = -26$$
+
+$$\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}} = \frac{-26}{10} = -2.6, \qquad \hat{\beta}_0 = \bar{y}-\hat{\beta}_1\bar{x} = 14.6-(-2.6)(3) = 14.6+7.8 = 22.4$$
+
+Fitted equation: $\hat{y} = 22.4 - 2.6x$
+
+**(b)** Each additional year of age is associated with an average **decrease** of \$2,600 in the resale value of a car of this type.
+
+**(c)** $\hat{y} = 22.4-2.6(7) = 22.4-18.2 = 4.2$ (\$1000s), i.e. \$4,200.
+
+Since $x=7$ lies **outside** the observed range $[1,5]$, this is **extrapolation** — the prediction assumes the linear decline continues at the same rate, which may not hold once a car is old enough to have negligible resale value.
+
+**(d)**
+$$\text{SSE} = S_{yy}-\hat{\beta}_1 S_{xy} = 69.2-(-2.6)(-26) = 69.2-67.6 = 1.6$$
+$$R^2 = 1-\frac{\text{SSE}}{S_{yy}} = 1-\frac{1.6}{69.2} \approx 0.977$$
+
+About 97.7% of the variability in resale value is explained by the linear relationship with age. This indicates a very strong, **negative** linear relationship: resale value declines consistently and predictably as a car gets older.
+
+</div>
+</details>
+
+---
+
+<!-- Q47 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 46</div>
+
+A chemical engineer studies the effect of catalyst amount ($x$, grams) on the percentage yield ($y$, \%) of a reaction, using 5 trial runs:
+
+| Catalyst ($x$, g) | 1  | 2  | 3  | 4  | 5  |
+|--------------------|----|----|----|----|----|
+| Yield ($y$, \%)    | 23 | 29 | 45 | 35 | 41 |
+
+(a) Compute $\bar{x}$, $\bar{y}$, $S_{xx}$, and $S_{xy}$. Find $\hat{\beta}_0$ and $\hat{\beta}_1$, and write the fitted regression equation.
+
+(b) Complete a table of fitted values $\hat{y}_i$ and residuals $e_i = y_i-\hat{y}_i$ for all five runs. Verify that $\sum e_i = 0$.
+
+(c) **Sketch the residual plot by hand:** put $x_i$ (catalyst amount) on the horizontal axis and $e_i$ (residual) on the vertical axis, and draw a horizontal reference line at $e=0$.
+
+(d) Based on the pattern in your residual plot, identify any unusual observation(s). Does it raise concerns about a specific data point, about the overall appropriateness of the linear model, or both?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Use $\hat{\beta}_1 = S_{xy}/S_{xx}$ and $\hat{\beta}_0 = \bar{y}-\hat{\beta}_1\bar{x}$ as usual.
+- $\hat{y}_i = \hat{\beta}_0+\hat{\beta}_1 x_i$; $e_i = y_i-\hat{y}_i$.
+- When sketching, look for any point whose residual is much larger in magnitude than the others, or far from the horizontal band the rest of the points form.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\bar{x} = 3$, $\quad\bar{y} = \dfrac{23+29+45+35+41}{5} = \dfrac{173}{5} = 34.6$
+
+$$S_{xx} = 10$$
+$$S_{xy} = (-2)(-11.6)+(-1)(-5.6)+(0)(10.4)+(1)(0.4)+(2)(6.4) = 23.2+5.6+0+0.4+12.8 = 42$$
+
+$$\hat{\beta}_1 = \frac{42}{10} = 4.2, \qquad \hat{\beta}_0 = 34.6-4.2(3) = 34.6-12.6 = 22.0$$
+
+Fitted equation: $\hat{y} = 22.0+4.2x$
+
+**(b)**
+
+| $x$ | $y$ | $\hat{y} = 22.0+4.2x$ | $e_i = y_i-\hat{y}_i$ |
+|:---:|:---:|:---------------------:|:----------------------:|
+| 1 | 23 | 26.2 | $-3.2$ |
+| 2 | 29 | 30.4 | $-1.4$ |
+| 3 | 45 | 34.6 | $+10.4$ |
+| 4 | 35 | 38.8 | $-3.8$ |
+| 5 | 41 | 43.0 | $-2.0$ |
+
+$\sum e_i = -3.2-1.4+10.4-3.8-2.0 = 0$ ✓
+
+**(c)** Plotting the five points $(x_i, e_i)$ from the table above, with a dashed horizontal line at $e=0$, gives the reference residual plot below:
+
+```r
+library(ggplot2)
+df47 <- data.frame(x = c(1,2,3,4,5), y = c(23,29,45,35,41))
+m47  <- lm(y ~ x, data = df47)
+df47$resid <- resid(m47)
+ggplot(df47, aes(x, resid)) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+  geom_point(size = 3.5, color = "#619CFF") +
+  scale_x_continuous(breaks = 1:5) +
+  labs(x = "Catalyst amount (x, g)", y = "Residual") +
+  theme_minimal(base_size = 14)
+```
+
+**(d)** The residual at $x=3$ (Trial 3, $e_3 = +10.4$) stands out sharply: the other four residuals are all small and negative, ranging from $-3.8$ to $-1.4$, forming a fairly tight band, while Trial 3 sits far above them. This is a clear **unusual observation**. It raises concerns primarily about that specific data point — the run should be checked for a measurement or recording error, or for an unusual experimental condition — rather than about the linear model in general, since the remaining four points show no obvious curvature or trend. Once the Trial 3 observation is investigated, the fit should be reassessed with and without it to see how much it is influencing $\hat{\beta}_0$ and $\hat{\beta}_1$.
+
+</div>
+</details>
+
+---
+
+<!-- Q48 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 47</div>
+
+A manufacturing analyst fits a simple linear regression of per-unit production cost ($y$, \$) on production batch size ($x$, units) using $n=50$ batches. Figure \@ref(fig:ch9q48resid) shows the residuals-vs-fitted-values plot from the fitted model.
+
+```r
+library(ggplot2)
+set.seed(48)
+n48 <- 50
+x48 <- seq(5, 100, length.out = n48)
+y48 <- 80 - 0.30 * x48 + rnorm(n48, 0, sd = 1.5 + 0.13 * x48)
+m48 <- lm(y48 ~ x48)
+df48 <- data.frame(Fitted = fitted(m48), Residuals = resid(m48))
+ggplot(df48, aes(Fitted, Residuals)) +
+  geom_hline(yintercept = 0, color = "black", linewidth = 0.7) +
+  geom_point(color = "#619CFF", size = 2.5) +
+  labs(x = "Fitted Values", y = "Residuals") +
+  theme_minimal(base_size = 14)
+```
+
+(a) Describe the pattern in the spread of the residuals as the fitted values increase.
+
+(b) Which model assumption is called into question by this pattern? Explain how the plot supports your answer.
+
+(c) Give a plausible real-world explanation for why the variability in per-unit production cost might depend on batch size in this way.
+
+(d) Does the linearity assumption also appear violated in this plot? Explain how you distinguish a linearity problem from a constant-variance problem when reading a residual plot.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Compare the vertical spread ("width of the band") of points at the left of the plot to the spread at the right.
+- Constant variance requires the width of the residual band to stay roughly the same across all fitted values.
+- Linearity requires the residuals to be centred on zero with no systematic upward/downward curve as fitted values change.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** The residuals are widely scattered at low fitted values (small batches) and become noticeably tighter around zero as the fitted values increase (larger batches) — the opposite of a "fan opening to the right"; here the funnel narrows as fitted values increase.
+
+**(b)** This calls into question the **constant variance (homoscedasticity)** assumption: $\text{Var}(\varepsilon_i) = \sigma^2$ for all $i$. Instead, the error variance appears to be larger for small batches and smaller for large batches, i.e., the variance is not constant across the range of fitted values.
+
+**(c)** For small batches, fixed setup and changeover costs are spread across only a few units, so the per-unit cost is highly sensitive to small differences in efficiency from run to run — producing high variability. For large batches, those fixed costs are averaged over many more units, and efficiencies of scale tend to stabilize the per-unit cost, producing low variability.
+
+**(d)** No, linearity does not appear to be violated here: aside from the change in spread, the residuals are centred around zero across the *entire* range of fitted values, with no obvious curve (no systematic rise-then-fall or fall-then-rise pattern). To distinguish the two issues: for **linearity**, look at whether the *centre* of the point cloud drifts away from the zero line and curves as you scan left to right; for **constant variance**, look at whether the *width* of the vertical band of points changes as you scan left to right, regardless of whether its centre stays at zero.
+
+</div>
+</details>
+
+---
+
+<!-- Q49 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 48</div>
+
+Figure \@ref(fig:ch9q49panels) shows four residuals-vs-fitted-values plots, Panels (A)–(D), each from a different simple linear regression fit to a different dataset.
+
+```r
+library(ggplot2)
+library(patchwork)
+set.seed(49)
+
+# Panel A: assumptions reasonably satisfied
+xA <- seq(1, 50, length.out = 40)
+dfA <- data.frame(Fitted = xA, Residuals = rnorm(40, 0, 3))
+
+# Panel B: non-linearity (systematic curved pattern)
+xB <- seq(1, 50, length.out = 40)
+dfB <- data.frame(Fitted = xB, Residuals = 0.02 * (xB - 25)^2 - 8 + rnorm(40, 0, 1.5))
+
+# Panel C: non-constant variance (fan/funnel pattern)
+xC <- seq(1, 50, length.out = 40)
+dfC <- data.frame(Fitted = xC, Residuals = rnorm(40, 0, sd = 0.15 * xC + 0.5))
+
+# Panel D: an outlier / unusual observation
+xD <- seq(1, 50, length.out = 40)
+rD <- rnorm(40, 0, 2.5)
+rD[20] <- 25
+dfD <- data.frame(Fitted = xD, Residuals = rD)
+
+mk <- function(df, tt) {
+  ggplot(df, aes(Fitted, Residuals)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "grey50") +
+    geom_point(color = "#619CFF", size = 2) +
+    labs(title = tt, x = "Fitted values", y = "Residuals") +
+    theme_minimal(base_size = 12)
+}
+
+(mk(dfA, "(A)") + mk(dfB, "(B)")) / (mk(dfC, "(C)") + mk(dfD, "(D)"))
+```
+
+(a) For each panel, state which ONE of the following best describes what it shows: (i) assumptions reasonably satisfied; (ii) non-linearity; (iii) non-constant variance; (iv) an outlier/unusual observation.
+
+(b) For each panel you classified as (ii), (iii), or (iv), briefly describe the specific visual feature that led you to that classification.
+
+(c) For which panel(s), if any, would you be comfortable proceeding with formal inference ($t$-tests, confidence intervals) based on the fitted simple linear regression model? Explain.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- (i) looks like a random, constant-width horizontal band centred on zero.
+- (ii) shows a smooth curve in the centre of the point cloud (not just noise).
+- (iii) shows a band that widens or narrows systematically from one side to the other.
+- (iv) looks like (i) except for one point that is clearly separated from the rest of the cloud.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** Panel (A) $\to$ (i); Panel (B) $\to$ (ii); Panel (C) $\to$ (iii); Panel (D) $\to$ (iv).
+
+**(b)**
+
+- **Panel (B):** the residuals trace a smooth, systematic curve — negative at the extremes of the fitted-value range and positive in the middle (or the reverse) — rather than scattering randomly around zero. This curvature indicates the true relationship between $x$ and $y$ is not linear.
+- **Panel (C):** the vertical spread of the residuals visibly widens (or narrows) as the fitted values increase, rather than staying roughly constant — a "fan" or "funnel" shape indicating the error variance is not constant.
+- **Panel (D):** nearly all of the residuals fall inside a narrow, randomly-scattered band around zero, but a single point lies far outside that band, clearly separated from the rest of the cloud — an unusual observation that warrants investigation.
+
+**(c)** Panel (A) only. Its residuals scatter randomly in a horizontal band of roughly constant width around zero, with no curvature and no extreme points, so the assumptions needed for valid inference (linearity, constant variance, absence of unusual/influential points) all appear reasonably satisfied. In Panels (B)–(D), at least one assumption is questionable, so $t$-tests, confidence intervals, and predictions from those fitted lines should be treated with caution until the underlying issue (curvature, non-constant variance, or the unusual point) is addressed.
+
+</div>
+</details>

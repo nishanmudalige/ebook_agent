@@ -1,0 +1,2408 @@
+<!-- ebook_agent retrieval copy; source: 04-Foundations_of_Inference.Rmd -->
+<!-- Treat this as course material but independently verify mathematical/statistical claims. -->
+
+# Foundations of Inference
+
+The aim of statistical inference is to produce estimators of the population parameters
+based on a smaller sample and to quantify the accuracy of these estimators in terms of a
+probability statement. In other words we are interested in the values of unknown parameters
+for a population thus we collect data from a sample and calculate statistics to estimate the
+parameters of interest. We then quantify our confidence that the statistic is representative
+of the parameter.
+
+Statistical inference is concerned primarily with understanding the
+quality of parameter estimates. For example, a classic inferential
+question is, "How sure are we that the estimated mean, $\bar{x}$, is
+near the true population mean, $\mu$?" While the equations and details
+change depending on the setting, the foundations for inference are the
+same throughout all of statistics. 
+
+## Some Important Statistical Distributions {#sec:inference}
+
+### Introduction to the Normal Distribution {#sec:IntroNormalDist}
+
+In probability theory and statistics, the normal distribution is one of the most
+important distribution used to model many populations and processes which occur in reality.
+
+::: {.definition name="Normal distribution" #NormalDist}
+Let $X$ be a random variable with mean $-\infty < \mu < +\infty$ and variance $\sigma^2 > 0$.
+We say that $X$ folowes a normal distribution if the probability density function of $X$ is:
+$$f(x) = \frac{1}{\sqrt{2 \pi \sigma^2}} \cdot e^{-\displaystyle\frac{(x - \mu)^2}{2\sigma^2}}, \text{ for $-\infty < x < \infty$.}$$
+:::
+
+::: {.remark}
+The normal distribution is also called Gaussian distribution since it was 
+discovered Johann Carl Friedrich Gauss in 1809. 
+Gauss is one of the most influential and important mathematicians in history.
+:::
+
+The normal distribution is symmetric about its mean $\mu$ and has a bell-shaped curve.
+It is completely characterized by two parameters which are the the mean $\mu$ and the standard deviation $\sigma$.
+Some examples are shown in Figure \@ref(fig:NormalExample).
+
+```r
+library(ggplot2)
+library(grid)
+
+# 1) Define your parameters
+mu1  <- -2; sd1  <- 0.5; col1 <- "#00BA38"; lab1 <- "N(-2, 0.5²)"
+mu2  <-  0; sd2  <- 1.0; col2 <- "#F8766D"; lab2 <- "N(0, 1²)"
+mu3  <-  3; sd3  <- 1.5; col3 <- "#619CFF"; lab3 <- "N(3, 1.5²)"
+
+# 2) Base plot with no default axis lines or grid
+p <- ggplot(data.frame(x = c(-6, 10)), aes(x = x)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid      = element_blank(),
+    axis.line       = element_blank(),
+    axis.ticks      = element_blank(),
+    axis.text       = element_blank(),
+    axis.title      = element_text(face = "bold")
+  ) +
+  labs(x = "x", y = "Density")
+
+# 3) Add arrow‐tipped axes via geom_segment
+p <- p +
+  # x-axis from x=-6→10
+  geom_segment(
+    aes(x = -6, y = 0, xend = 10, yend = 0),
+    arrow = arrow(length = unit(0.2, "cm")), inherit.aes = FALSE
+  ) +
+  # y-axis from y=0→max density (~0.8)
+  geom_segment(
+    aes(x = -6, y = 0, xend = -6, yend = 0.85),
+    arrow = arrow(length = unit(0.2, "cm")), inherit.aes = FALSE
+  )
+
+# 4) Shade area and draw first curve + label
+p <- p +
+  stat_function(
+    fun       = dnorm,
+    args      = list(mean = mu1, sd = sd1),
+    geom      = "area",
+    fill      = col1,
+    alpha     = 0.61,
+    n         = 801,
+    inherit.aes = TRUE
+  ) +
+  stat_function(
+    fun       = dnorm,
+    args      = list(mean = mu1, sd = sd1),
+    colour    = col1,
+    size      = 1.2,
+    n         = 801,
+    inherit.aes = TRUE
+  ) +
+  annotate(
+    "text",
+    x        = mu1,
+    y        = dnorm(mu1, mu1, sd1) * 1.05,
+    label    = lab1,
+    colour   = col1,
+    fontface = "bold",
+    hjust    = 0.5
+  )
+
+# 5) Shade area and draw second curve + label
+p <- p +
+  stat_function(
+    fun       = dnorm,
+    args      = list(mean = mu2, sd = sd2),
+    geom      = "area",
+    fill      = col2,
+    alpha     = 0.61,
+    n         = 801
+  ) +
+  stat_function(
+    fun       = dnorm,
+    args      = list(mean = mu2, sd = sd2),
+    colour    = col2,
+    size      = 1.2,
+    n         = 801
+  ) +
+  annotate(
+    "text",
+    x        = mu2,
+    y        = dnorm(mu2, mu2, sd2) * 1.05,
+    label    = lab2,
+    colour   = col2,
+    fontface = "bold",
+    hjust    = 0.50,
+    vjust    = -0.15
+  )
+
+# 6) Shade area and draw third curve + label
+p <- p +
+  stat_function(
+    fun       = dnorm,
+    args      = list(mean = mu3, sd = sd3),
+    geom      = "area",
+    fill      = col3,
+    alpha     = 0.61,
+    n         = 801
+  ) +
+  stat_function(
+    fun       = dnorm,
+    args      = list(mean = mu3, sd = sd3),
+    colour    = col3,
+    size      = 1.2,
+    n         = 801
+  ) +
+  annotate(
+    "text",
+    x        = mu3,
+    y        = dnorm(mu3, mu3, sd3) * 1.05,
+    label    = lab3,
+    colour   = col3,
+    fontface = "bold",
+    hjust    = 0.5,
+    vjust    = -0.25
+  )
+
+# 7) Render the final plot
+p
+```
+
+A special case of normal distribution is standard normal distribution which is explained in Definition \@ref(def:StandardNormalDist).
+
+::: {.definition name="Standard normal distribution" #StandardNormalDist}
+Let $Z \sim N( \mu = 0, \sigma^2 = 1)$, then $Z$ has
+probability density function as:
+$$f(y) = \frac{1}{\sqrt{2\pi}} \cdot e^{-\displaystyle\frac{z^2}{2}}.$$
+which is called the standard normal distribution.
+:::
+
+::: {.remark}
+Standard normal random variables are often denoted by $Z$.
+:::
+
+
+A useful property of the normal distribution is that it is symmetric about its mean $\mu$.
+
+::: {.remark}
+The Empirical Rule informs us that for any symmetric (bell-shaped) curve, let $\mu$ be its mean and
+$\sigma$ be its standard deviation, the following probability set
+function is true:
+
+- $1.$ $P(\mu - \sigma < X < \mu + \sigma) = 68.27\%;$
+
+- $2.$ $P(\mu - 2\sigma < X < \mu + 2\sigma) = 95.45\%;$
+
+- $3.$ $P(\mu - 3\sigma < X < \mu + 3\sigma) = 99.73\%.$
+:::
+
+
+
+
+<!--
+```r
+library(plotly)
+library(plotly)
+
+# Standard normal distribution
+x <- seq(-4, 4, length.out = 1000)
+y <- dnorm(x)
+
+# Shaded segments under curve
+segments <- list(
+  list(start = -4, end = -3, color = "#F066EA"),
+  list(start = -3, end = -2, color = "#7997FF"),
+  list(start = -2, end = -1, color = "#00B0F6"),
+  list(start = -1, end = 1,  color = "#00C0B8"),
+  list(start = 1,  end = 2,  color = "#00B0F6"),
+  list(start = 2,  end = 3,  color = "#7997FF"),
+  list(start = 3,  end = 4,  color = "#F066EA")
+)
+
+# Base plot
+p <- plot_ly(showlegend = FALSE) %>%
+  add_trace(
+    x = x,
+    y = y,
+    type = "scatter",
+    mode = "lines",
+    line = list(color = "black")
+  )
+
+# Add filled segments
+for (s in segments) {
+  xs <- seq(s$start, s$end, length.out = 200)
+  ys <- dnorm(xs)
+  p <- add_trace(
+    p,
+    x = c(xs, rev(xs)),
+    y = c(ys, rep(0, length(ys))),
+    type = "scatter",
+    mode = "none",
+    fill = "toself",
+    fillcolor = s$color,
+    hoverinfo = "skip"
+  )
+}
+
+# Vertical dashed lines ending at the curve
+segment_bounds <- c(-3, -2, -1, 0, 1, 2, 3)
+dashed_lines <- lapply(segment_bounds, function(xpos) {
+  list(
+    type = "line",
+    x0 = xpos, x1 = xpos,
+    y0 = 0, y1 = dnorm(xpos),
+    xref = "x", yref = "y",
+    line = list(color = "black", dash = "dash", width = 1)
+  )
+})
+
+# Annotations
+annotations <- list(
+  list(x = -2.35, y = 0.01, text = "0.15%", font = list(size = 12, color = "black"), showarrow = FALSE),
+  list(x = -1.5, y = 0.05, text = "13.5%", font = list(size = 12, color = "black"), showarrow = FALSE),
+  list(x =  0,   y = 0.1, text = "<b>68%</b>", font = list(size = 16, color = "black"), showarrow = FALSE),
+  list(x =  1.5, y = 0.05, text = "13.5%", font = list(size = 12, color = "black"), showarrow = FALSE),
+  list(x =  2.35, y = 0.01, text = "0.15%", font = list(size = 12, color = "black"), showarrow = FALSE),
+  list(x = -3, y = -0.01, text = "-3σ", font = list(size = 12), showarrow = FALSE),
+  list(x = -2, y = -0.01, text = "-2σ", font = list(size = 12), showarrow = FALSE),
+  list(x = -1, y = -0.01, text = "-1σ", font = list(size = 12), showarrow = FALSE),
+  list(x =  0, y = -0.01, text = "0", font = list(size = 12), showarrow = FALSE),
+  list(x =  1, y = -0.01, text = "1σ", font = list(size = 12), showarrow = FALSE),
+  list(x =  2, y = -0.01, text = "2σ", font = list(size = 12), showarrow = FALSE),
+  list(x =  3, y = -0.01, text = "3σ", font = list(size = 12), showarrow = FALSE),
+  list(x = 0, y = max(y) + 0.01, text = "f(x)", font = list(size = 14), showarrow = FALSE)
+)
+
+# Final layout with lowered title
+p <- layout(
+  p,
+  title = list(
+    text = "Empirical Rule: 68%–95%–99.7%",
+    y = 0.90
+  ),
+  xaxis = list(
+    title = NULL,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    zeroline = FALSE
+  ),
+  yaxis = list(
+    title = NULL,
+    showticklabels = FALSE,
+    showgrid = FALSE,
+    zeroline = FALSE,
+    range = c(-0.02, max(y) + 0.10)
+  ),
+  shapes = dashed_lines,
+  annotations = annotations
+)
+
+# Interactivity options
+config(p, displayModeBar = TRUE)
+```
+-->
+
+
+The interactive application below illustrates the empirical rule.
+
+<h3 style="text-align: center; color: #FF2C21;">Fix appearance of shiny app</h3>
+
+<center>
+```r
+knitr::include_app("https://nishan-mudalige.shinyapps.io/Empirical_Rule_Shiny_App/", height = "750")
+```
+</center>
+
+
+
+
+::: {.remark}
+A consequence of the Empirical Rule from \@ref(sec:IntroNormalDist) is that for a sample drawn from a population that is 
+approximately normal, we can roughly estimate the standard deviation using the _crude_ approximate :
+
+$$\hat{\sigma} \approx \frac{\text{Sample Range}}{4}.$$
+:::
+
+
+
+### Introduction to the Chi-Square distribution
+
+Before we introduce the chi-Square square distribution, we recall the gamma distribution.
+
+::: {.definition name="Gamma distribution" #GammaFunction}
+A random variable \(X\) is said to follow a Gamma distribution with shape parameter \(\alpha > 0\) and scale parameter \(\beta > 0\) (denoted \(X \sim \mathrm{Gamma}(\alpha,\beta)\)) if its probability density function is
+\[
+f_{X}(x; \alpha, \beta)
+\;=\;
+\begin{cases}
+\dfrac{1}{\Gamma(\alpha)\,\beta^{\alpha}}\,x^{\alpha - 1}\,e^{-x/\beta}, 
+& x > 0, \\[1em]
+0, 
+& \text{otherwise},
+\end{cases}
+\]
+where 
+\(\Gamma(\alpha) = \displaystyle\int_{0}^{\infty} t^{\alpha - 1} e^{-t}\,dt\)
+is the Gamma function.
+:::
+
+
+The Chi-square random variable follows a Chi-square distribution with $k$ degrees of freedom if it is defined as the sum of the squares of $k$ independent standard normal random variables.
+
+::: {.definition name="Chi-square random variable" #ChiSquareRV}
+A chi-square random variable with \(k\) degrees of freedom is defined as the sum of the squares of \(k\) independent standard normal random variables.  Formally, if
+\[
+Z_{1}, Z_{2}, \dots, Z_{k} \;\overset{\mathrm{iid}}{\sim}\; N(0,1),
+\]
+then
+\[
+X \;=\;\sum_{i=1}^{k} Z_{i}^{2}
+\]
+follows a chi-square distribution with \(k\) degrees of freedom, denoted $X \sim \chi^{2}_{k}$ and has the probability density function 
+\[
+f_{X}(x; k)
+\;=\;
+\begin{cases}
+\dfrac{1}{2^{\,k/2}\,\Gamma\!\bigl(\tfrac{k}{2}\bigr)}\,x^{\,\tfrac{k}{2}-1}\,e^{-x/2}, 
+& x > 0, \\[1em]
+0, 
+& \text{otherwise}.
+\end{cases}
+\]
+Where \(\Gamma(\cdot)\) is the Gamma function in Definition \@ref(def:GammaFunction).
+:::
+
+The definition of a chi-square random variable can be proven using moment generating functions.
+
+::: {.remark}
+The Chi-square distribution is also a special case of the gamma distribution,
+however we will not be covering the gamma distribution in this course.
+:::
+
+
+The shape of the chi-square distribution is determined by its degrees of freedom.
+Some examples of chi-square distributions are shown in Figure \@ref(fig:ChiSqExample).
+
+```r
+# 1) Define your parameters for chi-square dfs
+df1   <- 2; df2   <- 5; df3   <- 10
+col1  <- "#00BA38"; lab1 <- expression(chi[2]^2)
+col2  <- "#F8766D"; lab2 <- expression(chi[5]^2)
+col3  <- "#619CFF"; lab3 <- expression(chi[10]^2)
+
+# 2) Base plot with no default grid or axes
+p <- ggplot(data.frame(x = c(0, 30)), aes(x = x)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid   = element_blank(),
+    axis.line    = element_blank(),
+    axis.ticks   = element_blank(),
+    axis.text    = element_blank(),
+    axis.title   = element_text(face = "bold")
+  ) +
+  labs(x = expression(x), y = "Density") +
+  # arrow-tipped axes
+  geom_segment(aes(x = 0, y = 0, xend = 30, yend = 0),
+               arrow = arrow(length = unit(0.2, "cm")),
+               inherit.aes = FALSE) +
+  geom_segment(aes(x = 0, y = 0, xend = 0, yend = 0.55),
+               arrow = arrow(length = unit(0.2, "cm")),
+               inherit.aes = FALSE)
+
+# 3) Shade & draw χ²(df=2)
+p <- p +
+  stat_function(fun = dchisq, args = list(df = df1),
+                geom = "area", fill = col1, alpha = 0.61, n = 801) +
+  stat_function(fun = dchisq, args = list(df = df1),
+                colour = col1, size = 1.2, n = 801) +
+  annotate("text",
+           x       = df1,
+           y       = dchisq(df1, df1) * 1.05,
+           label   = lab1,
+           parse   = TRUE,
+           colour  = col1,
+           fontface= "bold",
+           vjust   = -0.75,
+           hjust   = -0.5)
+
+# 4) Shade & draw χ²(df=5)
+p <- p +
+  stat_function(fun = dchisq, args = list(df = df2),
+                geom = "area", fill = col2, alpha = 0.61, n = 801) +
+  stat_function(fun = dchisq, args = list(df = df2),
+                colour = col2, size = 1.2, n = 801) +
+  annotate("text",
+           x       = df2,
+           y       = dchisq(df2, df2) * 1.05,
+           label   = lab2,
+           parse   = TRUE,
+           colour  = col2,
+           fontface= "bold",
+           vjust   = -0.75,
+           hjust   = 0.5)
+
+# 5) Shade & draw χ²(df=10)
+p <- p +
+  stat_function(fun = dchisq, args = list(df = df3),
+                geom = "area", fill = col3, alpha = 0.61, n = 801) +
+  stat_function(fun = dchisq, args = list(df = df3),
+                colour = col3, size = 1.2, n = 801) +
+  annotate("text",
+           x       = df3,
+           y       = dchisq(df3, df3) * 1.05,
+           label   = lab3,
+           parse   = TRUE,
+           colour  = col3,
+           fontface= "bold",
+           vjust   = -0.5,
+           hjust   = 0.5)
+
+# 6) Render the plot
+p
+```
+
+### Introduction to the t-Distribution
+
+::: {.definition name="Student’s \(t\) Distribution" #TDist}
+A **Student’s \(t\) random variable** with \(\nu\) degrees of freedom is defined as the ratio of a standard normal variate and the square root of a scaled chi-square variate.  Formally, if
+\[
+Z \;\overset{\mathrm{iid}}{\sim}\; N(0,1)
+\quad\text{and}\quad
+U \;\overset{\mathrm{iid}}{\sim}\; \chi^{2}_{\nu}
+\]
+are independent, then
+\[
+T \;=\;\frac{Z}{\sqrt{\,U / \nu\,}}
+\]
+follows a Student’s \(t\) distribution with \(\nu\) degrees of freedom, denoted
+\[
+T \sim t_{\nu},
+\]
+and has the probability density function
+\[
+f_{T}(t; \nu)
+\;=\;
+\frac{\Gamma\!\bigl(\tfrac{\nu+1}{2}\bigr)}{\sqrt{\pi\,\nu}\,\Gamma\!\bigl(\tfrac{\nu}{2}\bigr)}
+\Bigl(1 + \tfrac{t^{2}}{\nu}\Bigr)^{-\tfrac{\nu+1}{2}},
+\quad
+-\infty < t < \infty.
+\]
+Here \(\Gamma(\cdot)\) is the Gamma function as in Definition \@ref(def:GammaFunction).
+:::
+
+The t-distribution resembles the normal distribution but with heavier tails.
+
+
+```r
+library(ggplot2)
+library(dplyr)
+
+# Generate x values and compute densities
+# Generate x values
+x_vals <- seq(-4, 4, length.out = 300)
+
+# Create data frame for all distributions
+df <- tibble(
+  x = rep(x_vals, 3),  # Repeat x_vals for each distribution
+  y = c(dnorm(x_vals), dt(x_vals, df = 2), dt(x_vals, df = 9)),  # All y values
+  dist = factor(rep(c("Standard Normal", "t(2)", "t(9)"), each = length(x_vals)),
+                levels = c("Standard Normal", "t(2)", "t(9)"))
+)
+
+
+
+# Create the plot
+ggplot(df, aes(x = x, y = y, color = dist, linetype = dist)) +
+  geom_line(size = 1.2) +
+  scale_color_manual(values = c("#F8766D", "#00BA38", "#619CFF")) +
+
+  scale_linetype_manual(values = c("solid", "dashed", "dashed")) +
+  labs(
+    x = "t",
+    y = "Density"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.title = element_blank(),
+    panel.grid = element_blank()
+  )
+```
+
+
+<!--
+```r
+library(ggplot2)
+library(grid)   # for unit()
+
+## 1) Degrees of freedom, colours, labels ------------------------------------
+df1  <-  2;  col1 <- "#00BA38"; lab1 <- expression(t[2])
+df2  <-  5;  col2 <- "#F8766D"; lab2 <- expression(t[5])
+df3  <- 10;  col3 <- "#619CFF"; lab3 <- expression(t[10])
+
+## 2) Base plot (no default grid or axes) ------------------------------------
+p <- ggplot(data.frame(x = c(-6,  6)), aes(x = x)) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid   = element_blank(),
+    axis.line    = element_blank(),
+    axis.ticks   = element_blank(),
+    axis.text    = element_blank(),
+    axis.title   = element_text(face = "bold")
+  ) +
+  labs(x = expression(x), y = "Density") +
+  # arrow-tipped axes
+  geom_segment(aes(x = -6, y = 0, xend =  6, yend = 0),
+               arrow = arrow(length = unit(0.2, "cm")),
+               inherit.aes = FALSE) +
+  geom_segment(aes(x =  0, y = 0, xend =  0, yend = 0.40),
+               arrow = arrow(length = unit(0.2, "cm")),
+               inherit.aes = FALSE)
+
+## 3) Shade & draw t(df = 2) --------------------------------------------------
+p <- p +
+  stat_function(fun = dt, args = list(df = df1),
+                geom = "area", fill = col1, alpha = 0.61, n = 801) +
+  stat_function(fun = dt, args = list(df = df1),
+                colour = col1, size = 1.2, n = 801) +
+  annotate("text",
+           x       = 0,
+           y       = dt(0, df1) * 1.05,
+           label   = lab1,      # t[2]
+           parse   = TRUE,
+           colour  = col1,
+           fontface = "bold",
+           hjust   = 0.5) +
+  annotate("text",
+           x       = 2.5,       # a little to the right of the curve
+           y       = dt(2.5, df1),
+           label   = "df = 2",
+           colour  = col1,
+           fontface = "bold",
+           hjust   = 0)         # left-aligned for readability
+
+## 4) Shade & draw t(df = 5) --------------------------------------------------
+p <- p +
+  stat_function(fun = dt, args = list(df = df2),
+                geom = "area", fill = col2, alpha = 0.34, n = 801) +
+  stat_function(fun = dt, args = list(df = df2),
+                colour = col2, size = 1.2, n = 801) +
+  annotate("text",
+           x       = 0,
+           y       = dt(0, df2) * 1.05,
+           label   = lab2,      # t[5]
+           parse   = TRUE,
+           colour  = col2,
+           fontface = "bold",
+           hjust   = 0.5,
+           vjust   = -0.35) +
+  annotate("text",
+           x       = 3,
+           y       = dt(3, df2),
+           label   = "df = 5",
+           colour  = col2,
+           fontface = "bold",
+           hjust   = 0)
+
+## 5) Shade & draw t(df = 10) -------------------------------------------------
+p <- p +
+  stat_function(fun = dt, args = list(df = df3),
+                geom = "area", fill = col3, alpha = 0.25, n = 801) +
+  stat_function(fun = dt, args = list(df = df3),
+                colour = col3, size = 1.2, n = 801) +
+  annotate("text",
+           x       = 0,
+           y       = dt(0, df3) * 1.05,
+           label   = lab3,      # t[10]
+           parse   = TRUE,
+           colour  = col3,
+           fontface = "bold",
+           hjust   = 0.5,
+           vjust   = -0.70) +
+  annotate("text",
+           x       = 3.5,
+           y       = dt(3.5, df3),
+           label   = "df = 10",
+           colour  = col3,
+           fontface = "bold",
+           hjust   = 0)
+
+## 6) Render the combined plot -----------------------------------------------
+print(p)
+```
+-->
+
+
+### Introduction to the F-Distribution
+
+::: {.definition name="Beta function" #BetaFunction}
+The **Beta function**, also called the Euler integral of the first kind, is defined for complex numbers \(\;z_{1}, z_{2}\) with \(\Re(z_{1}), \Re(z_{2})>0\) by the integral
+$$
+B(z_{1}, z_{2})
+=
+\int_{0}^{1} t^{\,z_{1}-1}\,(1 - t)^{\,z_{2}-1}\,\mathrm{d}t.
+$$
+
+<!-- It is symmetric in its arguments, i.e. -->
+<!-- $$ -->
+<!-- B(z_{1}, z_{2}) = B(z_{2}, z_{1}), -->
+<!-- $$ -->
+<!-- and satisfies the relationship with the Gamma function: -->
+<!-- $$ -->
+<!-- B(z_{1}, z_{2}) -->
+<!-- = -->
+<!-- \frac{\Gamma(z_{1})\,\Gamma(z_{2})}{\Gamma(z_{1} + z_{2})}. -->
+<!-- $$ -->
+:::
+
+
+::: {.definition name="F random variable" #dist}
+An \(F\) random variable with \(\nu_{1}\) and \(\nu_{2}\) degrees of freedom is defined as the ratio of two independent chi-square variates, each divided by its degrees of freedom.  Formally, if  
+$$
+U \;\overset{\mathrm{iid}}{\sim}\;\chi^{2}_{\nu_{1}}
+\quad\text{and}\quad
+V \;\overset{\mathrm{iid}}{\sim}\;\chi^{2}_{\nu_{2}}
+$$
+are independent, then
+$$
+F \;=\;\frac{\,U / \nu_{1}\,}{\,V / \nu_{2}\,}
+$$
+follows an \(F\) distribution with \(\nu_{1}\) and \(\nu_{2}\) degrees of freedom, denoted
+$$
+F \sim F_{\nu_{1},\nu_{2}},
+$$
+and has probability density function
+$$
+f_{F}(x; \nu_{1}, \nu_{2})
+=
+\begin{cases}
+\displaystyle
+\frac{\bigl(\tfrac{\nu_{1}}{\nu_{2}}\bigr)^{\!\nu_{1}/2}
+      \,x^{\,\tfrac{\nu_{1}}{2}-1}}
+     {B\!\bigl(\tfrac{\nu_{1}}{2},\,\tfrac{\nu_{2}}{2}\bigr)}
+\,
+\Bigl(1 + \tfrac{\nu_{1}}{\nu_{2}}\,x\Bigr)^{-\tfrac{\nu_{1}+\nu_{2}}{2}},
+& x > 0 \\[1em]
+0,
+& \text{otherwise}.
+\end{cases}
+$$
+where $B(\cdot,\cdot)$ is the Beta function (see Definition \@ref(def:BetaFunction)).
+:::
+
+
+```r
+library(ggplot2)
+library(grid)   # for arrow()
+
+# 1) Parameters for the three F distributions
+nu1a <-  2; nu2a <-  5; colA <- "#00BA38"; labA <- expression(bold(F[2][", "][5]))
+nu1b <-  5; nu2b <- 10; colB <- "#F8766D"; labB <- expression(bold(F[5][", "][10]))
+nu1c <- 10; nu2c <- 30; colC <- "#619CFF"; labC <- expression(bold(F[10][", "][30]))
+
+# 2) Common x‐axis values
+x_vals <- seq(0, 5, length.out = 1000)
+
+# 3) Compute densities
+f_dens_a <- df(x_vals, df1 = nu1a, df2 = nu2a)
+f_dens_b <- df(x_vals, df1 = nu1b, df2 = nu2b)
+f_dens_c <- df(x_vals, df1 = nu1c, df2 = nu2c)
+
+# 4) Single data frame with grouping
+f_data <- data.frame(
+  x       = rep(x_vals, 3),
+  density = c(f_dens_a, f_dens_b, f_dens_c),
+  group   = factor(rep(c("2,5", "5,10", "10,20"), each = length(x_vals)))
+)
+
+# 5) Base ggplot
+f_plot <- ggplot(f_data, aes(x = x, y = density, group = group)) +
+  
+  # F(2,5)
+  geom_area(data = subset(f_data, group == "2,5"),
+            fill = colA, alpha = 0.61) +
+  geom_line(data = subset(f_data, group == "2,5"),
+            colour = colA, size = 1.2) +
+  annotate("text",
+           x      = nu1a/(nu2a-2),
+           y      = df(nu1a/(nu2a-2), df1 = nu1a, df2 = nu2a)*1.05,
+           label  = labA,
+           parse  = TRUE,
+           colour = colA,
+           vjust  = -10, 
+           hjust  = 2.0) +
+  
+  # F(5,10)
+  geom_area(data = subset(f_data, group == "5,10"),
+            fill = colB, alpha = 0.61) +
+  geom_line(data = subset(f_data, group == "5,10"),
+            colour = colB, size = 1.2) +
+  annotate("text",
+           x      = nu1b/(nu2b-2),
+           y      = df(nu1b/(nu2b-2), df1 = nu1b, df2 = nu2b)*1.05,
+           label  = labB,
+           parse  = TRUE,
+           colour = colB,
+           vjust  = -0.5,
+           hjust  = 1.0) +
+  
+  # F(10,20)
+  geom_area(data = subset(f_data, group == "10,20"),
+            fill = colC, alpha = 0.61) +
+  geom_line(data = subset(f_data, group == "10,20"),
+            colour = colC, size = 1.2) +
+  annotate("text",
+           x      = nu1c/(nu2c-2),
+           y      = df(nu1c/(nu2c-2), df1 = nu1c, df2 = nu2c)*1.05,
+           label  = labC,
+           parse  = TRUE,
+           colour = colC,
+           hjust  = -3.75) +
+  
+  # Arrow‐tipped axes
+  geom_segment(aes(x = 0, y = 0, xend = 5, yend = 0),
+               arrow = arrow(length = unit(0.2, "cm")),
+               inherit.aes = FALSE) +
+  geom_segment(aes(x = 0, y = 0, xend = 0, yend = max(f_dens_a, f_dens_b, f_dens_c)*1.1),
+               arrow = arrow(length = unit(0.2, "cm")),
+               inherit.aes = FALSE) +
+  
+  # Axis labels
+  labs(x = "x", y = "Density") +
+  
+  # Clean theme: only axes, no grid/box/ticks/text
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid     = element_blank(),
+    panel.border   = element_blank(),
+    axis.ticks     = element_blank(),
+    axis.text      = element_blank(),
+    axis.title.x   = element_text(face = "plain"),
+    axis.title.y   = element_text(face = "bold"),
+    axis.line      = element_blank()
+  )
+
+# 6) Render
+print(f_plot)
+```
+
+
+
+<!-- Both student's t-distribution and F-distribution are highly used in -->
+<!-- inferential statistics, until confidence interval, testing hypothesis -->
+<!-- and ANOVA analysis, these two distributions will come to play a lot. At -->
+<!-- this point, just guarantee that you know how to obtain those -->
+<!-- distribution from random given information is sufficient. -->
+
+
+### Distribution Calculator
+
+```{=html}
+<iframe 
+  src="Apps/distribution_calculator.html"
+  width="100%" 
+  height="750px"
+  style="border: 1px solid #ddd; border-radius: 8px;">
+</iframe>
+```
+
+<!--
+### Arithmetics of RV's
+
+**To be completed**
+-->
+
+## Sampling Distributions
+
+Although this may be a new concept, a statistic can follow a distribution. The distribution of a statistic is called its sampling distribution.
+
+::: {.definition name="Sampling distribution" #SamplingDist}
+The sampling distribution of a statistic is the probability distribution of that statistic computed from all possible random samples of a given size drawn from the same population.
+:::
+
+In other words, Definition \@ref(def:SamplingDist) in informing us that if we repeatedly draw samples of size \(n\) and compute the statistic (e.g.\ the sample mean \(\bar X\)), then the values of \(\bar X\) across those samples form a distribution, which is its sampling distribution.
+The sampling distribution is important because it allows us to understand the variability of a statistic from sample to sample, and it forms the basis for inferential statistics, such as confidence intervals and hypothesis tests.
+
+
+
+
+## The Central Limit Theorem
+
+The central limit theorem (CLT) explains why the distribution of a properly
+standardized sample mean becomes approximately normal as the sample size
+grows—even when the underlying population is not normal.  
+
+Suppose \(X_1,X_2,\dots,X_n\) are independent and identically distributed
+(i.i.d.) with finite mean \(\mu\) and variance \(\sigma^{2}\). Define the sample mean \(\bar X_n = \tfrac{1}{n}\sum_{i=1}^{n} X_i\). The Centrel Limit Theorem tells us that the random fluctuation of \(\bar X_n\) around the
+population mean \(\mu\) (after appropriate scaling) behaves more and more like
+a standard normal variable as \(n\) increases.
+
+::: {.theorem name="Central Limit Theorem" #CLT}
+Let \(X_{1},X_{2},\dots,X_{n}\) be i.i.d.\ random variables with  
+\(E[X_i]=\mu\) and \(\operatorname{Var}(X_i)=\sigma^{2}<\infty\).
+Then, as \(n\to\infty\),
+
+$$
+\frac{\sqrt{n}\,(\bar X_{n}-\mu)}{\sigma}
+\;\overset{d}{\longrightarrow}\;
+N(0,1).
+$$
+
+<!-- i.e.\ for every real \(z\), -->
+
+<!-- $$ -->
+<!-- \lim_{n\to\infty} -->
+<!-- P\!\Bigl(\frac{\sqrt{n}(\bar X_{n}-\mu)}{\sigma}\le z\Bigr) -->
+<!-- = -->
+<!-- \Phi(z), -->
+<!-- $$ -->
+<!-- where \(\Phi(\cdot)\) is the standard normal cumulative distribution function. -->
+:::
+
+A practical consequence is that for large \(n\) we can use normal‐based
+confidence intervals and hypothesis tests for \(\mu\) even when the parent
+distribution of the data is unknown or skewed; the accuracy of this normal
+approximation improves as the sample size grows.
+
+The interactive app below can be used to illustrate the central limit theorem by sampling from various distributions.
+
+```{=html}
+<iframe 
+  src="Apps/clt_simulation.html"
+  width="100%" 
+  height="1575px"
+  style="border: 1px solid #ddd; border-radius: 8px;">
+</iframe>
+```
+
+
+
+## Law of Large Numbers
+
+The law of large numbers (LLN) says that sample averages settle down near their common expected value as the sample size grows. This idea is an foundational component statistical inference with for large samples.
+
+### Convergence in Probability
+
+::: {.definition name="Convergence in Probability"}
+The sequence of random variables $X_1, X_2, \ldots$ is
+said to converge in probability to the constant $c$, if for every
+$\varepsilon > 0$,
+$$\lim_{n \to \infty} P\left( |X_n - c| \leq \varepsilon \right) = 1$$ or
+equivalently,
+$$\lim_{n \to \infty} P\left( |X_n - c| > \varepsilon \right) = 0$$
+:::
+
+::: {.remark}
+If a sequence of random variables $X_n = \{X_1, X_2, \ldots \}$ converges in probability to $c$, we denote this as $X_n \overset{p}{\longrightarrow} c$.
+:::
+
+This concept plays a key role in the Law of Large Numbers, where the
+sample mean of independent and identically distributed random variables
+converges in probability to the population mean as the sample size
+grows.
+
+Recall Chebyshev's Inequality, which provides a bound on the probability that a random variable deviates from its mean.
+
+::: {.theorem name="Chebyshev's Inequality" #Chebyshev}
+Let $X$ be a random variable with finite mean $\mu$ and variance
+$\sigma^2$. Then, for any $k > 0$,
+$$P\left( |X - \mu| \geq k \right) \leq \frac{\sigma^2}{k^2}$$
+
+*Using complements:*
+$$P\left( |X - \mu| < k \right) \geq 1 - \frac{\sigma^2}{k^2}$$
+:::
+
+### Weak Law of Large Numbers (WLLN)
+
+::: definition
+Let $X_1, X_2, \ldots$ be a sequence of independent and identically
+distributed random variables, each having finite mean $E(X_i) = \mu$ and
+variance $\mathrm{Var}(X_i) = \sigma^2$. Then, for any $\varepsilon > 0$,
+$$P\left( \left| \frac{X_1 + X_2 + \cdots + X_n}{n} - \mu \right| \geq \varepsilon \right) \longrightarrow 0 \quad \text{as } n \longrightarrow \infty.$$
+
+This is denoted as $\bar{X}_n \overset{p}{\longrightarrow} \mu$
+:::
+
+#### Proof of the Weak Law of Large Numbers (WLLN) {#proof-of-the-weak-law-of-large-numbers-wlln .unnumbered}
+
+<!-- First recall Chebchev's inequality -->
+
+<!-- ::: {.theorem} -->
+<!-- Chebyshev's Inequality states that for any random variable $X$ with mean $\mu$ and variance $\sigma^2$, -->
+<!-- $$P\left( |X - \mu| > k \right) \leq \frac{\sigma^2}{k^2} \quad \text{for } k > 0.$$ -->
+<!-- ::: -->
+
+We aim to show that for every $\varepsilon > 0$,
+$$\lim_{n \to \infty} P\left( \left| \bar{X}_n - \mu \right| > \varepsilon \right) = 0$$
+where $\bar{X}_n$ is the sample mean of $n$ independent and identically
+distributed (i.i.d.) random variables with
+$$E(X_i) = \mu, \quad \text{and} \quad \mathrm{Var}(X_i) = \sigma^2.$$
+
+Let $$\bar{X}_n = \frac{1}{n} \sum_{i=1}^{n} X_i.$$
+
+Since $X_1, X_2, \ldots, X_n$ are i.i.d.\ with mean $\mu$ and variance $\sigma^2$, we have
+$$E(\bar{X}_n) = \mu \quad \text{and} \quad \mathrm{Var}(\bar{X}_n) = \frac{\sigma^2}{n}.$$
+
+Applying Chebyshev's Inequality from Theorem \@ref(thm:Chebyshev) to $\bar{X}_n$, we set $k = \varepsilon$, and obtain:
+$$P\left( \left| \bar{X}_n - \mu \right| > \varepsilon \right) \leq \frac{\mathrm{Var}(\bar{X}_n)}{\varepsilon^2} = \frac{\sigma^2 / n}{\varepsilon^2} = \frac{\sigma^2}{n \varepsilon^2}.$$
+
+Taking the limit as $n \to \infty$, we have:
+$$\lim_{n \to \infty} P\left( \left| \bar{X}_n - \mu \right| > \varepsilon \right) \leq \lim_{n \to \infty} \frac{\sigma^2}{n \varepsilon^2} = 0.$$
+
+Since probabilities are always non-negative, we conclude:
+$$\lim_{n \to \infty} P\left( \left| \bar{X}_n - \mu \right| > \varepsilon \right) = 0.$$
+
+By the definition of convergence in probability,
+$$\bar{X}_n \overset{p}{\longrightarrow} \mu.$$
+
+::: example
+Let $X_i$, for $i = 1, 2, 3, \ldots$, be independent Poisson random
+variables with rate parameter $\lambda = 3$. Prove that:
+$$\bar{X}_n \xrightarrow{P} 3$$
+
+**Properties of Poisson Distribution:**
+$$E(X_i) = \lambda, \quad \mathrm{Var}(X_i) = \lambda$$ In this case,
+$\lambda = 3$, so: $$E(X_i) = \mathrm{Var}(X_i) = 3$$
+
+**Proof:**
+
+We know:
+$$E\left( \frac{X_1 + X_2 + \cdots + X_n}{n} \right) = 3, \quad \text{and} \quad
+\mathrm{Var}\left( \frac{X_1 + X_2 + \cdots + X_n}{n} \right) = \frac{3}{n}$$
+
+Applying Chebyshev's Inequality:
+$$P\left( \left| \frac{X_1 + X_2 + \cdots + X_n}{n} - 3 \right| \geq \varepsilon \right) \leq \frac{3}{n \varepsilon^2}$$
+
+Taking the limit as $n \to \infty$:
+$$P\left( \left| \frac{X_1 + X_2 + \cdots + X_n}{n} - 3 \right| \geq \varepsilon \right) \to 0$$
+
+**Conclusion:** $$\bar{X}_n \xrightarrow{P} 3$$
+:::
+
+```r
+library(ggplot2)
+
+set.seed(123)
+n  <- 10; p  <- 0.5
+df <- data.frame(
+  trial        = 1:n,
+  running_mean = cumsum(rbinom(n, 1, p)) / (1:n)
+)
+
+# Pick two lovely colors from ColorBrewer Set2
+line_col  <- "#619CFF"
+point_col <- "#F8766D"
+
+ggplot(df, aes(x = trial, y = running_mean)) +
+  geom_hline(yintercept = p, linetype = "dashed", colour = "grey50") +
+  geom_line(colour = line_col, size = 1.2) +
+  geom_point(colour = point_col, size = 3) +
+  scale_x_continuous(breaks = 1:n) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    x = "trial",
+    y = "(Cumulative sum of sample)/(Trial number)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid.major = element_line(colour = "grey90"),
+    panel.grid.minor = element_blank(),
+    axis.ticks       = element_line(colour = "grey80"),
+    axis.text        = element_text(colour = "grey30")
+  )
+```
+
+### Simulation
+
+```{=html}
+<iframe 
+  src="Apps/lln_simulation.html"
+  width="100%" 
+  height="1625px"
+  style="border: 1px solid #ddd; border-radius: 8px;">
+</iframe>
+```
+
+<br>
+**R Simulation Code (Single Sample Path):**
+
+::: {.example}
+    n = 10
+    trial = seq(1, n, by = 1)
+    sample = rbinom(n, 1, 1/2)
+
+    plot(trial, cumsum(sample)/trial, type = "l", ylim = c(0,1), col = "blue")
+    points(trial, cumsum(sample)/trial, col = "red")
+    abline(h = 0.5, lty = 2, col = "black")
+:::
+
+```r
+library(ggplot2)
+library(tidyr)
+
+set.seed(123)
+
+# 1) Simulate eight independent Bernoulli(½) streams and compute running means
+n       <- 100
+p       <- 0.5
+trial   <- 1:n
+samples <- replicate(8, rbinom(n, 1, p))
+runs    <- apply(samples, 2, function(x) cumsum(x) / trial)
+
+# 2) Pivot to long format
+df        <- as.data.frame(runs)
+df$trial  <- trial
+df_long   <- pivot_longer(
+  df,
+  cols      = starts_with("V"),
+  names_to  = "series",
+  values_to = "running_mean"
+)
+
+# 3) Plot with thinner, lighter lines and no legend
+ggplot(df_long, aes(x = trial, y = running_mean, color = series)) +
+  geom_line(size = 0.75, alpha = 0.61) +             # thinner and semi-transparent :contentReference[oaicite:0]{index=0}
+  geom_hline(yintercept = p, linetype = "dashed", color = "black") +
+  scale_x_continuous(breaks = seq(0, n, by = 10)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    x     = "Trial",
+    y     = "Cumulative Proportion of Ones"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey90"),
+    axis.ticks       = element_line(color = "grey80"),
+    legend.position  = "none"
+  )
+```
+
+**R Simulation Code (Multiple Sample Paths):**
+
+::: {.example}
+    n = 100
+    trial = seq(1, 100, by = 1)
+
+    sample1 = rbinom(n, 1, 1/2)
+    sample2 = rbinom(n, 1, 1/2)
+    sample3 = rbinom(n, 1, 1/2)
+    sample4 = rbinom(n, 1, 1/2)
+    sample5 = rbinom(n, 1, 1/2)
+    sample6 = rbinom(n, 1, 1/2)
+    sample7 = rbinom(n, 1, 1/2)
+    sample8 = rbinom(n, 1, 1/2)
+
+    colors = rainbow(8)
+
+
+    plot(trial, cumsum(sample1)/trial, type = "l", col = colors[1], ylim = c(0,1))
+    lines(trial, cumsum(sample2)/trial, col = colors[2])
+    lines(trial, cumsum(sample3)/trial, col = colors[3])
+    lines(trial, cumsum(sample4)/trial, col = colors[4])
+    lines(trial, cumsum(sample5)/trial, col = colors[5])
+    lines(trial, cumsum(sample6)/trial, col = colors[6])
+    lines(trial, cumsum(sample7)/trial, col = colors[7])
+    lines(trial, cumsum(sample8)/trial, col = colors[8])
+    abline(h = 0.5, lty = 2, col = "black")
+:::
+
+### Empirical Probability Insight {.unlisted .unnumbered #empirical-probability-insight}
+
+The Law of Large Numbers gives us empirical probabilities. Consider
+tossing a fair coin. Define the random variable $X$ as:
+
+$$X = \begin{cases}
+1 & \text{heads up} \\
+0 & \text{tails up}
+\end{cases}$$
+
+Then as we sample more and more values of $X$, the sample mean
+$\bar{X}_n$ converges in probability to $P(\text{heads up})$, that is:
+
+$$\bar{X}_n \overset{p}{\longrightarrow} P(\text{heads up}).$$
+
+## Exercises
+
+<!-- Q1 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 1</div>
+
+The birth weights of full-term newborns at a hospital are approximately normally distributed with mean $\mu = 3400$ g and standard deviation $\sigma = 500$ g.
+
+(a) Use the Empirical Rule to find the probability that a randomly selected newborn weighs between 2400 g and 4400 g.
+
+(b) Use the Empirical Rule to find the probability that a newborn weighs more than 4900 g.
+
+(c) Approximately the heaviest 2.5% of newborns weigh more than some value $c$. Use the Empirical Rule to find $c$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The Empirical Rule: 68% within $\pm 1\sigma$; 95% within $\pm 2\sigma$; 99.7% within $\pm 3\sigma$.
+- Sketch a bell curve and mark $\mu$, $\mu \pm \sigma$, $\mu \pm 2\sigma$, $\mu \pm 3\sigma$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $2400 = \mu - 2\sigma$ and $4400 = \mu + 2\sigma$, so by the Empirical Rule:
+
+$$P(2400 < X < 4400) \approx P(\mu - 2\sigma < X < \mu + 2\sigma) \approx 95\%$$
+
+**(b)** $4900 = \mu + 3\sigma$. By the Empirical Rule, approximately 99.7% of values fall within $\pm 3\sigma$, so approximately 0.3% fall outside. By symmetry, approximately 0.15% lie above $\mu + 3\sigma$:
+
+$$P(X > 4900) \approx 0.15\%$$
+
+**(c)** By symmetry, the top 2.5% corresponds to $\mu + 2\sigma = 3400 + 2(500) = 4400$ g. So $c \approx 4400$ g.
+
+</div>
+</details>
+
+---
+
+<!-- Q2 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 2</div>
+
+Let $Z \sim N(0, 1)$ be a standard normal random variable.
+
+(a) What are the mean and variance of $Z$?
+
+(b) A quality-control engineer measures the diameter of machined bolts. The diameters follow $X \sim N(10.0,\ 0.04)$ (in mm, so $\sigma^2 = 0.04$ and $\sigma = 0.2$ mm). Standardize $X$ by writing $Z = (X - \mu)/\sigma$. What distribution does $Z$ follow?
+
+(c) The engineer rejects bolts with diameters outside $[9.6,\ 10.4]$ mm. Express this acceptance interval in terms of $Z$ and identify the corresponding range of $z$-values.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The standard normal has $\mu = 0$ and $\sigma^2 = 1$.
+- Standardization: $Z = (X - \mu)/\sigma$ converts any $N(\mu, \sigma^2)$ to $N(0, 1)$.
+- Substitute each endpoint of the interval into $z = (x - \mu)/\sigma$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $E[Z] = 0$ and $\text{Var}(Z) = 1$.
+
+**(b)** $Z = (X - 10.0)/0.2 \sim N(0, 1)$.
+
+**(c)** Lower: $z = (9.6 - 10.0)/0.2 = -2$. Upper: $z = (10.4 - 10.0)/0.2 = 2$. The acceptance interval in $Z$-scores is $[-2,\ 2]$.
+
+</div>
+</details>
+
+---
+
+<!-- Q3 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 3</div>
+
+A dataset of exam scores is approximately normally distributed with a minimum of 42 and a maximum of 98.
+
+(a) Use the crude approximation $\hat{\sigma} \approx \text{Range}/4$ to estimate the standard deviation.
+
+(b) A classmate argues that a more careful estimate would use Range/6 instead. Under the Empirical Rule, which divisor ($4$ or $6$) corresponds to capturing approximately 95% of the data, and which corresponds to approximately 99.7%? Explain.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Range = max $-$ min.
+- Under the Empirical Rule: 95% of values lie within $\pm 2\sigma$ (total spread $\approx 4\sigma$); 99.7% within $\pm 3\sigma$ (total spread $\approx 6\sigma$).
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** Range $= 98 - 42 = 56$. $\hat{\sigma} \approx 56/4 = 14$.
+
+**(b)** Dividing by 4 assumes the observed range covers roughly $\pm 2\sigma$ ($4\sigma$ total), which corresponds to **95%** of the data. Dividing by 6 assumes the range covers $\pm 3\sigma$ ($6\sigma$ total), which corresponds to **99.7%** of the data. The choice of divisor reflects how extreme one assumes the most extreme observations to be.
+
+</div>
+</details>
+
+---
+
+<!-- Q4 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 4</div>
+
+Let $Z_1, Z_2, Z_3 \overset{\text{iid}}{\sim} N(0, 1)$.
+
+(a) What is the distribution of $W = Z_1^2 + Z_2^2 + Z_3^2$? State the name and parameter(s).
+
+(b) What is the distribution of $V = Z_1^2$? State the name and parameter(s).
+
+(c) A student claims that $Z_1^2 + Z_2^2$ follows a $\chi^2_4$ distribution because "$2 \times 2 = 4$." Is this correct? Explain.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- By definition, the sum of $k$ squared independent $N(0,1)$ variables follows $\chi^2_k$.
+- The degrees of freedom equal the number of squared terms, not the square of the number of terms.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $W = Z_1^2 + Z_2^2 + Z_3^2 \sim \chi^2_3$ (chi-square with 3 degrees of freedom).
+
+**(b)** $V = Z_1^2 \sim \chi^2_1$ (chi-square with 1 degree of freedom).
+
+**(c)** Incorrect. $Z_1^2 + Z_2^2$ is the sum of **2** squared independent standard normals, so it follows $\chi^2_2$, not $\chi^2_4$. The degrees of freedom count the number of squared terms.
+
+</div>
+</details>
+
+---
+
+<!-- Q5 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 5</div>
+
+Suppose $Z \sim N(0, 1)$ and $U \sim \chi^2_{9}$ are independent.
+
+(a) Write the expression for a random variable $T$ that follows a $t_9$ distribution using $Z$ and $U$.
+
+(b) As the degrees of freedom $\nu \to \infty$, the $t_\nu$ distribution approaches another well-known distribution. Which one? Explain briefly why this makes intuitive sense.
+
+(c) Two researchers compute tail probabilities. Researcher A uses the standard normal; Researcher B uses $t_{5}$. For the same tail region (say, beyond $|t| = 2$), who gets the larger tail probability? Explain.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $T = Z / \sqrt{U/\nu}$ where $\nu$ is the degrees of freedom.
+- The $t$ distribution has heavier tails than the normal; it is wider for small $\nu$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $T = \dfrac{Z}{\sqrt{U/9}} \sim t_9$.
+
+**(b)** As $\nu \to \infty$, $t_\nu \to N(0,1)$. As the degrees of freedom increase, the $t$ distribution becomes increasingly similar to the standard normal distribution: its heavier tails become less pronounced and the curve becomes taller and narrower at the centre. In the limit as $\nu \to \infty$, the $t_\nu$ distribution approaches $N(0,1)$.
+
+**(c)** Researcher B (using $t_5$) gets the larger tail probability. The $t$ distribution has heavier tails than the standard normal, so more probability lies in the tails — especially when the degrees of freedom are small.
+
+</div>
+</details>
+
+---
+
+<!-- Q6 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 6</div>
+
+Suppose $U \sim \chi^2_{3}$ and $V \sim \chi^2_{10}$ are independent.
+
+(a) Write the expression for a random variable $F$ that follows an $F_{3,10}$ distribution using $U$ and $V$.
+
+(b) State the two degrees of freedom parameters of $F$ and identify which corresponds to the numerator and which to the denominator.
+
+(c) The $F$ distribution is always non-negative. Explain why, based on its definition as a ratio.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $F = (U/\nu_1)\,/\,(V/\nu_2)$ where $\nu_1$ and $\nu_2$ are the numerator and denominator degrees of freedom.
+- Chi-square variables are sums of squared terms, so they are always $\geq 0$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $F = \dfrac{U/3}{V/10} \sim F_{3,\,10}$.
+
+**(b)** The numerator degrees of freedom are $\nu_1 = 3$ (from $U \sim \chi^2_3$); the denominator degrees of freedom are $\nu_2 = 10$ (from $V \sim \chi^2_{10}$).
+
+**(c)** $U$ and $V$ are chi-square random variables — each is a sum of squared terms and therefore $\geq 0$. Dividing by their degrees of freedom (positive constants) keeps each quotient $\geq 0$. The ratio of two non-negative quantities is non-negative, so $F \geq 0$ always.
+
+</div>
+</details>
+
+---
+
+<!-- Q7 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 7</div>
+
+A researcher repeatedly takes random samples of size $n = 36$ from a population with mean $\mu = 50$ and standard deviation $\sigma = 12$. Assume that $n = 36$ is sufficiently large for the CLT approximation to be appropriate in this setting.
+
+(a) What is the mean of the sampling distribution of $\bar{X}$?
+
+(b) What is the standard deviation (standard error) of $\bar{X}$?
+
+(c) By the Central Limit Theorem, what is the approximate distribution of $\bar{X}$?
+
+(d) Write the standardized version of $\bar{X}$: express $Z = (\bar{X} - \mu)/(\sigma/\sqrt{n})$ with numbers substituted in.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The sampling distribution of $\bar{X}$ has mean $\mu$ and standard deviation $\sigma/\sqrt{n}$.
+- The CLT says that for large $n$, $\bar{X}$ is approximately $N(\mu,\, \sigma^2/n)$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $E[\bar{X}] = \mu = 50$.
+
+**(b)** $\text{SD}(\bar{X}) = \sigma/\sqrt{n} = 12/\sqrt{36} = 12/6 = 2$.
+
+**(c)** By the CLT, $\bar{X} \overset{\text{approx}}{\sim} N(50,\, 4)$ (i.e., $N(\mu,\, \sigma^2/n) = N(50,\, 2^2)$).
+
+**(d)** $Z = \dfrac{\bar{X} - 50}{12/\sqrt{36}} = \dfrac{\bar{X} - 50}{2} \sim N(0,1)$ approximately.
+
+</div>
+</details>
+
+---
+
+<!-- Q8 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 8</div>
+
+A factory produces light bulbs with a mean lifetime of $\mu = 800$ hours and a standard deviation of $\sigma = 100$ hours. The distribution of individual lifetimes is unknown.
+
+(a) A quality inspector records the mean lifetime $\bar{X}$ of a random sample of $n = 100$ bulbs. What distribution does $\bar{X}$ approximately follow, and why?
+
+(b) Would the CLT apply equally well for a sample of $n = 4$ bulbs? Explain.
+
+(c) Another inspector samples $n = 100$ bulbs from a second factory where individual lifetimes are exactly normally distributed. Does the CLT still need to be invoked for $\bar{X}$ to be normal? Explain.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The CLT approximation generally improves as the sample size increases. For a sufficiently large sample size, the sampling distribution of the sample mean can often be approximated by a normal distribution under the conditions of the CLT.
+- If the parent distribution is itself normal, $\bar{X}$ is exactly normal for any $n$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** By the CLT, $\bar{X} \overset{\text{approx}}{\sim} N(800,\, 100^2/100) = N(800,\, 100)$, i.e., with mean 800 and standard deviation $100/\sqrt{100} = 10$ hours. The CLT applies because $n = 100$ is large.
+
+**(b)** With $n = 4$, the CLT approximation may not be reliable. The CLT guarantees approximate normality as $n$ grows large; for very small samples from a non-normal population, the sampling distribution of $\bar{X}$ may still be noticeably non-normal.
+
+**(c)** No — if the parent distribution is exactly normal, $\bar{X}$ is exactly $N(\mu,\, \sigma^2/n)$ for any $n$, including small samples. Therefore, the CLT is not needed to establish normality of $\bar{X}$ in this case.
+
+</div>
+</details>
+
+---
+
+<!-- Q9 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 9</div>
+
+Let $X$ be a random variable with mean $\mu = 20$ and variance $\sigma^2 = 16$.
+
+(a) Use Chebyshev's Inequality to find an upper bound for $P(|X - 20| \geq 8)$.
+
+(b) Use Chebyshev's Inequality to find a lower bound for $P(|X - 20| < 8)$.
+
+(c) Suppose $X_1, X_2, \ldots, X_n$ are i.i.d. copies of $X$. By the Weak Law of Large Numbers, what does $\bar{X}_n$ converge to in probability?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- Chebyshev's Inequality: $P(|X - \mu| \geq k) \leq \sigma^2/k^2$.
+- Using complements: $P(|X - \mu| < k) \geq 1 - \sigma^2/k^2$.
+- The WLLN states $\bar{X}_n \overset{p}{\longrightarrow} \mu$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** With $k = 8$, $\mu = 20$, $\sigma^2 = 16$:
+
+$$P(|X - 20| \geq 8) \leq \frac{\sigma^2}{k^2} = \frac{16}{64} = 0.25$$
+
+**(b)** By the complement form: $P(|X - 20| < 8) \geq 1 - 0.25 = 0.75$.
+
+**(c)** By the WLLN, $\bar{X}_n \overset{p}{\longrightarrow} \mu = 20$.
+
+</div>
+</details>
+
+---
+
+<!-- Q10 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 10</div>
+
+Use R to compute the following probabilities using the built-in distribution functions. Record the R command and the numerical result for each.
+
+(a) $P(Z \leq 1.96)$ where $Z \sim N(0,1)$.
+
+(b) $P(Z > 1.645)$ where $Z \sim N(0,1)$.
+
+(c) $P(T \leq 2.262)$ where $T \sim t_9$.
+
+(d) $P(\chi^2 \leq 16.92)$ where $\chi^2 \sim \chi^2_{9}$.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="8">pnorm(___)
+pnorm(___, lower.tail = ___)
+pt(___, df = ___)
+pchisq(___, df = ___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `pnorm(q)` gives $P(Z \leq q)$ for a standard normal.
+- Use `lower.tail = FALSE` to get the upper tail probability.
+- `pt(q, df)` and `pchisq(q, df)` work similarly for the $t$ and $\chi^2$ distributions.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+# (a)
+pnorm(1.96)             # ≈ 0.9750
+
+# (b)
+pnorm(1.645, lower.tail = FALSE)   # ≈ 0.0500
+
+# (c)
+pt(2.262, df = 9)       # ≈ 0.9750
+
+# (d)
+pchisq(16.92, df = 9)   # ≈ 0.9500
+```
+
+**(a)** $P(Z \leq 1.96) \approx 0.9750$
+
+**(b)** $P(Z > 1.645) \approx 0.0500$
+
+**(c)** $P(T \leq 2.262) \approx 0.9750$
+
+**(d)** $P(\chi^2 \leq 16.92) \approx 0.9500$
+
+</div>
+</details>
+
+---
+
+<!-- Q11 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 11</div>
+
+Use R to simulate the Central Limit Theorem. The population distribution is **Exponential with rate 1** (mean $= 1$, variance $= 1$), which is strongly right-skewed.
+
+(a) Draw 1000 samples of size $n = 5$ and compute the sample mean of each. Plot a histogram of the 1000 sample means.
+
+(b) Repeat with $n = 30$ and $n = 100$. Compare the three histograms. What do you observe as $n$ increases?
+
+(c) What does this simulation illustrate about the Central Limit Theorem?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="14">set.seed(42)
+means5   <- replicate(1000, mean(rexp(___, rate = ___)))
+means30  <- replicate(1000, mean(rexp(___, rate = ___)))
+means100 <- replicate(1000, mean(rexp(___, rate = ___)))
+par(mfrow = c(___, ___))
+hist(___, breaks = 30, main = "___", xlab = "Sample Mean", col = "#619CFF")
+hist(___, breaks = 30, main = "___", xlab = "Sample Mean", col = "#00BA38")
+hist(___, breaks = 30, main = "___", xlab = "Sample Mean", col = "#F8766D")
+par(mfrow = c(1, 1))
+cat("Mean:", mean(___), "  SD:", sd(___))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `rexp(n, rate = 1)` generates $n$ observations from an Exponential(1) distribution.
+- `replicate(1000, expr)` repeats `expr` 1000 times and collects the results.
+- Look at the shape of each histogram: does it become more symmetric and bell-shaped as $n$ grows?
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+set.seed(42)
+sim_means <- function(n, reps = 1000) {
+  replicate(reps, mean(rexp(n, rate = 1)))
+}
+means5   <- sim_means(5)
+means30  <- sim_means(30)
+means100 <- sim_means(100)
+
+par(mfrow = c(1, 3))
+hist(means5,   breaks = 30, main = "n = 5",   xlab = "Sample Mean", col = "#619CFF")
+hist(means30,  breaks = 30, main = "n = 30",  xlab = "Sample Mean", col = "#00BA38")
+hist(means100, breaks = 30, main = "n = 100", xlab = "Sample Mean", col = "#F8766D")
+par(mfrow = c(1, 1))
+```
+
+**(b)** At $n = 5$, the histogram of sample means is still visibly right-skewed (reflecting the skewed parent). At $n = 30$, the histogram becomes much more symmetric and roughly bell-shaped. At $n = 100$, the histogram is very close to a normal curve, centred near 1 (the true mean) with smaller spread.
+
+**(c)** Even though the parent distribution is skewed, the sampling distribution of $\bar{X}$ becomes increasingly well approximated by a normal distribution as $n$ increases, as predicted by the Central Limit Theorem.
+
+</div>
+</details>
+
+---
+
+<!-- Q12 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 12</div>
+
+Use R to verify the Weak Law of Large Numbers by simulating rolling a fair six-sided die.
+
+(a) The theoretical mean of one die roll is $\mu = 3.5$. Generate a running sample mean for 500 rolls and plot it against the number of rolls. Add a horizontal dashed line at $\mu = 3.5$.
+
+(b) What do you observe about the running mean as the number of rolls increases? How does this relate to the WLLN?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="11">set.seed(7)
+n     <- 500
+rolls <- sample(___, size = ___, replace = ___)
+running_mean <- cumsum(___) / seq_len(___)
+plot(seq_len(n), ___, type = "l",
+     xlab = "Number of Rolls", ylab = "Running Sample Mean",
+     col = "#619CFF", ylim = c(1, 6))
+abline(h = ___, lty = 2, col = "red")
+legend("topright", legend = "___", lty = 2, col = "red")
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `sample(1:6, size = n, replace = TRUE)` simulates $n$ fair die rolls.
+- `cumsum(rolls) / seq_len(n)` computes the running (cumulative) sample mean after each roll.
+- Add the dashed line at $\mu = 3.5$ using `abline(h = 3.5, lty = 2)`.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+set.seed(7)
+n    <- 500
+rolls <- sample(1:6, size = n, replace = TRUE)
+running_mean <- cumsum(rolls) / seq_len(n)
+
+plot(seq_len(n), running_mean, type = "l",
+     xlab = "Number of Rolls", ylab = "Running Sample Mean",
+     main = "WLLN: Running Mean of Die Rolls",
+     col = "#619CFF", ylim = c(1, 6))
+abline(h = 3.5, lty = 2, col = "red")
+legend("topright", legend = "True mean = 3.5", lty = 2, col = "red")
+```
+
+**(b)** The running sample mean fluctuates substantially when the number of rolls is small, but tends to stabilize near $\mu = 3.5$ as the number of rolls increases. This simulation illustrates the WLLN: as the sample size grows, the sample mean tends to become increasingly close to the population mean.
+
+</div>
+</details>
+
+---
+
+<!-- Q13 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 13</div>
+
+Consider three independent normally distributed random variables:
+
+$$X \sim N(50,\; 4), \quad Y \sim N(50,\; 16), \quad W \sim N(60,\; 4)$$
+
+(Recall that the second parameter is the **variance** $\sigma^2$.)
+
+(a) Which two distributions have the same mean? Which two have the same spread (standard deviation)?
+
+(b) Describe how the bell curve for $X$ compares to that of $Y$ in terms of **centre** and **width**.
+
+(c) Describe how the bell curve for $X$ compares to that of $W$ in terms of **centre** and **width**.
+
+(d) Without computing any probabilities, which variable — $X$ or $Y$ — is more likely to take a value within 2 units of its mean? Explain using the standard deviations.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The mean $\mu$ controls the **location** (centre) of the bell curve; the standard deviation $\sigma = \sqrt{\sigma^2}$ controls its **width**.
+- A larger $\sigma$ produces a flatter, more spread-out curve; a smaller $\sigma$ produces a taller, narrower curve.
+- For part (d), think about how many standard deviations 2 units represents for each variable.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $X$ and $Y$ share the same mean ($\mu = 50$). $X$ and $W$ share the same variance ($\sigma^2 = 4$, so $\sigma = 2$).
+
+**(b)** $X$ and $Y$ are both centred at 50. We have $\sigma_X = 2$ and $\sigma_Y = 4$, so $Y$ has twice the standard deviation of $X$ and is more spread out.
+
+**(c)** $X$ and $W$ have the same standard deviation ($\sigma = 2$), so their bell curves have the **same width**. But $W$ is centred at 60, shifted 10 units to the right of $X$.
+
+**(d)** $X$ is more likely. For $X$: $\sigma_X = 2$, so 2 units equals $1\sigma_X$; by the Empirical Rule, about 68% of $X$ values fall within $\pm 1\sigma_X$. For $Y$: $\sigma_Y = 4$, so 2 units equals only $0.5\sigma_Y$, which covers a smaller fraction of $Y$'s distribution. The narrower spread of $X$ makes values near the mean more probable.
+
+</div>
+</details>
+
+---
+
+<!-- Q14 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 14</div>
+
+Random samples of size $n = 100$ are drawn from a large population with mean $\mu = 50$ and standard deviation $\sigma = 20$.
+
+(a) Compute $E[\bar{X}]$ and $\text{SE}(\bar{X}) = \sigma/\sqrt{n}$.
+
+(b) State the approximate distribution of $\bar{X}$ by the Central Limit Theorem.
+
+(c) Use the Empirical Rule applied to $\bar{X}$ to find $P(46 < \bar{X} < 54)$.
+
+(d) Using the Empirical Rule, find $P(\bar{X} > 54)$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{SE}(\bar{X}) = \sigma / \sqrt{n}$; compute this number first.
+- By the CLT, $\bar{X} \overset{\text{approx}}{\sim} N(\mu,\, \sigma^2/n)$.
+- Check how many standard errors 46 and 54 are from $\mu = 50$ — then apply the Empirical Rule.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $E[\bar{X}] = \mu = 50$. $\text{SE}(\bar{X}) = 20/\sqrt{100} = 20/10 = 2$.
+
+**(b)** By the CLT: $\bar{X} \overset{\text{approx}}{\sim} N(50,\; 4)$, i.e., normal with mean 50 and standard deviation 2.
+
+**(c)** $46 = \mu - 2\,\text{SE}$ and $54 = \mu + 2\,\text{SE}$, so by the Empirical Rule:
+
+$$P(46 < \bar{X} < 54) \approx 95\%$$
+
+**(d)** Since $54 = \mu + 2\,\text{SE}$, and by the Empirical Rule approximately 95% of the distribution falls within $\pm 2\,\text{SE}$, the remaining 5% is split equally between the two tails:
+
+$$P(\bar{X} > 54) \approx \frac{1 - 0.95}{2} = 2.5\%$$
+
+</div>
+</details>
+
+---
+
+<!-- Q15 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 15</div>
+
+Let $X_1, X_2, \ldots, X_n$ be i.i.d. random variables with mean $\mu = 10$ and variance $\sigma^2 = 25$.
+
+(a) For $n = 25$, compute $\text{Var}(\bar{X})$. Apply Chebyshev's Inequality to find an upper bound for $P(|\bar{X} - 10| \geq 3)$.
+
+(b) For $n = 100$, repeat part (a).
+
+(c) Compare the two bounds. What does this illustrate about the behaviour of $\bar{X}$ as $n$ increases?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{Var}(\bar{X}) = \sigma^2/n$.
+- Apply Chebyshev's Inequality to $\bar{X}$: $P(|\bar{X} - \mu| \geq k) \leq \text{Var}(\bar{X})/k^2$.
+- Set $k = 3$ in both parts.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $\text{Var}(\bar{X}) = 25/25 = 1$. Applying Chebyshev with $k = 3$:
+
+$$P(|\bar{X} - 10| \geq 3) \leq \frac{1}{3^2} = \frac{1}{9} \approx 0.111$$
+
+**(b)** $\text{Var}(\bar{X}) = 25/100 = 0.25$. Applying Chebyshev:
+
+$$P(|\bar{X} - 10| \geq 3) \leq \frac{0.25}{9} \approx 0.028$$
+
+**(c)** As $n$ increases from 25 to 100, $\text{Var}(\bar{X})$ decreases and the Chebyshev bound tightens. This illustrates the WLLN: $\bar{X}$ becomes increasingly concentrated around $\mu = 10$ as the sample size grows.
+
+</div>
+</details>
+
+---
+
+<!-- Q16 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 16</div>
+
+For each $n = 1, 2, \ldots$, define a random variable $Y_n$ by
+
+$$Y_n = \begin{cases} 2, & \text{with probability } 1 - \dfrac{1}{n}, \\[6pt] 5, & \text{with probability } \dfrac{1}{n}. \end{cases}$$
+
+(a) Let $0 < \varepsilon < 3$. Find $P(|Y_n - 2| > \varepsilon)$.
+
+(b) What is $P(|Y_n - 2| > \varepsilon)$ when $\varepsilon \geq 3$?
+
+(c) For every fixed $\varepsilon > 0$, find $\displaystyle\lim_{n \to \infty} P(|Y_n - 2| > \varepsilon)$. Based on the definition of convergence in probability, does $Y_n$ converge in probability to 2?
+
+(d) Explain intuitively why your answer to part (c) makes sense.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $Y_n$ differs from 2 only when $Y_n = 5$; in that case $|Y_n - 2| = 3$.
+- Consider the two cases $0 < \varepsilon < 3$ and $\varepsilon \geq 3$ separately.
+- Recall that $Y_n \overset{p}{\longrightarrow} c$ means that for every fixed $\varepsilon > 0$, $P(|Y_n - c| > \varepsilon) \to 0$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** For $0 < \varepsilon < 3$, the event $|Y_n - 2| > \varepsilon$ occurs exactly when $Y_n = 5$, since $|5 - 2| = 3 > \varepsilon$. Therefore:
+
+$$P(|Y_n - 2| > \varepsilon) = P(Y_n = 5) = \frac{1}{n}$$
+
+**(b)** If $\varepsilon \geq 3$, neither possible value of $Y_n$ is more than $\varepsilon$ units away from 2. Therefore:
+
+$$P(|Y_n - 2| > \varepsilon) = 0$$
+
+**(c)** For $0 < \varepsilon < 3$:
+
+$$\lim_{n \to \infty} P(|Y_n - 2| > \varepsilon) = \lim_{n \to \infty} \frac{1}{n} = 0$$
+
+For $\varepsilon \geq 3$, the probability is already 0. Thus, for every fixed $\varepsilon > 0$:
+
+$$\lim_{n \to \infty} P(|Y_n - 2| > \varepsilon) = 0$$
+
+Therefore, by the definition of convergence in probability, $Y_n \overset{p}{\longrightarrow} 2$.
+
+**(d)** The probability that $Y_n = 2$ is $1 - \tfrac{1}{n}$, which approaches 1 as $n \to \infty$. At the same time, $P(Y_n = 5) = \tfrac{1}{n} \to 0$. Therefore, as $n$ increases, $Y_n$ becomes increasingly likely to equal 2.
+
+</div>
+</details>
+
+---
+
+<!-- Q17 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 17</div>
+
+Suppose $X_1, X_2, \ldots, X_n$ are i.i.d. random variables with $E[X_i] = \mu$ and $\text{Var}(X_i) = \sigma^2 < \infty$. Consider the sample mean $\bar{X}_n = (X_1 + \cdots + X_n)/n$.
+
+For each statement below, determine whether it is primarily described by the **Central Limit Theorem (CLT)** or the **Weak Law of Large Numbers (WLLN)**.
+
+(a) As $n$ becomes large, $\bar{X}_n$ becomes increasingly concentrated near $\mu$.
+
+(b) For large $n$, $\dfrac{\sqrt{n}(\bar{X}_n - \mu)}{\sigma}$ has an approximately standard normal distribution.
+
+(c) For every fixed $\varepsilon > 0$, $P(|\bar{X}_n - \mu| > \varepsilon) \to 0$.
+
+(d) A student says: "The WLLN and CLT say exactly the same thing because both involve the sample mean when $n$ becomes large." Is the student correct? Briefly explain the main difference between the two results.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+Think about what each theorem describes:
+
+- Does it describe **where** the sample mean goes (convergence in probability)?
+- Or does it describe the **shape** of the standardized sampling distribution?
+- The WLLN uses convergence in probability: $\bar{X}_n \overset{p}{\longrightarrow} \mu$.
+- The CLT describes the approximately normal distribution of the standardized sample mean for large $n$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** **WLLN.** The WLLN states that $\bar{X}_n \overset{p}{\longrightarrow} \mu$, so as $n$ grows, the sample mean becomes increasingly concentrated near the population mean.
+
+**(b)** **CLT.** The CLT describes the standardized sample mean: for large $n$, $\dfrac{\sqrt{n}(\bar{X}_n - \mu)}{\sigma}$ has an approximately standard normal distribution.
+
+**(c)** **WLLN.** The statement $P(|\bar{X}_n - \mu| > \varepsilon) \to 0$ for every fixed $\varepsilon > 0$ is the convergence-in-probability statement used in the WLLN.
+
+**(d)** The student is incorrect. The WLLN describes **where** the sample mean goes: as $n$ increases, $\bar{X}_n$ becomes increasingly close to $\mu$ in probability. The CLT describes the **shape** of the standardized sampling distribution: for large $n$, $\dfrac{\sqrt{n}(\bar{X}_n - \mu)}{\sigma}$ is approximately standard normal. The two theorems are related but describe different aspects of the behaviour of $\bar{X}_n$.
+
+</div>
+</details>
+
+---
+
+<!-- Q18 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 18</div>
+
+Let $X \sim \chi^2_3$ and $Y \sim \chi^2_7$ be independent.
+
+(a) By the definition of the chi-square distribution, how many squared standard normal terms does $X$ represent? How many does $Y$ represent?
+
+(b) Write $W = X + Y$ as a sum of squared standard normals. What is the distribution of $W$?
+
+(c) Now let $A \sim \chi^2_4$ and $B \sim \chi^2_4$ be independent. Let $T = \dfrac{Z}{\sqrt{(A+B)/8}}$ where $Z \sim N(0,1)$ is independent of $A$ and $B$. Identify the distribution of $T$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\chi^2_k$ is by definition the sum of $k$ squared i.i.d.\ $N(0,1)$ variables, so adding $\chi^2_m$ and $\chi^2_n$ gives $\chi^2_{m+n}$.
+- For part (c): first find the distribution of $A + B$, then match the expression $Z/\sqrt{\cdot/\nu}$ to the $t_\nu$ definition.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** $X$ represents 3 squared standard normals; $Y$ represents 7 squared standard normals.
+
+**(b)** $W = X + Y$ is the sum of $3 + 7 = 10$ independent squared standard normals, so $W \sim \chi^2_{10}$.
+
+**(c)** $A + B \sim \chi^2_{4+4} = \chi^2_8$. Therefore:
+
+$$T = \frac{Z}{\sqrt{(A+B)/8}} \sim t_8$$
+
+matching the definition $T = Z/\sqrt{U/\nu}$ with $U = A + B \sim \chi^2_8$ and $\nu = 8$.
+
+</div>
+</details>
+
+---
+
+<!-- Q19 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 19</div>
+
+A normally distributed variable $X$ is known to satisfy the following two properties:
+
+- Approximately 95% of values lie between 30 and 70.
+- The distribution is symmetric.
+
+(a) Find $\mu$.
+
+(b) Find $\sigma$ using the Empirical Rule.
+
+(c) What percentage of values lie above 80, according to the Empirical Rule?
+
+(d) Standardize: if a randomly selected value is $x = 55$, compute its $z$-score.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- The mean is at the centre of the symmetric interval.
+- By the Empirical Rule, 95% of values lie within $\mu \pm 2\sigma$, so the half-width of the interval equals $2\sigma$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** By symmetry, $\mu = (30 + 70)/2 = 50$.
+
+**(b)** The interval $[30,\, 70]$ covers 95% of the distribution, so it spans $\mu \pm 2\sigma$. The half-width is $70 - 50 = 20 = 2\sigma$, giving $\sigma = 10$.
+
+**(c)** $80 = \mu + 3\sigma = 50 + 30$. By the Empirical Rule, approximately 99.7% of values fall within $\pm 3\sigma$, leaving approximately 0.3% outside; by symmetry, approximately **0.15%** lie above 80.
+
+**(d)** $z = (55 - 50)/10 = 0.5$.
+
+</div>
+</details>
+
+---
+
+<!-- Q20 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 20</div>
+
+Use R to find the following quantiles (critical values) using the built-in distribution functions.
+
+(a) Find the value $z^*$ such that $P(Z \leq z^*) = 0.975$ for $Z \sim N(0,1)$.
+
+(b) Find the 95th percentile of $T \sim t_{15}$.
+
+(c) Find the value $c$ such that $P(\chi^2 \leq c) = 0.90$ for $\chi^2 \sim \chi^2_{10}$.
+
+(d) Find the value $f^*$ such that $P(F \leq f^*) = 0.95$ for $F \sim F_{3,\,20}$.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="8">qnorm(___)
+qt(___, df = ___)
+qchisq(___, df = ___)
+qf(___, df1 = ___, df2 = ___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `qnorm(p)` returns the value $z$ such that $P(Z \leq z) = p$.
+- `qt(p, df)`, `qchisq(p, df)`, and `qf(p, df1, df2)` work the same way for their respective distributions.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+qnorm(0.975)            # (a) ≈ 1.960
+qt(0.95, df = 15)       # (b) ≈ 1.753
+qchisq(0.90, df = 10)   # (c) ≈ 15.99
+qf(0.95, df1 = 3, df2 = 20)  # (d) ≈ 3.098
+```
+
+**(a)** $z^* \approx 1.960$ — this is the familiar 97.5th percentile of the standard normal.
+
+**(b)** 95th percentile of $t_{15} \approx 1.753$ — note this is slightly larger than $z_{0.95} \approx 1.645$ for the standard normal, reflecting the heavier tails of the $t$ distribution.
+
+**(c)** $c \approx 15.99$.
+
+**(d)** $f^* \approx 3.098$.
+
+</div>
+</details>
+
+---
+
+<!-- Q21 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 21</div>
+
+Use R to simulate the sampling distribution of $\bar{X}$ when the population distribution is **Uniform on $[0,\, 1]$** (mean $\mu = 0.5$, variance $\sigma^2 = 1/12$).
+
+(a) For $n = 1, 10, 50$, generate 2000 samples of each size and compute the sample mean of each. Plot histograms of the 2000 sample means side by side.
+
+(b) For $n = 50$: compute the mean and variance of your 2000 simulated sample means. Compare with the theoretical values $\mu = 0.5$ and $\sigma^2/n = 1/600$.
+
+(c) What do you observe about the shape of the distribution as $n$ increases?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="14">set.seed(99)
+reps <- 2000
+means1  <- replicate(reps, mean(runif(___)))
+means10 <- replicate(reps, mean(runif(___)))
+means50 <- replicate(reps, mean(runif(___)))
+par(mfrow = c(___, ___))
+hist(___, breaks = 30, main = "___", xlab = "Sample Mean", col = "#619CFF")
+hist(___, breaks = 30, main = "___", xlab = "Sample Mean", col = "#00BA38")
+hist(___, breaks = 30, main = "___", xlab = "Sample Mean", col = "#F8766D")
+par(mfrow = c(1, 1))
+cat("Simulated mean:", mean(___), " Simulated var:", var(___), " Theoretical var:", ___ / ___)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `runif(n)` generates $n$ observations from Uniform$[0,1]$.
+- The theoretical variance of $\bar{X}$ for $n = 50$ is $\sigma^2/n = (1/12)/50 \approx 0.00167$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+set.seed(99)
+reps <- 2000
+means1  <- replicate(reps, mean(runif(1)))
+means10 <- replicate(reps, mean(runif(10)))
+means50 <- replicate(reps, mean(runif(50)))
+
+par(mfrow = c(1, 3))
+hist(means1,  breaks = 30, main = "n = 1",  xlab = "Sample Mean", col = "#619CFF")
+hist(means10, breaks = 30, main = "n = 10", xlab = "Sample Mean", col = "#00BA38")
+hist(means50, breaks = 30, main = "n = 50", xlab = "Sample Mean", col = "#F8766D")
+par(mfrow = c(1, 1))
+mean(means50)   # ≈ 0.500
+var(means50)    # ≈ 0.00167
+```
+
+**(b)** The simulated mean $\approx 0.500$ (matches $\mu = 0.5$) and the simulated variance $\approx 0.00167$ (matches $\sigma^2/n = 1/600 \approx 0.00167$).
+
+**(c)** At $n = 1$, the histogram is flat (matching the uniform parent). As $n$ increases to 10 and 50, the histogram becomes increasingly symmetric and bell-shaped — illustrating the Central Limit Theorem even for a non-normal parent.
+
+</div>
+</details>
+
+---
+
+<!-- Q22 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 22</div>
+
+Use R to plot the $t_\nu$ distribution for $\nu = 2, 10, 30$ alongside the standard normal $N(0,1)$ on the same axes.
+
+(a) Run the code and describe how the shape of the $t$ distribution changes as $\nu$ increases.
+
+(b) At $x = 2$, which distribution has the highest density: $t_2$, $t_{10}$, $t_{30}$, or $N(0,1)$? Does this agree with the property that the $t$ distribution has heavier tails than the normal?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="12">x <- seq(-4, 4, length.out = 300)
+plot(x, dnorm(___), type = "l", lwd = 2, col = "black",
+     ylab = "Density", ylim = c(0, 0.42))
+lines(x, dt(x, df = ___), col = "#F8766D", lwd = 2, lty = 2)
+lines(x, dt(x, df = ___), col = "#00BA38", lwd = 2, lty = 3)
+lines(x, dt(x, df = ___), col = "#619CFF", lwd = 2, lty = 4)
+legend("topright",
+       legend = c("N(0,1)", "t(2)", "t(10)", "t(30)"),
+       col    = c("black", "#F8766D", "#00BA38", "#619CFF"),
+       lty    = c(1, 2, 3, 4), lwd = 2)
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `dt(x, df = v)` computes the density of $t_\nu$ at $x$.
+- The $t$ distribution has heavier tails: more density far from zero, less density at the centre, compared to $N(0,1)$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+x <- seq(-4, 4, length.out = 300)
+plot(x, dnorm(x), type = "l", lwd = 2, col = "black",
+     ylab = "Density", main = "t-distributions vs Standard Normal",
+     ylim = c(0, 0.42))
+lines(x, dt(x, df = 2),  col = "#F8766D", lwd = 2, lty = 2)
+lines(x, dt(x, df = 10), col = "#00BA38", lwd = 2, lty = 3)
+lines(x, dt(x, df = 30), col = "#619CFF", lwd = 2, lty = 4)
+legend("topright",
+       legend = c("N(0,1)", "t(2)", "t(10)", "t(30)"),
+       col    = c("black", "#F8766D", "#00BA38", "#619CFF"),
+       lty    = c(1, 2, 3, 4), lwd = 2)
+```
+
+**(a)** As $\nu$ increases, the $t_\nu$ curve becomes taller at the centre and its tails become lighter, converging toward the $N(0,1)$ curve. At $\nu = 30$ the curves are nearly indistinguishable.
+
+**(b)** At $x = 2$, the $t_2$ distribution has the **highest** density — because heavy tails mean more probability mass farther from zero. The standard normal has the lowest density at $x = 2$ among the four. This is consistent with the $t$ distribution's heavier-tail property: probability "moved" from the centre to the tails means the peak is lower but the tail density is higher than the normal.
+
+</div>
+</details>
+
+---
+
+<!-- Q23 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 23</div>
+
+Use R to verify Chebyshev's Inequality by simulation. Let $X \sim \text{Exponential}(\text{rate} = 1)$, so $\mu = 1$ and $\sigma^2 = 1$.
+
+(a) Generate 50,000 observations from $X$. Compute the proportion of observations satisfying $|X - 1| \geq 2$ (i.e., $X \leq -1$ or $X \geq 3$). Since $X \geq 0$, this reduces to $X \geq 3$.
+
+(b) Chebyshev's Inequality gives $P(|X - 1| \geq 2) \leq \sigma^2/k^2 = 1/4 = 0.25$. Does your simulated proportion satisfy this bound?
+
+(c) The exact probability is $P(X \geq 3) = e^{-3} \approx 0.050$. How does the Chebyshev bound compare to the exact value? What does this tell you about Chebyshev's Inequality?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="12">set.seed(21)
+n <- 50000
+x          <- rexp(n, rate = ___)
+prop_sim   <- mean(x >= ___)
+cheb_bound <- ___ / ___^2
+exact      <- exp(___)
+cat("Simulated proportion:", prop_sim, "\n")
+cat("Chebyshev bound:     ", cheb_bound, "\n")
+cat("Exact probability:   ", round(exact, 4), "\n")
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `rexp(n, rate = 1)` generates exponential observations with mean 1.
+- The Chebyshev bound uses $k = 2$: $\sigma^2/k^2 = 1/4$.
+- `mean(x >= 3)` computes the proportion of observations $\geq 3$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+set.seed(21)
+n <- 50000
+x <- rexp(n, rate = 1)
+prop_sim <- mean(x >= 3)
+cat("Simulated proportion:", prop_sim, "\n")   # ≈ 0.050
+cheb_bound <- 1 / 4
+cat("Chebyshev bound:", cheb_bound, "\n")       # 0.250
+exact <- exp(-3)
+cat("Exact probability:", round(exact, 4), "\n") # 0.0498
+```
+
+**(b)** The simulated proportion ($\approx 0.050$) is well below the Chebyshev bound of 0.25 — the bound holds.
+
+**(c)** The Chebyshev bound (0.25) is much larger than the exact probability ($\approx 0.050$). Chebyshev's Inequality is a **conservative** (worst-case) bound that holds for **any** distribution with finite mean and variance. It does not require knowledge of the distribution's shape, so it sacrifices sharpness in exchange for generality.
+
+</div>
+</details>
+
+---
+
+<!-- Q24 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 24</div>
+
+Use R to investigate how the CLT improves normality of $\bar{X}$ when the population is **Poisson with $\lambda = 2$** (right-skewed, mean $= 2$, variance $= 2$).
+
+For $n = 5, 30, 100$: generate 1000 sample means and use `qqnorm()` to assess normality.
+
+(a) Run the code. For which value of $n$ does the Q-Q plot appear most linear (closest to the reference line)?
+
+(b) What does the Q-Q plot for $n = 5$ look like compared to $n = 100$? How does this relate to the CLT?
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">R Exercise</div>
+<textarea class="webr-editor" rows="13">set.seed(14)
+reps <- 1000
+means5   <- replicate(reps, mean(rpois(___, lambda = ___)))
+means30  <- replicate(reps, mean(rpois(___, lambda = ___)))
+means100 <- replicate(reps, mean(rpois(___, lambda = ___)))
+par(mfrow = c(___, ___))
+qqnorm(___); qqline(___)
+qqnorm(___); qqline(___)
+qqnorm(___); qqline(___)
+par(mfrow = c(1, 1))
+</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- `rpois(n, lambda = 2)` generates $n$ Poisson observations.
+- A Q-Q plot compares the quantiles of your data against those of a normal distribution. A straight line indicates normality.
+- Deviations from the line (especially at the tails) indicate non-normality.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+```r
+set.seed(14)
+reps <- 1000
+means5   <- replicate(reps, mean(rpois(5,   lambda = 2)))
+means30  <- replicate(reps, mean(rpois(30,  lambda = 2)))
+means100 <- replicate(reps, mean(rpois(100, lambda = 2)))
+
+par(mfrow = c(1, 3))
+qqnorm(means5,   main = "n = 5");   qqline(means5)
+qqnorm(means30,  main = "n = 30");  qqline(means30)
+qqnorm(means100, main = "n = 100"); qqline(means100)
+par(mfrow = c(1, 1))
+```
+
+**(a)** The Q-Q plot for $n = 100$ is most linear — the points fall very close to the reference line, indicating that the distribution of $\bar{X}$ is approximately normal.
+
+**(b)** For $n = 5$, the Q-Q plot shows noticeable curvature, especially in the upper tail (reflecting the right-skewed Poisson parent). As $n$ increases to 30 and 100, the points tend to follow the reference line more closely and the Q-Q plots become progressively more linear. Even though the parent distribution is skewed, the sampling distribution of $\bar{X}$ becomes increasingly well approximated by a normal distribution as $n$ increases, as predicted by the Central Limit Theorem.
+
+</div>
+</details>
+
+---
+
+<!-- Q25 -->
+<div class="exercise-box">
+<div class="exercise-label">Question 25</div>
+
+Let $X_1, X_2, \ldots$ be i.i.d. Bernoulli random variables with success probability $p = 0.4$, so $E[X_i] = 0.4$ and $\text{Var}(X_i) = p(1-p) = 0.24$.
+
+(a) By the WLLN, what value does $\bar{X}_n$ converge to in probability?
+
+(b) Use Chebyshev's Inequality to find the minimum $n$ such that:
+
+$$P\!\left(|\bar{X}_n - 0.4| \geq 0.05\right) \leq 0.05$$
+
+Show all steps.
+
+(c) Interpret your answer: in the context of estimating a proportion from a survey, what does this bound guarantee?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+
+- $\text{Var}(\bar{X}_n) = \text{Var}(X_i)/n = 0.24/n$.
+- Apply Chebyshev with $k = 0.05$: set $\dfrac{0.24/n}{(0.05)^2} \leq 0.05$ and solve for $n$.
+
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+
+**(a)** By the WLLN: $\bar{X}_n \overset{p}{\longrightarrow} 0.4$.
+
+**(b)** $\text{Var}(\bar{X}_n) = 0.24/n$. By Chebyshev's Inequality:
+
+$$P(|\bar{X}_n - 0.4| \geq 0.05) \leq \frac{0.24/n}{(0.05)^2} = \frac{0.24}{0.0025\,n} = \frac{96}{n}$$
+
+Setting $96/n \leq 0.05$:
+
+$$n \geq \frac{96}{0.05} = 1920$$
+
+The minimum required sample size is $n = 1920$.
+
+**(c)** With $n = 1920$ respondents, Chebyshev's Inequality guarantees that the probability that the sample proportion $\bar{X}_n$ differs from the true proportion $p = 0.4$ by at least 0.05 is at most 5%.
+
+</div>
+</details>

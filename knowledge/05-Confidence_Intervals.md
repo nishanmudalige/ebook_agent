@@ -1,0 +1,3812 @@
+<!-- ebook_agent retrieval copy; source: 05-Confidence_Intervals.Rmd -->
+<!-- Treat this as course material but independently verify mathematical/statistical claims. -->
+
+---
+resources:
+  - Academic_Performance_A.csv
+  - sleep_study.csv
+  - student_admission.csv
+  - plant_yield.csv
+  - braking_dist.csv
+---
+
+# Confidence Intervals
+
+
+## Introduction 
+
+Confidence intervals are a fundamental concept in statistics that allow us to make inferences about a population based on a sample. They provide a range of values, derived from the sample data, that is likely to contain the true population parameter with a specified level of confidence.
+
+We will start by introducing point estimates which are used to estimate population parameters and then move on to interval estimates which utilzie point estimates to calculate them.
+
+::: {.definition Name="Point Estimate" #PointEstim}
+A point estimate is a single numerical value computed from sample data that serves as the best guess of an unknown population parameter.
+:::
+
+::: {.example}
+- $\bar{x}$ is a point estimate of $\mu$
+- $s^2$ is a point estimate of $\sigma^2$
+- $s$ is a point estimate of $\sigma$
+:::
+
+Recall in Section \@ref(sec:inference) where we introduced statistics inference, 
+we discussed that we the values of statistics which are calculated and known 
+to make conclusions on parameters which are unknown and quantify the degree of 
+certainty of statements
+made.
+
+When we calculate a statistic, it will not be exactly equal to the parameter it is estimating.
+For example, the sample mean $\bar{x}$ is not exactly equal to the population mean $\mu$. 
+We can get an idea about the value of a parameter using an
+*interval estimate* which gives a *range of real numbers* around the statistic 
+which we believe contains it.
+
+::: definition
+A confidence interval is a plausible range of values that captures a
+parameter with a quantified degree of confidence.
+:::
+
+In this course, all confidence intervals have the same basic skeleton:
+
+$$\text{estimator} \pm 
+\underbrace{
+\left(
+\text{value from a reference distribution}
+\right)
+\times 
+\left(
+\text{standard error of estimate}
+\right)
+}_{\textit{margin of error}}$$
+
+The *standard error of the estimator* is the standard deviation of the 
+the *sampling distribution* of the estimator.
+
+The value from the reference distribution in the skeleton above will be
+either a value from the standard normal distribution the Student
+*t*-distribution, ot the chi-square distribution. 
+The margin of error (*MOE*) can be considered as the
+distance around our estimator in which the true value of the parameter
+of interest will be found, with a specified level of confidence.
+
+## Interpretation
+
+We use very specific language when we interpret a confidence interval.
+
+::: tcolorbox
+*Suppose we construct a $C\%$ confidence interval for some parameter
+such that $C$ is between 0 and 100. In repeated sampling, we are $C\%$
+confident that approximately $C\%$ of the intervals will capture the
+true value of the parameter.*
+:::
+
+By this we mean that if we constructed several $C\%$ confidence
+intervals using different samples (with or without replacing the units),
+then we should expect approximately $C\%$ of these intervals to capture
+the parameter of interest. For example suppose we construct 1000 95%
+confidence intervals for the population mean $\mu$. We would expect
+approximately 95% of these 1000 intervals
+(i.e. $95\% \times 1000 = 950$) to actually capture $\mu$.
+
+A more intuitive but equivalent interpretation is to state that we are
+$C$% confident that our target parameter is inside the interval
+constructed.
+
+::: {.remark}
+It is **incorrect** to state that there is a $C\%$ probability that the
+interval we constructed contains the parameter of interest. We assume
+that the value of a parameter is fixed. Therefore when we construct a
+confidence interval, the interval either contains the parameter or it
+does not.
+:::
+
+Not all confidence intervals contain the true value of the parameter. This can be
+illustrated by plotting many intervals simultaneously and observing.
+
+
+```r
+library(ggplot2)
+library(dplyr)
+
+set.seed(10)
+
+# 1) Simulation parameters
+n        <- 50           # observations per simulation
+num_sims <- 50           # number of simulations
+true_mu  <- 0            # true population mean
+alpha    <- 0.05         # for 95% CI
+z        <- qnorm(1 - alpha / 2)
+
+# 2) Run the simulations and collect confidence intervals
+ci_df <- tibble(sim = 1:num_sims) %>%
+  rowwise() %>%
+  mutate(
+    sample   = list(rnorm(n, mean = true_mu, sd = 1)),
+    mean     = mean(unlist(sample)),
+    se       = sd(unlist(sample)) / sqrt(n),
+    lower    = mean - z * se - 0.1,
+    upper    = mean + z * se + 0.5,
+    misses   = (lower > true_mu) | (upper < true_mu)
+  ) %>%
+  ungroup()
+
+# 3) Plot with ggplot2
+p = ggplot(ci_df, aes(y = sim)) +
+  # 3a) Confidence intervals
+  geom_segment(aes(x = lower, xend = upper, color = factor(sim)),
+               size = 1.1) +
+  # 3b) Vertical dashed line from y = 0 to y = num_sims
+  geom_segment(aes(x = true_mu, xend = true_mu, y = 0, yend = num_sims + 2),
+               linetype     = "dashed",
+               color        = "black",
+               inherit.aes  = FALSE) +
+  # 3c) Mark intervals that miss the true mean with a red "X"
+  geom_text(data = filter(ci_df, misses),
+            aes(x = upper + 0.3, label = "X"),
+            color = "red", size = 5, hjust = 0) +
+  # 4) Scales and labels
+  scale_y_continuous(breaks = 1:num_sims) +
+  scale_x_continuous(limits = c(-3, 5)) +
+  labs(x = NULL, y = NULL) +
+  # 5) Theme adjustments: no legend, no grids, no ticks/text
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position     = "none",
+    panel.grid.minor    = element_blank(),
+    panel.grid.major.y  = element_blank(),
+    panel.grid.major.x  = element_blank(),  # remove vertical grid lines
+    axis.ticks          = element_blank(),
+    axis.text           = element_blank()
+  )
+
+p +
+  # your existing vline…
+  annotate("text",
+           x     = 0,
+           y     = -2,              # place it just above the highest y
+           label = expression(mu),             # Greek μ via plotmath
+           parse = TRUE,
+           fontface = "bold",
+           size = 5,
+           hjust = 0.5,                        # center it horizontally
+           vjust = 0.5)        
+```
+
+
+
+## One Sample Confidence Intervals
+
+In this section, we explore how to construct confidence intervals for estimating a single population parameter, focusing on the population mean. We will examine the logic behind confidence intervals, the assumptions required, and how different levels of confidence affect the width of the interval. This foundational concept is essential for interpreting sample data in the context of uncertainty and variability.
+
+### On a Population Mean
+
+#### When $\sigma$ is Known
+
+When we know the population standard deviation $\sigma$, we can
+construct a confidence interval for $\mu$ in the following manner.
+
+A $(100 - \alpha)\%$ confidence interval on $\mu$ when $\sigma$ is
+known is given by
+$$\bar{x} \; \pm \; z_{\alpha/2} \left( \frac{\sigma}{\sqrt{n}} \right)$$
+
+The $z_{\alpha/2}$ value is obtained from standard normal tables. The
+standard error is $\frac{\sigma}{\sqrt{n}}$ and the margin of error is
+$z_{\alpha/2} \left( \frac{\sigma}{\sqrt{n}} \right)$
+
+
+
+The critical value $z_{\ast}$ is illustrated in Figure \@ref(fig:ConfLevelImg) below and
+depends on $C$.
+
+```r
+library(plotly)
+library(dplyr)
+
+# Parameters
+z      <- seq(-4, 4, length.out = 1000)
+curve  <- dnorm(z)
+C      <- 0.95
+z_star <- qnorm(1 - (1 - C)/2)
+
+# Data
+df        <- tibble(z = z, density = curve)
+df_shaded <- df %>% filter(z >= -z_star & z <= z_star)
+
+# Bracket positioning
+bracket_height <- 0.08   # height above axis for brackets
+bracket_width  <- 0.0    # horizontal length of top bar
+cap_height     <- 0.02   # vertical cap height
+
+# x-range for tails
+left_end_x  <- min(df$z)  + 0.001  # nudge inside so left cap is visible
+right_end_x <- max(df$z)  - 0.001  # nudge inside so right cap is visible
+
+# Build plot
+plot_ly() |>
+  # Shaded central area
+  add_ribbons(
+    x = df_shaded$z,
+    ymin = 0,
+    ymax = df_shaded$density,
+    fillcolor = "rgba(0,192,184,0.6)",
+    line = list(color = "rgba(0,0,0,0)"),
+    hoverinfo = "skip"
+  ) |>
+  # Density curve
+  add_trace(
+    x = df$z, y = df$density,
+    type = "scatter", mode = "lines",
+    line = list(width = 3, color = "rgba(0,192,184,0.6)"),
+    hovertemplate = "z=%{x:.2f}<br>f(z)=%{y:.3f}<extra></extra>"
+  ) |>
+  layout(
+    xaxis = list(
+      title = "",
+      range = c(-4.2, 4.2),
+      tickvals = c(-z_star, 0, z_star),
+      ticktext = c("\u2212z\u002A", "0", "z\u002A"),  # minus z* and z*
+      tickfont = list(size = 18),                     # increased font size
+      zeroline = FALSE,
+      showgrid = FALSE
+    ),
+    yaxis = list(
+      title = "",
+      showticklabels = FALSE,
+      showgrid = FALSE,
+      zeroline = FALSE
+    ),
+    shapes = list(
+      # baseline y = 0
+      list(type = "line", x0 = -4, x1 = 4, y0 = 0, y1 = 0,
+           line = list(color = "black", width = 1)),
+      
+      # ---- LEFT BRACKET ----
+      list(type = "line",
+           x0 = left_end_x, x1 = -z_star,
+           y0 = bracket_height, y1 = bracket_height,
+           line = list(color = "black", width = 2)),
+      list(type = "line",
+           x0 = left_end_x, x1 = left_end_x,
+           y0 = bracket_height, y1 = bracket_height - cap_height,
+           line = list(color = "black", width = 2)),
+      list(type = "line",
+           x0 = -z_star, x1 = -z_star,
+           y0 = bracket_height, y1 = bracket_height - cap_height,
+           line = list(color = "black", width = 2)),
+      
+      # ---- RIGHT BRACKET ----
+      list(type = "line",
+           x0 = z_star, x1 = right_end_x,
+           y0 = bracket_height, y1 = bracket_height,
+           line = list(color = "black", width = 2)),
+      list(type = "line",
+           x0 = z_star, x1 = z_star,
+           y0 = bracket_height, y1 = bracket_height - cap_height,
+           line = list(color = "black", width = 2)),
+      list(type = "line",
+           x0 = right_end_x, x1 = right_end_x,
+           y0 = bracket_height, y1 = bracket_height - cap_height,
+           line = list(color = "black", width = 2))
+    ),
+    annotations = list(
+      # C/2 above each bracket
+      list(x = (left_end_x + (-z_star)) / 2,  y = bracket_height + 0.02,
+           text = "(C/2)%", showarrow = FALSE, font = list(size = 14)),
+      list(x = (z_star + right_end_x) / 2,    y = bracket_height + 0.02,
+           text = "(C/2)%", showarrow = FALSE, font = list(size = 14)),
+      list(x = 0, y = 0.12, text = "C%",
+           showarrow = FALSE, font = list(size = 16))
+    ),
+    plot_bgcolor  = "rgba(0,0,0,0)",
+    paper_bgcolor = "rgba(0,0,0,0)",
+    margin = list(l = 40, r = 20, t = 20, b = 50),
+    showlegend = FALSE
+  ) |>
+  config(
+    displayModeBar = FALSE,      # remove mode bar
+    staticPlot = TRUE            # disable zoom/pan
+  )
+```
+
+
+#### Table of Common $z$-values {.unlisted .unnumbered}
+
+
+| Confidence coefficient | Confidence level |   $z$   |
+|:----------------------:|:----------------:|:-------:|
+|          0.90          |       90%        |  1.645  |
+|          0.95          |       95%        |  1.96   |
+|          0.99          |       99%        |  2.576  |
+
+
+
+
+::: {.example}
+Playbill magazine reported that the mean annual household income of its
+readers is \$119,155. Assume this estimate is based on a sample of 80
+households, and that the population standard deviation is known to be
+$\sigma = 30{,}000$.
+
+- $\bar{x} = 119{,}155$
+
+- $n = 80$
+
+- $\sigma = 30{,}000$
+
+**Tasks:**
+
+1.  Develop a 90% confidence interval estimate of the population mean.
+
+2.  Develop a 95% confidence interval estimate of the population mean.
+
+3.  Develop a 99% confidence interval estimate of the population mean.
+
+**90% CI Calculation**
+
+$$\bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}} = 119{,}155 \pm 1.645 \cdot \frac{30{,}000}{\sqrt{80}}$$
+$$= 119{,}155 \pm 5{,}500.73$$ $$= (113{,}654.27, \; 124{,}655.73)$$
+
+**95% CI Calculation**
+
+$$\bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}} = 119{,}155 \pm 1.96 \cdot \frac{30{,}000}{\sqrt{80}}$$
+$$= 119{,}155 \pm 6{,}574.04$$ $$= (112{,}580.96, \; 125{,}729.04)$$
+
+**99% CI Calculation**
+
+$$\bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}} = 119{,}155 \pm 2.576 \cdot \frac{30{,}000}{\sqrt{80}}$$
+$$= 119{,}155 \pm 8{,}620.04$$ $$= (110{,}534.96, \; 127{,}775.04)$$
+
+**Interpretation**
+
+We are 99% confident the mean household income of magazine readers is
+between \$110,534.96 and \$127,775.04.
+:::
+
+
+::: {.example}
+**Scenario:**
+
+The number of cars sold annually by used car salespeople is known to be
+**normally distributed**, with a population standard deviation of
+$\sigma = 15$. A random sample of $n = 15$ salespeople was taken, and
+the number of cars each sold is recorded below. Construct a **95%
+confidence interval** for the population mean number of cars sold, and
+provide an interpretation.
+
+**Raw data:**
+
+$$\begin{matrix}
+79 & 43 & 58 & 66 & 101 \\
+63 & 79 & 33 & 58 & 71 \\
+60 & 101 & 74 & 55 & 88 \\
+\end{matrix}$$
+
+The sample mean is:
+
+$$\bar{x} = \frac{79 + 43 + \cdots + 55 + 88}{15} = 68.6$$
+
+**R function:**
+
+```r
+    simple.z.test = function(x, sigma, conf.level = 0.95) {
+      n = length(x);
+      xbar = mean(x);
+      alpha = 1 - conf.level;
+      zstar = qnorm(1 - alpha/2);
+      SE = sigma / sqrt(n);
+      xbar + c(-zstar * SE, zstar * SE);
+    }
+```
+
+
+**R output:**
+
+```r
+    # Step 1. Entering data;
+    cars = c(79, 43, 58, 66, 101, 63, 79,
+             33, 58, 71, 60, 101, 74, 55, 88)
+
+    # Step 2. Finding CI;
+    simple.z.test(cars, 15)
+
+    ## [1] 61.00909 76.19091
+```
+
+**Interpretation:** 
+
+We estimate that the mean number of cars sold
+annually by all used car salespeople lies between 61 and 76,
+approximately. This type of estimate is correct 95% of the time.
+:::
+
+
+
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+
+#### When $\sigma$ is Not known
+
+
+::: {.definition}
+Let $\mu$ be the population mean. When the population standard deviation
+is unknown, a confidence interval for $\mu$ is given by:
+$$\bar{x} \pm t_{n-1, \alpha/2} \left( \frac{s}{\sqrt{n}} \right)$$
+where 
+$\bar{x}$ is the sample mean; <br> 
+$s$ is the sample standard deviation; <br>
+$n$ is the sample size.
+:::
+
+<!--
+### Independence Assumption {#independence-assumption .unlisted .unnumbered}
+
+The data values should be independent. There's really no way to check
+independence of the data by looking at the sample, but we should think
+about whether the assumption is reasonable.
+
+### Randomization Condition {#randomization-condition .unlisted .unnumbered}
+
+The data arise from a random sample or suitably randomized experiment.
+Randomly sampled data is ideal is usually most preferred. 
+
+A common way type of random sample is a simple random sample (SRS),
+which is a sample where every unit, or every group of units, is equally likely to be selected.
+Other sampling techniques exist, however these are more suitable for a course 
+on sampling techniques.
+-->
+
+<!--
+::: tcolorbox
+- For very small samples ($n < 15$ or so), the data should follow a
+  Normal model pretty closely. If you do find outliers or strong
+  skewness, don't use this method.
+
+- For moderate samples ($n$ between 15 and 40 or so), the t-method will
+  work well as long as the data is unimodal and reasonably symmetric.
+  Make a histogram, boxplot, or Q--Q plot to check.
+
+- When the sample size is larger than 40 or 50, the t-method is safe to
+  use unless the data are extremely skewed. Make a histogram, boxplot,
+  or Q--Q plot to check.
+:::
+-->
+
+<!--
+### Standard Error {#standard-error .unlisted .unnumbered}
+
+When the standard deviation of a statistic is estimated from data, the
+result is called the *standard error* of the statistic. The standard
+error of the sample mean $\bar{x}$ is $$\frac{s}{\sqrt{n}}.$$
+-->
+
+<!--
+::: tcolorbox
+- The density curves of the *t* distributions are similar in shape to
+  the Standard Normal curve. They are symmetric about 0, single-peaked,
+  and bell-shaped.
+
+- The spread of the *t* distributions is a bit greater than that of the
+  Standard Normal distribution. The *t* distributions have more
+  probability in the tails and less in the center than the Standard
+  Normal. This is because substituting the estimate $s$ for the fixed
+  parameter $\sigma$ introduces more variation into the statistic.
+
+- As the degrees of freedom increase, the *t* density curve approaches
+  the $N(0, 1)$ curve more closely. This happens because $s$ estimates
+  $\sigma$ more accurately as the sample size increases. So using $s$ in
+  place of $\sigma$ causes little extra variation when the sample is
+  large.
+:::
+-->
+
+
+
+
+::: {.example}
+The composition of the Earth's atmosphere may have changed over time. To
+study the nature of the atmosphere long ago, scientists examined the gas
+in air bubbles trapped in ancient amber. Amber is fossilized tree resin
+that preserved the atmospheric gases at the time it was formed.
+
+Measurements on amber specimens from the late Cretaceous era (75 to 95
+million years ago) give the following percent values of nitrogen:
+
+$$
+63.4, 65.0, 64.4, 63.3, 54.8, 64.5, 60.8, 49.1, 51.0
+$$
+
+Assume these observations are a simple random sample (SRS) from the
+population of all ancient air bubbles. Construct a **90% confidence
+interval** to estimate the mean percent of nitrogen in ancient air.
+(Today's atmosphere contains about 78.1% nitrogen.)
+
+**Solution:**
+
+Let $\mu$ represent the true mean percent of nitrogen in ancient air. We
+compute a 90% confidence interval for $\mu$ using the sample data.
+
+Given:
+$$\bar{x} = 59.5888, \quad s = 6.2552, \quad n = 9, \quad t^* = 1.860 \quad (\text{df} = 8)$$
+
+$$59.5888 \pm 1.860 \left( \frac{6.2552}{\sqrt{9}} \right) = 59.5888 \pm 3.8782$$
+
+$$\boxed{55.7106 \text{ to } 63.4670}$$
+
+**R code:**
+
+```r
+    # Step 1: Entering the data
+    nitrogen <- c(63.4, 65.0, 64.4, 63.3, 54.8, 64.5, 60.8, 49.1, 51.0)
+
+    # Step 2: Constructing the 90% confidence interval
+    t.test(nitrogen, conf.level = 0.90)
+```
+
+**R output:**
+
+```r
+    One Sample t-test
+
+    data:  nitrogen
+    t = 28.578, df = 8, p-value = 2.43e-09
+    alternative hypothesis: true mean is not equal to 0
+    90 percent confidence interval:
+     55.71155 63.46622
+    sample estimates:
+    mean of x 
+      59.58889 
+```
+:::
+
+
+
+::: {.example}
+Most owners of digital cameras store their pictures on the camera. Some
+will eventually download these to a computer or print them using their
+own printers or a commercial printer. A film-processing company wanted
+to know how many pictures were stored on cameras.
+
+A random sample of 10 digital camera owners produced the following data:
+
+$$
+25, 6, 22, 26, 31, 18, 13, 20, 14, 2
+$$
+
+Estimate with **95% confidence** the mean number of pictures stored on
+digital cameras.
+
+---
+
+**Solution:**
+
+We are given raw data with $n = 10$ and no information about the
+population standard deviation, so we construct a confidence interval for
+the population mean using the t-distribution.
+
+**Step 1: Compute sample statistics**
+
+- Sample mean: $\bar{x} = \dfrac{177}{10} = 17.7$
+
+- Sample variance (method 1 -- direct):
+  $$s^2 = \dfrac{\sum (x_i - \bar{x})^2}{n - 1} = \dfrac{742}{9} = 82.4556$$
+
+- Sample standard deviation: $$s = \sqrt{82.4556} = 9.081$$
+
+**Step 2: Find the critical value**
+
+For a 95% confidence interval with $n = 10$, degrees of freedom = 9.
+From the t-distribution table: $$t_{(9, 0.025)} = 2.262$$
+
+**Step 3: Construct the confidence interval**
+
+$$\bar{x} \pm t^* \cdot \dfrac{s}{\sqrt{n}} = 17.7 \pm 2.262 \cdot \dfrac{9.081}{\sqrt{10}} = 17.7 \pm 6.495$$
+
+$$\boxed{11.205 \text{ to } 24.195}$$
+
+**Interpretation:**
+
+We are 95% confident that the mean number of images stored on digital
+cameras is between 11.205 and 24.195.
+
+---
+
+**R code:**
+
+```r
+    # Step 1: Entering data
+    dataset <- c(25, 6, 22, 26, 31, 18, 13, 20, 14, 2)
+
+    # Step 2: Finding 95% confidence interval
+    t.test(dataset, conf.level = 0.95)
+```
+
+**R output:**
+
+```r
+    One Sample t-test
+
+    data:  dataset
+    t = 6.164, df = 9, p-value = 0.0001659
+    alternative hypothesis: true mean is not equal to 0
+    95 percent confidence interval:
+     11.2042 24.1958
+    sample estimates:
+    mean of x 
+         17.7 
+```
+:::
+
+
+
+::: {.example}
+A manufacturing company produces electric insulators. If the insulators
+break when in use, a short circuit is likely. To test the strength of
+the insulators, destructive testing is performed to determine how much
+force (in pounds) is required to break them.
+
+The following dataset consists of force values (in pounds) recorded for
+a random sample of 30 insulators:
+
+$$
+1870, 1728, 1656, 1610, 1634, 1784, 1522, 1696, 1592, 1662, 1866, 1764,
+1734, 1662, 1734, 1774, 1550, 1756, 1762, 1866, 1820, 1744, 1788, 1688,
+1810, 1752, 1680, 1810, 1652, 1736
+$$
+
+Construct a **95% confidence interval** for the population mean force
+required to break the insulators.
+
+**Solution:**
+
+We want a confidence interval for the population mean $\mu$, where
+$\mu =$ mean force required to break electric insulators. The population
+standard deviation is unknown, so we use a *one-sample* t-interval.
+
+**R code:**
+
+```r
+    # Step 1. Entering data;
+    dataset <- c(1870, 1728, 1656, 1610, 1634, 1784, 1522, 1696, 1592, 1662,
+                 1866, 1764, 1734, 1662, 1734, 1774, 1550, 1756, 1762, 1866,
+                 1820, 1744, 1788, 1688, 1810, 1752, 1680, 1810, 1652, 1736)
+
+    # Step 2. Finding CI;
+    t.test(dataset, conf.level = 0.95)
+```
+
+**R output:**
+
+```r
+    One Sample t-test
+
+    data:  dataset
+    t = 105.41, df = 29, p-value < 2.2e-16
+    alternative hypothesis: true mean is not equal to 0
+    95 percent confidence interval:
+     1689.961 1756.839
+    sample estimates:
+    mean of x 
+       1723.4 
+```
+
+**Interpretation:**
+
+We are 95% confident that the average force required to break an
+electric insulator is between **1689.961 pounds** and **1756.839
+pounds**.
+:::
+
+
+
+::: {.example}
+The operations manager of a production plant would like to estimate the
+mean amount of time a worker takes to assemble a new electronic
+component. After observing 120 workers assembling similar devices, she
+noticed that their average time was 16.2 minutes (with a standard
+deviation of 3.6 minutes).
+
+Construct a **92% confidence interval** for the mean assembly time.
+State all necessary assumptions.
+:::
+-->
+
+<!--
+::: {.example}
+In 2010, 142,823,000 tax returns were filed in the United States. The
+Internal Revenue Service (IRS) examined 1.107%, or 1,581,000, of them to
+determine if they were correctly done. To evaluate auditor performance,
+a random sample of these returns was drawn and the additional tax was
+recorded.
+
+Estimate with 95% confidence the mean additional income tax collected
+from the 1,581,000 files audited.
+
+**Solution:**
+
+We use a one-sample confidence interval for the population mean
+additional tax collected.
+
+**Step 1: Import the data from `taxes.txt`**
+
+```r
+
+    # url of taxes;
+    url <- "https://mcs.utm.utoronto.ca/~nosedal/data/taxes.txt"
+    taxes_data <- read.table(url, header = TRUE)
+
+    # inspect structure
+    names(taxes_data)
+    head(taxes_data)
+
+    # isolate the tax values
+    taxes <- taxes_data$Taxes
+```
+
+**Step 2: Plot the data**
+
+*Histogram:*
+
+```r
+    hist(taxes,
+         main = "Histogram for our example",
+         xlab = "taxes", ylab = "frequency",
+         col = "blue")
+```
+
+
+
+```r
+library(ggplot2)
+
+# Step 1: Load the dataset
+url <- "https://mcs.utm.utoronto.ca/~nosedal/data/taxes.txt"
+taxes_data <- read.table(url, header = TRUE)
+
+# Step 2: Extract 'Taxes' column
+taxes <- taxes_data$Taxes
+
+# Step 3: ggplot histogram
+ggplot(taxes_data, aes(x = Taxes)) +
+  geom_histogram(
+    fill = "#619CFF",
+    color = "#FFFFFF",
+    bins = 30
+  ) +
+  labs(
+    title = " ",
+    x = "Taxes",
+    y = "Frequency"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+
+*Boxplot:*
+
+```r
+    boxplot(taxes,
+            main = "Additional Income Tax",
+            col = "blue")
+```
+
+
+```r
+library(ggplot2)
+
+# Step 1: Load the dataset
+url <- "https://mcs.utm.utoronto.ca/~nosedal/data/taxes.txt"
+taxes_data <- read.table(url, header = TRUE)
+
+# Step 2: ggplot boxplot
+ggplot(taxes_data, aes(y = Taxes)) +
+  geom_boxplot(fill = "#619CFF", color = "#000000") +
+  labs(
+    title = " ",
+    y = "Taxes",
+    x = NULL
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+
+*Q-Q Plot:*
+
+```r
+    qqnorm(taxes, col = "blue", pch = 19)
+    qqline(taxes)
+```
+
+
+```r
+library(ggplot2)
+
+# Step 1: Load the dataset
+url <- "https://mcs.utm.utoronto.ca/~nosedal/data/taxes.txt"
+taxes_data <- read.table(url, header = TRUE)
+
+# Step 2: Create ggplot-compatible Q-Q data
+ggplot(taxes_data, aes(sample = Taxes)) +
+  stat_qq(color = "#619CFF", size = 2) +         # Equivalent to qqnorm()
+  stat_qq_line(color = "#000000") +             # Equivalent to qqline()
+  labs(
+    title = " ",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+
+**Step 3: Construct 95% CI**
+
+```r
+    t.test(taxes, conf.level = 0.95)
+```
+
+**Interpretation:** Based on the t-test, we are 95% confident that the
+average additional tax collected lies within the interval calculated
+from the sample.
+
+**Assumptions:**
+
+- The sample is a random sample from the population of interest.
+
+- Observations are independent.
+
+- The population is approximately Normal, or the sample size is large
+  enough (justified by the histogram, boxplot, and Q-Q plot).
+
+```r
+    ## 
+    ##  One Sample t-test
+    ## 
+    ##  data:  taxes
+    ##  t = 29.345, df = 191, p-value < 2.2e-16
+    ##  alternative hypothesis: true mean is not equal to 0
+    ##  95 percent confidence interval:
+    ##   8886.932 10167.721
+    ##  sample estimates:
+    ##  mean of x 
+    ##    9527.326 
+```
+
+**Interpretation:**
+
+We estimate that the mean additional tax collected lies between \$8,887
+and \$10,168 (with 95% confidence).
+:::
+
+<!--
+### A few final comments {#a-few-final-comments .unlisted .unnumbered}
+
+When we introduced the Student *t*-distribution, we pointed out that the
+*t*-statistic is Student *t*-distributed if the population from which
+we've sampled is Normal. However, statisticians have shown that the
+mathematical process that derived the Student *t*-distribution is
+**robust**, which means that if the population is non-Normal, the
+results of the confidence interval estimate are still valid provided
+that the population is **not extremely non-Normal**. Our histogram,
+boxplot, and Q--Q plot suggest that our variable of interest is not
+extremely non-Normal, and in fact, may be Normal.
+-->
+
+
+
+### On a Population Proportion
+
+Previously, we have introduced two types of confidence interval based on
+known and unknown variance. Moreover, confidence intervals are also
+applied to an unknown population proportion. For example, suppose we are
+interested the proportion of total number of left-handed students among
+all students who are currently studying at University of Toronto
+Mississauga. The question is: how do we know such the parameter which
+estimates the proportion of left-handed students at UTM? While, it is
+impossible to proceed it directly by counting both the total number of
+students and all left-handed students at UTM, due to the complexity and
+the total workload of that task. Then, we have to work with confidence
+intervals.
+
+First, we take a random sample of students at UTM, then we calculate
+how many students are left-handed by dividing total number of
+left-handed students in that sample with total number of students in it,
+and denote the proportion as $\hat{p}$. Next we begin our confidence
+interval calculation to get a range of number with a certain level of
+confidence.
+
+Now let's begin with the proper definition of confidence interval on
+proportion.
+
+::: definition
+We select a random sample of size $n$ from a population with **unknown**
+proportion $p$ of success. An approximate confidence interval for **p**
+is:
+$$p = \hat{p}  \pm z_{\frac{\alpha}{2}} \cdot \sqrt{\frac{\hat{p}(1 - \hat{p})}{n}}, \text{ where $\hat{p} = \frac{\text{number of observations satisfying the criteria}}{n}$.}$$
+In addition, $n$ is the sample size.
+
+To apply this confidence interval, there are $3$ conditions that we need
+to guarantee:
+
+- $1$. Random sample;
+
+- $2$. Independent and identically distributed Bernoulli trails;
+
+- $3$. We have a large chosen sample size ($n\hat{p} \ge 10$ and
+  $n(1-\hat{p}) \ge 10$).
+:::
+
+A good way to understand confidence interval is visualization. Now,
+suppose we have a valid estimation $\hat{p}$. After the entire procedure
+of confidence interval, our population proportion ($p$) should be as the
+following number line shows:\
+
+```r
+\usetikzlibrary{decorations.pathmorphing, arrows, shapes, trees, positioning, matrix, calc, backgrounds}
+\begin{tikzpicture}
+  \draw[->] (0,0) -- (11,0);
+  \foreach \x in {0, 1.0} {
+    \draw[shift={(\x*10,0)},color=black] (0pt,3pt) -- (0pt,-3pt);
+    \draw[shift={(\x*10,0)},color=black] (0pt,-6pt) node[below] {\x};}
+  \draw[thick] (2.0,-0.3) arc (270:90:0.15cm and 0.3cm);
+  \node[above] at (2.0,0.3) {\textbf{Lower Bound of $p$}};
+  \draw[thick] (8.0,-0.3) arc (-90:90:0.15cm and 0.3cm);
+  \node[above] at (8.0,0.3) {\textbf{Upper Bound of $p$}};
+\end{tikzpicture}
+```
+
+Remember that your final answer of the range of $p$ must between $0$ and
+$1$, since we are working with proportion.
+
+
+<!--
+**Summary on One Sample Confidence Intervals**
+
+We have introduced one sample confidence interval under three different
+cases: given population variance, unknown population variance and
+unknown population proportion. All the material of one sample confidence
+interval comes from chapter $6, 7, 8$, which seems like you to remember
+a lot. However, the reason why we give this summery is to help you to
+remember the basic skeleton of one sample confidence interval. Let's
+revisit the three distinct types of confidence interval:
+
+- Known variance:
+  $\hat{x} \pm z_{\alpha/2} \displaystyle \frac{\sigma}{\sqrt{n}}$.
+
+- Unknown variance:
+  $\bar{x} \pm t_{\alpha/2} \displaystyle \frac{s}{\sqrt{n}}$
+
+- Proportion:
+  $\hat{p} \pm z_{\alpha/2} \displaystyle \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$
+
+The question is: what is the similarity between the three distinct types
+of confidence interval? You may have already noticed that the confidence
+intervals above are all follow such a skeleton that $\bar{x}$ plus or
+minus its margin of error (different between each type of C.I.).
+
+If we keep questioning ourselves that how the margin of error comes
+from, you will catch the pattern. The margin of error contains reference
+distribution and the standard deviation of $\bar{x}$ under its reference
+distribution. Let's analyze each type of confidence interval to prove my
+statement is true:
+
+The first type (given population variance) confidence interval is quite
+easy to recognize. Recall chapter $3$: The Central Limit Theorem, we
+state that $\bar{x} \sim N(\mu, \frac{\sigma^2}{n})$, which is how
+reference distribution comes from with given population variance. To get
+the standard deviation of $\bar{x}$, we simply take the square root of
+the variance, then $s_{\bar{x}} = \frac{\sigma}{\sqrt{n}}$. Finally, we
+multiply reference distribution at the point $\frac{\alpha}{2}$ with the
+standard deviation of $\bar{x}$ under normal distribution to get the
+margin of error.
+
+The second type (unknown population variance) confidence interval is
+similar to the first type, but the reference distribution is
+t-distribution instead of normal distribution. In chapter $7$, we
+introduced the calculation of sample variance ($s^2$) to estimate
+population variance ($\sigma^2$), and $s^2$ is an unbiased estimator of
+$\sigma^2$ (the proof of this statement is in STA260, in this course we
+can assume it freely). In chapter $2$, we defined that
+$T = \frac{\bar{x} - \mu}{(\frac{s}{\sqrt{n}})} \sim t_{n-1},$ then the
+term $\frac{s}{\sqrt{n}}$ (verify this by yourself as an extra exercise)
+is the standard deviation of $\bar{x}$ under t-distribution with $n-1$
+degrees of freedom. Finally, we multiply multiply reference distribution
+at the point $\frac{\alpha}{2}$ with the standard deviation of $\bar{x}$
+under t-distribution to get the margin of error.
+
+The third type (estimate population proportion) confidence interval is
+slightly harder to identify. Recall chapter $4$ that we can approximate
+binomial distribution by normal distribution. Suppose that a random
+variable $X \sim Binomial(n,p)$, then the random variable
+$X \sim N(np, np(1-p)).$ From chapter $4$, we know that
+$\hat{p} \sim N(\mu_{\hat{p}} = p, \sigma_{\hat{p}}^{2} = \frac{p(1-p)}{n})$.
+Trivially, the standard deviation of $\hat{p}$ is
+$\sqrt{\frac{p(1-p)}{n}}$, since we don't know the value $p$ and use
+$\hat{p}$ to estimate that. Then, standard deviation of $\hat{p}$ is
+$\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$. Finally, by multiplying the
+reference distribution and standard deviation, we get the margin of
+error of the confidence interval.
+
+**Conclusion About One Sample Confidence Intervals**
+
+If you follow the skeleton below, one sample confidence interval will
+become easier:
+
+- 1\. Identify what type of one sample confidence interval to use from
+  given information;
+
+- 2\. Construct your confidence interval that fits the circumstance
+  which you are facing, it either going to be
+  $\bar{x}  \pm M.E.(\bar{x})\text{ or } \hat{p}  \pm M.E.(\hat{p});$
+
+- 3\. Check the validity of your final answer. For example, the range of
+  $p$ must between $0$ and $1$.
+
+- 4\. Clearly state your final conclusion: we have a certain percentage
+  of confidence to guarantee that the value of the chosen sample is
+  between its lower bound and upper bound.
+
+
+
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+
+
+### On a Population Variance
+
+To construct a confidence interval for the **population variance** \( \sigma^2 \), we rely on the chi-square (\( \chi^2 \)) distribution. When the population is normally distributed, the sampling distribution of the statistic  
+\[
+\frac{(n - 1) s^2}{\sigma^2}
+\]  
+follows a chi-square distribution with \( n - 1 \) degrees of freedom. Using this, a \( (1 - \alpha) \times 100\% \) confidence interval for \( \sigma^2 \) is given by:  
+\[
+\left( \frac{(n - 1)s^2}{\chi^2_{\alpha/2}}, \frac{(n - 1)s^2}{\chi^2_{1 - \alpha/2}} \right)
+\]  
+where \( \chi^2_{\alpha/2} \) and \( \chi^2_{1 - \alpha/2} \) are the critical values from the chi-square distribution corresponding to the lower and upper tails, respectively.  
+This interval is not symmetric and depends heavily on the shape of the chi-square distribution.
+
+### Assumptions
+
+The construction of any confidence interval relies on a set of underlying assumptions. For one-sample confidence intervals, the key assumptions are:
+
+- **Independence**: The observations in the sample must be independent of one another.
+- **Random sampling**: The data should come from a random sample or randomized experiment.
+- **Normality**:
+  - For means: The population should be normally distributed, especially for small sample sizes. If the sample size is large (typically \( n \geq 30 \)), the Central Limit Theorem ensures approximate normality of the sampling distribution of the mean.
+  - For proportions: The sample size should be large enough such that both \( np \geq 10 \) and \( n(1 - p) \geq 10 \).
+  - For variances: The population must be normally distributed to use the chi-square-based interval for \( \sigma^2 \).
+
+If these assumptions are violated, the resulting confidence interval may not be valid or reliable.
+-->
+
+
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+
+
+## Two Sample Confidence Intervals
+
+We have discussed three distinct types of one sample confidence
+interval. Now, let's keep moving forward to see how confidence interval
+works for two sample. The aim of one sample confidence interval is
+giving a range of numbers to estimate population mean or proportion with
+a certain percentage of confidence. For two samples, the aim is
+comparing with sample has a relatively larger or smaller population mean
+or proportion with a certain percentage of confidence.
+
+### On a Difference of Means
+
+Suppose we are interested in the final mark of MAT135 from the same
+semester but with different campuses at the University of Toronto (let's
+use UTSG and UTM as the two independent population groups). We want to
+know which campus has a relatively higher average score, the question
+is: how do we determine that? It is going to be complicated if we
+proceed with the study directly by determining the sum of everyone's
+final marks and calculating the average for the two campuses. Similarly,
+as one sample confidence interval, we can select two groups of random
+sample from the two campuses (one group per each campus), and then
+calculate each sample mean. Finally, we apply a confidence interval to
+approximate which population has a higher mean (or average).
+
+
+Similar to one-sample confidence intervals on 
+a mean, we examine various cases of two-sample confidence intervals on a difference means.
+
+#### When $\sigma_1$ and $\sigma_2$ are Known
+
+::: definition
+Suppose we are given the population variance for both two independent
+groups of population. The confidence interval of $\mu_1 - \mu_2$
+(difference of mean between population group 1 and 2) is given by the
+following:
+$$(\bar{x}_{1} - \bar{x}_{2})  \pm z_{\small\alpha/2} \cdot \sqrt{ \frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}.$$
+For $\sigma_1^2$, which is population variance of population group 1;
+$n_1$ is the sample size chosen form population group 1. Similarly for
+$\sigma_2^2$, which is population variance of population group 2; $n_2$
+is the sample size chosen form population group 2.
+:::
+
+This situation is a bit unrealistic with other cases because the
+population variance ($\sigma^2$) from both groups are rare to know.
+
+
+<!-- ########## ########## ########## -->
+
+#### When $\sigma_1$ and $\sigma_2$ are Not Known
+
+In practice, we usually do not have the information about population variance.
+The situations in this section are a lot more realistic.
+In the case when the variances of both populations are unknown, 
+we consider two subcases.
+
+<!-- ########## ########## ########## -->
+
+#### When $\sigma_1 = \sigma_2$
+
+We first examine the case where we assume the standard deviation of both populations is assumed equal.
+
+::: {.definition #CIpooled}
+Suppose that the chosen two independent samples have same unknown
+population variance. Then the two sample confidence interval for
+$\mu_1 - \mu_2$ is given by the following:
+$$(\bar{x}_1 - \bar{x}_2)  \pm  t_{n_1+n_2-2; \alpha/2} \cdot s_p \cdot \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}.$$
+In this case, $n_1$ and $n_2$ are sample size from the two chosen
+samples respectively; $s_p$ is aggregated variance of both samples
+combined which accommodates samples of different sizes. Additionally,
+$s_p$ is called pooled standard deviation which is calculated by the
+following equation:
+$$s_p^2 = \frac{(n_1-1) s_1^2 + (n_2-1) s_2^2 }{n_1+n_2-2},$$
+where $s_1^2$ and $s_2^2$ are sample variance of the two chosen samples
+respectively.
+
+Then we take the square root $s_p = \sqrt{s_p^2}$ to get pooled standard
+deviation.
+:::
+
+::: {.remark}
+Alternatively we can also write the two sample confidence in Definition \@ref(def:CIpooled) as
+$$(\bar{x}_1 - \bar{x}_2)  \pm  t_{n_1+n_2-2; \alpha/2} \sqrt{s_p^2 \left(\frac{1}{n_1} + \frac{1}{n_2} \right) }$$
+:::
+
+The pooled variance (also known as combined variance,
+composite variance, or overall variance) is a method to calculate such a
+value in order to estimate variance between several distinct
+populations. The mean of each population may or may not be the same, but
+the variance of these populations are same. Pooled standard deviation
+does similar thing, we use that value to estimate standard deviation
+instead of variance.
+
+
+<!-- ########## ########## ########## -->
+
+#### When $\sigma_1 \neq \sigma_2$
+
+We now examine the case where we assume the standard deviation of both populations is assumed different.
+
+::: definition
+Suppose that our chosen two independent samples with unequal and unknown
+population variance, then the confidence interval for $\mu_1 - \mu_2$ is
+given by:
+$$(\bar{x}_1 - \bar{x}_2)  \pm t_{df; \alpha/2} \cdot \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}$$
+where $df = \min(n_1-1, n_2-1)$ and $s_1^2$ and $s_2^2$ are sample variance of the two chosen
+groups; and $n_1$, $n_2$ are the sample size of the two chosen groups
+respectively.
+:::
+
+
+::: {.remark}
+Note a more accurate approximation of the degrees of freedom is given by
+$$df = \frac{\left( \frac{s_1^2}{n_1} + \frac{s_2^2}{n_2} \right)^2}
+{
+\left( \frac{1}{n_1 - 1} \left( \frac{s_1^2}{n_1} \right)^2 \right)
++
+\left( \frac{1}{n_2 - 1} \left( \frac{s_2^2}{n_2} \right)^2 \right)
+}$$
+
+This approximation is accurate when both sample sizes $n_1$ and $n_2$
+are 5 or larger.
+:::
+
+
+#### Assumptions
+
+Same as all previous confidence intervals, we still need several
+conditions that guarantee the validity two sample confidence interval:
+
+- 1\. The two chosen sample is required to be independent and random;
+
+- 2\. If both sample size are small (both $n_1 < 30$ and $n_2 < 30$),
+  then both sample should be from normal population;
+
+- 3\. If one of the sample has a small size (either $n_1 < 30$ or
+  $n_2 < 30$), then the smaller sample must be from a normal population;
+
+Note that if both $n_1 \ge 30$ and $n_2 \ge 30$, then normality
+assumption is not required by the Central Limit Theorem.
+
+<!-- **Example (Comparing Two Population Means Managerial Success Indexes for -->
+<!-- Two Groups)** -->
+
+
+
+
+### On a Difference of Proportions
+
+Furthermore, two sample confidence intervals can approximate the
+proportion as well. Suppose we are interested in the proportion of
+left-handed students in UTSG and UTM, and we are asked to find the
+campus that has a relatively larger proportion of left-handed students.
+To begin with this task, it is impossible to complete it directly by
+calculation, due to its complexity and high workload. We can use select
+two independent groups (one group from each campus), then apply two
+sample confidence interval to approximate which campus has a larger
+proportion.
+
+::: definition
+Draw an SRS of size $n_1$ from a population having proportion $p_1$ of
+successes and draw an independent SRS of size $n_2$ from another
+population having proportion $p_2$ of successes. When $n_1$ and $n_2$
+are large, an approximate level C confidence interval for $p_1 - p_2$ is
+given by:
+$$(\hat{p}_1 - \hat{p}_2)  \pm z_{\alpha/2} \cdot \sqrt{ \frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}.$$
+Now, $n_1$ and $n_2$ are sample size of selected random sample from each
+population; $\hat{p}_1$ and $\hat{p}_2$ are the proportion of success of
+each selected random sample respectively.
+:::
+
+
+#### Assumptions
+
+- 1\. Randomization Condition: The data in each group should be drawn
+  independently and at random from a population or generated b y a
+  completely randomized designed experiment.
+
+- 2\. The $10\%$ Condition: If the data are sampled without replacement,
+  the sample should not exceed $10\%$ of the population. If samples are
+  bigger than $10\%$ of the target population, random draws are no
+  longer approximately independent.
+
+- 3\. Independent Groups Assumption: The two groups we are comparing
+  must be independent from each other.
+
+- 4\. Sample size requirement: both selected sample size must greater
+  than $70$.
+  
+
+
+### On a Ratio of Variances
+
+Confidence interval is a strong technique in inferential statistics, we
+have discussed its application on population mean, proportion and
+dependent data. Now, let's move on to variance.
+
+One simple method involves just looking at two sample variances.
+Logically, if two population variances are equal, then the two sample
+variances should be very similar. When the two sample variances are
+reasonably close, you can be reasonably conﬁdent that the homogeneity
+assumption is satisﬁed and proceed with, for example, Student
+t-interval. However, when one sample variance is three or four times
+larger than the other, then there is reason for a concern. The common
+statistical procedure for comparing population variances $\sigma_1^2$
+and $\sigma_2^2$ makes an inference about the ratio of
+$(\sigma_1^2)/(\sigma_2^2)$.
+
+To make an inference about the ratio of $(\sigma_1^2)/(\sigma_2^2)$ we
+collect sample data and use the ratio of the sample variances
+
+$(\sigma_1^2)/(\sigma_2^2)$.
+
+At this point, let's derive the confidence interval. We know that:
+$\frac{s_1^2/\sigma_1^2}{s_2^2/\sigma_2^2} \sim F_{n_1-1, n_2 -1}$.
+
+Then we can construct our confidence interval as:
+
+$$
+P \left( F_{n_1-1, n_2 -1; 1-\alpha/2} < \frac{s_1^2/\sigma_1^2}{s_2^2/\sigma_2^2} < F_{n_1-1, n_2 -1; \alpha/2} \right)  = 1 -\alpha.
+$$
+Now, the reference distribution of this confidence interval is
+F-distribution with $n_1 - 1$ and $n_2 -1$ degrees of freedom, leaving
+areas of $1 - \alpha/2$ and $\alpha/2$, respectively, to the right.
+
+Rearranging gives us:
+
+$$
+P \left( \frac{s_1^2}{s_2^2}\frac{1}{F_{n_1-1, n_2 -1; \alpha/2}} 
+  < \frac{\sigma_1^2}{\sigma_2^2} 
+  < \frac{s_1^2}{s_2^2} \frac{1}{F_{n_1-1, n_2 -1; 1-\alpha/2}} \right) = 1 - \alpha.
+$$
+
+Using the face that
+
+$F_{n_1-1,n_2-1; 1 - \alpha/2} = \displaystyle\frac{1}{F_{n_2-1,n_1-1; \alpha/2}}$,
+
+we have:
+
+$$
+P\left( \frac{s_1^2}{s_2^2} \frac{1}{F_{n_1-1, n_2-1, \alpha/2}}
+  < \frac{\sigma_1^2}{\sigma_2^2} 
+  < \frac{s_1^2}{s_2^2} F_{n_2-1, n_1 - 1, \alpha/2}
+\right)= 1 - \alpha.$$
+
+
+#### Assumptions
+
+The confidence interval for the ratio of two population variances relies on the following assumptions:
+
+- **Independence**: The two samples must be independent of each other.
+- **Random Sampling**: Each sample must be obtained through a process of random selection.
+- **Normality**: Both populations from which the samples are drawn must follow a normal distribution. This assumption is critical because the ratio of sample variances follows an F-distribution only when the underlying populations are normally distributed.
+- **Equal Measurement Scale**: The two variables being compared should be measured on the same or comparable scales, since we are comparing their variability.
+
+Violations of these assumptions, particularly normality, can lead to inaccurate confidence intervals and invalid conclusions.
+
+
+
+
+
+## Confidence Intervals on Paired Data {#sec:CIsOnPaired}
+
+It may appear that two sample confidence interval only works on two
+independent samples, however what about two dependent samples? Suppose
+we are interested the growth of height from several distinct elementary
+students. We measure their height recently, then we will do it another
+time with five years later. The question is: how are we going to proceed
+with two confidence interval? While, the answer is yes. We are able to
+do so by constructing two sample confidence interval, but with a
+different strategy. 
+
+We may have situations 
+
+::: {.smalltbl}
+| Sample Units | Measurement 1 (\(M_{1}\)) | Measurement 2 (\(M_{2}\)) | Difference (\(M_{2}-M_{1}\))    |
+|:------------:|:-------------------------:|:-------------------------:|:-------------------------------:|
+|            1 | \(x_{11}\)               | \(x_{12}\)               | \(x_{d1} = x_{12} - x_{11}\)      |
+|            2 | \(x_{21}\)               | \(x_{22}\)               | \(x_{d2} = x_{22} - x_{21}\)      |
+|            3 | \(x_{31}\)               | \(x_{32}\)               | \(x_{d3} = x_{32} - x_{31}\)      |
+|   \(\vdots\) | \(\vdots\)               | \(\vdots\)               | \(\vdots\)                        |
+|            n | \(x_{n1}\)               | \(x_{n2}\)               | \(x_{dn} = x_{n2} - x_{n1}\)      |
+:::
+
+<!-- |              |                          |                          | $\bar{x}_{d} = \displaystyle\frac{\displaystyle\sum_{i=1}^{m} x_{di}}{n}$ | -->
+<!-- |              |                          |                          | $s_{d} = \displaystyle\frac{\displaystyle\sum_{i=1}^{m} (x_{di} - \bar{x}_{d} )^2}{n-1}$ | -->
+
+The table shows how calculate paired data. 
+In each row, *Measurement 1*is a measurement on a sample unit
+and the *Measurement 2* is a measurement on the *same* unit.
+We then calculate the difference between the two measurements for each of the measurements for each unit
+as shown in the last column,
+difference between the second and the first measurement ($M_2 - M_1$).
+
+::: {.remark}
+In the table above, we calculated differences as $M_{2} - M_{1}$, however it is also possible to calculate $M_{2} - M_{1}$.
+The final results and interpretation will be the same, however one order in which measurements are subtracted
+may be more convenient than the other.
+:::
+
+To calculate the confidence interval on paired data, we first need to calculate the mean and sample variance of the difference data using:
+
+$$\bar{x}_{d} = \displaystyle\frac{\displaystyle\sum_{i=1}^{m} x_{di}}{n},
+\quad\quad
+s_{d} = \displaystyle\frac{\displaystyle\sum_{i=1}^{m} (x_{di} - \bar{x}_{d} )^2}{n-1}.$$
+
+Then we can use the fourth column to get the mean value, sample variance
+and sample standard deviation of the difference. Now, let's begin with
+the proper definition:
+
+::: definition
+Suppose we have two samples that are dependent with each other, the
+confidence interval on paired data's mean ($\mu_d$) is given by:
+$$\bar{x}_d  \pm t_{n-1, \alpha/2} \cdot \frac{s_d}{\sqrt{n}}.$$ In this
+case, the reference distribution is t-distribution with $n-1$ degrees of
+freedom (sample size minus $1$), $\bar{x}_d$ represents the sample mean
+of difference between the two measurements on the paired data, $s_d$ is
+the sample standard deviation of difference between the two
+measurements.
+:::
+
+
+#### Assumptions
+
+The confidence interval for the mean of paired data relies on the following assumptions:
+
+- **Paired Observations**: Each pair of values must come from the same experimental unit or matched units. For example, a before-and-after measurement on the same subject or matched subjects in a treatment and control group.
+
+- **Independence of Pairs**: The pairs themselves must be independent of each other. That is, the differences between paired observations should not influence one another.
+
+- **Normality of Differences**: The distribution of the differences between the paired observations (not the original values themselves) should be approximately normal. This assumption becomes less critical with larger sample sizes due to the Central Limit Theorem.
+
+- **Random Sampling**: The sample of pairs should be obtained using a random process to ensure unbiased inference.
+
+Violations of these assumptions may lead to inaccurate or misleading confidence intervals.
+
+
+
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+<!-- ########## ########## ########## -->
+
+## Sample Size Selection using Confidence Intervals
+
+In this section we will examine techniques to calculate the minimum
+sample size required to obtain a confidence interval to be within a
+specified margin of error.
+
+### Calculating Sample Size for a Confidence Interval on a Mean {#secSampleSizeCIMean}
+
+We will examine how to calculate the minimum sample size $n$ for a
+confidence interval on a mean for a margin of error $E$ at confidence
+level $1-\alpha$.
+
+#### When $\sigma$ is Known {.unnumbered .unlisted}
+
+For a desired margin of error $E$ and confidence level $1-\alpha$:
+$$E = z_{\alpha/2}\,\frac{\sigma}{\sqrt{n}}$$
+
+We can rearrange $E$ to calculate the sample size using
+$$n = \left( \frac{z_{\alpha/2}\,\sigma}{E} \right)^2$$ where $n$ is
+always *rounded up* to the next integer.
+
+::: {.example #SampleSizePharmaceutical}
+A manufacturer of pharmaceutical products analyzes a specimen from each
+batch of a product to verify the concentration of the active ingredient.
+The chemical analysis is not perfectly precise. Repeated measurements on
+the same specimen give slightly different results. Suppose we know that
+the results of repeated measurements follow a Normal distribution with
+mean $\mu$ equal to the true concentration and standard deviation
+$\sigma = 0.0068$ grams per liter. (That the mean of the population of
+all measurements is the true concentration says that the measurements
+process has no bias. The standard deviation describes the precision of
+the measurement.) The laboratory analyzes each specimen $n$ times and
+reports the mean result.
+
+Management asks the laboratory to produce results accurate to within
+$\pm 0.005$ with 95% confidence. How many measurements must be averaged
+to comply with this request?
+
+$$n = \left( \displaystyle \frac{z_{0.025}\,\sigma}{E} \right)^2
+    = \Bigl(\frac{1.96 \times 0.0068}{0.005}\Bigr)^2
+    \approx 7.1$$ Since the sample size should be a whole number, we
+round our result up to $n=8$ measurements.
+:::
+
+In Example \@ref(exm:SampleSizePharmaceutical), we note that 7 measurements
+will give a slightly larger margin of error than desired, and 8
+measurements a slightly smaller margin of error, the lab must take 8
+measurements on each specimen to meet management's demand. Always round
+up to the next higher whole number when finding $n$.
+
+::: example
+Planning value $\sigma=22.50$, desired margin $E=2$.
+
+1.  90% confidence, $z_{0.05}=1.65$:
+    $$n = \Bigl(\frac{1.65 \times 22.50}{2}\Bigr)^2
+          \approx 344.6
+        \quad\Longrightarrow\quad n = 345.$$
+
+2.  95% confidence, $z_{0.025}=1.96$:
+    $$n = \Bigl(\frac{1.96 \times 22.50}{2}\Bigr)^2
+          \approx 486.2
+        \quad\Longrightarrow\quad n = 487.$$
+
+3.  99% confidence, $z_{0.005}=2.58$:
+    $$n = \Bigl(\frac{2.58 \times 22.50}{2}\Bigr)^2
+          \approx 842.5
+        \quad\Longrightarrow\quad n = 843.$$
+:::
+
+#### When $\sigma$ is Not Known {.unnumbered .unlisted}
+
+When the population standard deviation \( \sigma \) is not known, we cannot use the standard normal distribution (Z-distribution) to determine the required sample size. Instead, we estimate \( \sigma \) using the sample standard deviation \( s \) from a preliminary or pilot study, and we rely on the **t-distribution** with \( n - 1 \) degrees of freedom.
+
+The formula for determining the sample size becomes:
+
+$$
+n = \left( \frac{t_{n-1, \alpha/2} \cdot s}{E} \right)^2
+$$
+
+However, there’s a complication: the critical value \( t_{n-1, \alpha/2} \) depends on \( n \), the very quantity we are trying to compute. Therefore, an **iterative approach** is usually required. The steps are as follows:
+
+1. Start with an initial guess for \( n \) (often using the Z-distribution as an approximation).
+2. Find the corresponding critical value \( t_{n-1, \alpha/2} \) from the t-distribution table.
+3. Plug this value back into the formula to update your estimate of \( n \).
+4. Repeat steps 2 and 3 until the value of \( n \) converges (i.e., does not change with further iterations).
+5. Round up to the next whole number, as sample size must be an integer.
+
+If no prior estimate of the sample standard deviation is available, you may conduct a small pilot study to obtain one, or use a conservative planning value based on subject-matter knowledge.
+
+This method is more complex than the known-\( \sigma \) case, but it allows for more realistic planning in most real-world situations where \( \sigma \) is unknown.
+
+### Calculating Sample Size for a Confidence Interval on a Proportion
+
+We will examine how to calculate the minimum sample size $n$ for a
+confidence interval on a proportion for a margin of error $E$ at
+confidence level $1-\alpha$. For sample of size $n$ with unknown
+population proportion $p$:
+$$\hat p \pm z^* \sqrt{ \displaystyle \frac{\hat p(1-\hat p)}{n}}.$$
+where the margin of error is
+$$E=z^*\sqrt{ \displaystyle \frac{p^*(1-p^*)}{n}}$$ we can rearrange $E$
+to calculate the sample size using
+$$n = \left( \displaystyle \frac{z^*}{E} \right)^2\,p^*(1-p^*),$$ where
+$p^*$ can be a *planning value*, which is value obtained from prior
+information such as a pilot study. If we do not have any prior
+information on $p^*$, we can use $p^* = 0.5$ which is the conservative
+value that maximizes the product $p^*(1-p^*)$.
+
+::: example
+Aisha Shariff and Yvette Ye are the candidates for mayor in a large
+city. You are planning a sample survey to determine what percent of the
+voters plan to vote for Shariff. This is a population proportion $p$.
+You will contact an SRS of registered voters in the city. You want to
+estimate $p$ with 95% confidence and a margin of error no greater than
+3%, or 0.03. How large a sample do you need?\
+For a 95% CI on $p$: $z_{0.025} = 1.96$. Margin of error = 0.03. Since
+no information on a good estimate of $p$, use $p^{*} = 0.5$.
+
+$$1.96 \sqrt{\frac{(0.5)(1 - 0.5)}{n}} \le 0.03
+\quad\Longrightarrow\quad
+n = \left(\frac{1.96}{0.03}\right)^{2} (0.5)(0.5) \approx 1067.1.$$
+Round up: $$n = 1068.$$
+:::
+
+::: example
+The percentage of people not covered by health care insurance in 2007 in
+the USA was 15.6%. A congressional committee has been charged with
+conducting a sample survey to obtain more current information.
+
+1.  What sample size would you recommend if the committee's goal is to
+    estimate the current proportion of individuals without health care
+    insurance with a margin of error of 0.03? Use a 95% confidence
+    level.
+
+2.  Repeat part (a) using a 99% confidence level.
+
+$$\text{(a) } n 
+= 
+\left(\frac{z^{*}}{E}\right)^{2}
+p^{*}(1-p^{*}), 
+\quad z^{*} = 1.96, \; E = 0.03,\; p^{*} = 0.156.$$ $$n
+=
+\left(\frac{1.96}{0.03}\right)^{2}
+(0.156)(1 - 0.156)
+\approx 563.$$
+
+$$\text{(b) } n 
+= 
+\left(\frac{2.58}{0.03}\right)^{2}
+(0.156)(1 - 0.156)
+\approx 974.$$
+:::
+
+::: example
+A consumer advocacy group would like to find the proportion of consumers
+who bought the newest generation of iPhone and were happy with their
+purchase. How large a sample should they take to estimate $p$ with 2%
+margin of error and 90% confidence?
+
+**Parameters:** $$\begin{aligned}
+E &= 0.02, \quad\text{(margin of error)}\\
+\text{Confidence level} &= 0.90 \;\Longrightarrow\; \alpha = 0.10,\;\alpha/2 = 0.05,\\
+z^{*} &= z_{0.05} = 1.645,\\
+p^{*} &= 0.5,\quad p^{*}(1 - p^{*}) = 0.5 \times 0.5 = 0.25.
+\end{aligned}$$
+
+**Sample‐Size Formula:**
+$$n \;=\; \left(\frac{z^{*}}{E}\right)^{2}\;p^{*}(1 - p^{*}).$$
+
+Substituting $z^{*} = 1.645$, $E = 0.02$, and $p^{*}(1 - p^{*}) = 0.25$:
+$$\begin{aligned}
+n 
+&= \left(\frac{1.645}{0.02}\right)^{2} \times 0.25 
+= \bigl(82.25\bigr)^{2} \times 0.25 
+= 6{,}764.0625 \times 0.25 \\[0.5em]
+&= 1{,}691.015625.
+\end{aligned}$$
+
+Since $n$ must be a whole number and we always round up to ensure the
+margin of error is at most $2\%$, we take $$n = 1{,}692.$$
+:::
+
+## Exercises {#sec:ch5exercises}
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 1</div>
+A biologist measures the average length of a certain type of leaf. She knows that leaf lengths are normally distributed with population standard deviation $\sigma = 2.4$ cm. From a random sample of $n = 16$ leaves, the sample mean is $\bar{x} = 18.6$ cm.
+
+Find the **95% confidence interval** for the population mean leaf length.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Since $\sigma$ is known, use the $z$-interval formula: $\bar{x} \pm z_{\alpha/2} \cdot \dfrac{\sigma}{\sqrt{n}}$.
+- For 95% confidence, $\alpha = 0.05$ and $z_{\alpha/2} = z_{0.025} = 1.96$.
+- Compute the standard error $\text{SE} = \sigma/\sqrt{n}$ first.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$\bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}$$
+
+**Given:** $\bar{x} = 18.6$, $\sigma = 2.4$, $n = 16$, $z_{0.025} = 1.96$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = \frac{\sigma}{\sqrt{n}} = \frac{2.4}{\sqrt{16}} = \frac{2.4}{4} = 0.6 \text{ cm}$$
+
+**Margin of error:**
+$$E = z_{0.025} \times \text{SE} = 1.96 \times 0.6000 = 1.1760 \text{ cm}$$
+
+**95% CI:**
+$$(18.6 - 1.1760,\ 18.6 + 1.1760) = \mathbf{(17.4240,\ 19.7760) \text{ cm}}$$
+
+We are 95% confident that the true mean leaf length lies between **17.4240 cm** and **19.7760 cm**.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 2</div>
+A researcher wants to estimate the average sleep time of university students during exam week. Based on previous studies, the population standard deviation is known to be $\sigma = 1.5$ hours. From a random sample of $n = 25$ students, the sample mean sleep time is $\bar{x} = 6.8$ hours.
+
+Find the **99% confidence interval** for the population mean sleep time.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Since $\sigma$ is known, use the $z$-interval: $\bar{x} \pm z_{\alpha/2} \cdot \dfrac{\sigma}{\sqrt{n}}$.
+- For 99% confidence, $\alpha = 0.01$ and $z_{\alpha/2} = z_{0.005} = 2.576$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$\bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}$$
+
+**Given:** $\bar{x} = 6.8$, $\sigma = 1.5$, $n = 25$, $z_{0.005} = 2.576$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = \frac{1.5}{\sqrt{25}} = \frac{1.5}{5} = 0.3 \text{ hr}$$
+
+**Margin of error:**
+$$E = 2.576 \times 0.3000 = 0.7728 \text{ hr}$$
+
+**99% CI:**
+$$(6.8 - 0.7728,\ 6.8 + 0.7728) = \mathbf{(6.0272,\ 7.5728) \text{ hr}}$$
+
+We are 99% confident that the true mean sleep time lies between **6.0272** and **7.5728 hours**.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 3</div>
+A researcher wants to estimate the average sleep time of university students during exam week. She randomly selects 10 students and records their sleep hours per night:
+
+$$6.5,\ 7.2,\ 5.8,\ 6.9,\ 7.5,\ 6.1,\ 5.9,\ 6.7,\ 7.0,\ 6.4$$
+
+The Normal Q--Q plot of these 10 values is shown below.
+
+```r
+library(ggplot2)
+sleep10 <- c(6.5,7.2,5.8,6.9,7.5,6.1,5.9,6.7,7.0,6.4)
+df_sleep10 <- data.frame(hours = sleep10)
+ggplot(df_sleep10, aes(sample = hours)) +
+  stat_qq(color = "#619CFF", size = 2.2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles",
+       caption = "n = 10 students") +
+  theme_minimal(base_size = 12) +
+  theme(plot.caption = element_text(color = "#555", size = 9))
+```
+
+**(a)** Based on the Q--Q plot, assess whether the normality assumption is reasonable for this small sample ($n = 10$).
+
+**(b)** Is a one-sample $t$-procedure appropriate here? Briefly justify your answer.
+
+**(c)** If appropriate, construct the **95% confidence interval** for the population mean sleep time.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- On a Normal Q--Q plot, the points should fall close to a straight line if the data are approximately Normal. Look for strong curvature, clustering, or points that stray far from the line.
+- Because $n = 10$ is small, we **cannot** rely on the Central Limit Theorem — the normality assumption must be checked directly from the data (e.g., with a Q--Q plot), since there is no large-sample guarantee that $\bar{x}$ is approximately Normal.
+- If the Q--Q plot shows no strong departure from linearity, it is reasonable to proceed with the $t$-interval: $\bar{x} \pm t_{n-1,\,\alpha/2} \cdot \dfrac{s}{\sqrt{n}}$.
+- Calculate $\bar{x}$ and $s$ from the raw data first.
+- Degrees of freedom: $df = n - 1 = 9$; look up $t_{9,\,0.025} = 2.262$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**(a)** The points in the Q--Q plot fall close to the reference line, with no strong curvature and no points that stray far from the line. There is no clear evidence of skewness or outliers, so the normality assumption looks **reasonable** for this small sample.
+
+**(b)** Because the sample is small ($n = 10 < 30$), we cannot appeal to the Central Limit Theorem — normality has to hold (at least approximately) in the population itself. Since the Q--Q plot in part (a) shows no strong departure from a straight line, it is reasonable to treat the population as approximately Normal, and the one-sample $t$-procedure is **appropriate**.
+
+**(c)**
+
+**Key formula:**
+$$\bar{x} \pm t_{n-1,\,\alpha/2} \cdot \frac{s}{\sqrt{n}}$$
+
+**Step 1 — Sample mean:**
+$$\bar{x} = \frac{6.5+7.2+5.8+6.9+7.5+6.1+5.9+6.7+7.0+6.4}{10} = \frac{66.0}{10} = 6.60 \text{ hr}$$
+
+**Step 2 — Sample standard deviation** (deviations from $\bar{x}=6.60$):
+
+| $x_i$ | $x_i - \bar{x}$ | $(x_i-\bar{x})^2$ |
+|:------:|:---------------:|:-----------------:|
+| 6.5 | −0.10 | 0.0100 |
+| 7.2 | +0.60 | 0.3600 |
+| 5.8 | −0.80 | 0.6400 |
+| 6.9 | +0.30 | 0.0900 |
+| 7.5 | +0.90 | 0.8100 |
+| 6.1 | −0.50 | 0.2500 |
+| 5.9 | −0.70 | 0.4900 |
+| 6.7 | +0.10 | 0.0100 |
+| 7.0 | +0.40 | 0.1600 |
+| 6.4 | −0.20 | 0.0400 |
+| **Sum** | | **2.8600** |
+
+$$s^2 = \frac{2.86}{9} \approx 0.3178, \qquad s \approx 0.5637 \text{ hr}$$
+
+**Step 3 — Critical value:** $df = 9$, $t_{9,\,0.025} = 2.262$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Step 4 — Margin of error:**
+$$E = 2.262 \times \frac{0.5637}{\sqrt{10}} = 2.262 \times \frac{0.5637}{3.1623} = 2.262 \times 0.1783 \approx 0.4033 \text{ hr}$$
+
+**95% CI:**
+$$(6.60 - 0.4033,\ 6.60 + 0.4033) = \mathbf{(6.1967,\ 7.0033) \text{ hr}}$$
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 4</div>
+A coffee shop wants to estimate the average waiting time for customers during the morning rush. A random sample of 12 customers has a sample mean waiting time of $\bar{x} = 4.8$ minutes and a sample standard deviation of $s = 1.1$ minutes.
+
+Assume the waiting times are approximately normally distributed. Find the **90% confidence interval** for the population mean waiting time.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Since $\sigma$ is unknown, use the $t$-interval: $\bar{x} \pm t_{n-1,\,\alpha/2} \cdot \dfrac{s}{\sqrt{n}}$.
+- $df = n - 1 = 11$; for 90% confidence, look up $t_{11,\,0.05} = 1.796$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$\bar{x} \pm t_{n-1,\,\alpha/2} \cdot \frac{s}{\sqrt{n}}$$
+
+**Given:** $\bar{x} = 4.8$, $s = 1.1$, $n = 12$, $df = 11$, $t_{11,\,0.05} = 1.796$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = \frac{s}{\sqrt{n}} = \frac{1.1}{\sqrt{12}} = \frac{1.1}{3.4641} \approx 0.3175 \text{ min}$$
+
+**Margin of error:**
+$$E = 1.796 \times 0.3175 \approx 0.5702 \text{ min}$$
+
+**90% CI:**
+$$(4.8 - 0.5702,\ 4.8 + 0.5702) = \mathbf{(4.2298,\ 5.3702) \text{ min}}$$
+
+We are 90% confident that the true mean waiting time lies between **4.2298** and **5.3702 minutes**.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 5</div>
+A university survey asked 1,200 students whether they use public transportation to commute to campus. Among them, 738 students said yes.
+
+Construct a **95% confidence interval** for the true proportion of all students who use public transportation to commute to campus.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- The CI for a population proportion is $\hat{p} \pm z_{\alpha/2}\sqrt{\dfrac{\hat{p}(1-\hat{p})}{n}}$.
+- First compute $\hat{p} = x/n$, then the standard error, then the margin of error.
+- For 95% confidence, $z_{0.025} = 1.96$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$\hat{p} \pm z_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$$
+
+**Given:** $n = 1200$, $x = 738$, $z_{0.025} = 1.96$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Point estimate:**
+$$\hat{p} = \frac{738}{1200} = 0.6150$$
+
+**Standard error:**
+$$\text{SE} = \sqrt{\frac{0.6150 \times 0.3850}{1200}} = \sqrt{\frac{0.2368}{1200}} \approx \sqrt{0.0001973} \approx 0.0140$$
+
+**Margin of error:**
+$$E = 1.96 \times 0.0140 \approx 0.0274$$
+
+**95% CI:**
+$$(0.6150 - 0.0274,\ 0.6150 + 0.0274) = \mathbf{(0.5876,\ 0.6424)}$$
+
+We are 95% confident that between **58.76%** and **64.24%** of all students use public transportation.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 6</div>
+A company surveyed 650 employees and found that 286 employees prefer working from home at least three days per week.
+
+**(a)** (1 mark) What is the **point estimate** of the population proportion?
+
+**(b)** (2 marks) At 90% confidence, what is the **margin of error**?
+
+**(c)** (1 mark) Construct the **90% confidence interval** for the true proportion of employees who prefer working from home at least three days per week.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Point estimate: $\hat{p} = x/n$.
+- For 90% confidence, $z_{0.05} = 1.645$.
+- Margin of error: $E = z_{\alpha/2}\sqrt{\hat{p}(1-\hat{p})/n}$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$\hat{p} \pm z_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}$$
+
+**Given:** $n = 650$, $x = 286$, $z_{0.05} = 1.645$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**(a) Point estimate:**
+$$\hat{p} = \frac{286}{650} \approx 0.4400$$
+
+**(b) Standard error and margin of error:**
+$$\text{SE} = \sqrt{\frac{0.4400 \times 0.5600}{650}} = \sqrt{\frac{0.2464}{650}} \approx \sqrt{0.000379} \approx 0.0195$$
+$$E = 1.645 \times 0.0195 \approx 0.0321$$
+
+**(c) 90% CI:**
+$$(0.4400 - 0.0321,\ 0.4400 + 0.0321) = \mathbf{(0.4079,\ 0.4721)}$$
+
+We are 90% confident that between **40.79%** and **47.21%** of all employees prefer working from home at least three days per week.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 7</div>
+A random sample of $n = 18$ adult women has a mean resting heart rate of $\bar{x} = 72$ bpm and sample standard deviation $s = 8$ bpm. Assume resting heart rates are approximately normally distributed.
+
+(a) Construct a **95% confidence interval** for the true mean resting heart rate.
+
+(b) Construct a **99% confidence interval** for the true mean resting heart rate.
+
+(c) Which interval is wider? Explain why in one sentence.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the one-sample $t$-interval: $\bar{x} \pm t_{df,\,\alpha/2} \cdot \dfrac{s}{\sqrt{n}}$, with $df = n - 1 = 17$.
+- For 95% confidence: $t_{17,\,0.025} = 2.110$. For 99% confidence: $t_{17,\,0.005} = 2.898$.
+- A higher confidence level requires a wider interval to capture the true mean with greater certainty.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:** $\bar{x} \pm t_{df,\,\alpha/2} \cdot \dfrac{s}{\sqrt{n}}$
+
+**Given:** $n = 18$, $\bar{x} = 72$, $s = 8$, $df = 17$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:** $\text{SE} = \dfrac{8}{\sqrt{18}} = \dfrac{8}{4.2426} \approx 1.8856$ bpm
+
+**(a) 95% CI** ($t_{17,\,0.025} = 2.110$):
+$$E = 2.110 \times 1.8856 \approx 3.979$$
+$$(72 - 3.979,\ 72 + 3.979) = \mathbf{(68.02,\ 75.98) \text{ bpm}}$$
+
+**(b) 99% CI** ($t_{17,\,0.005} = 2.898$):
+$$E = 2.898 \times 1.8856 \approx 5.466$$
+$$(72 - 5.466,\ 72 + 5.466) = \mathbf{(66.53,\ 77.47) \text{ bpm}}$$
+
+**(c)** The 99% CI is wider because a higher confidence level requires a larger critical value $t^*$, which increases the margin of error.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 8</div>
+A local bakery records the waiting time (in minutes) for a random sample of $n = 15$ customers. The sample mean is $\bar{x} = 5.2$ minutes with sample standard deviation $s = 1.8$ minutes. Assume waiting times are approximately normally distributed.
+
+(a) Construct a **90% confidence interval** for the true mean waiting time.
+
+(b) A manager claims the average wait is under 6 minutes. Does the confidence interval support this claim? Explain briefly.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the one-sample $t$-interval with $df = n - 1 = 14$.
+- For 90% confidence: $t_{14,\,0.05} = 1.761$.
+- Think about what it means if 6 is inside or outside the confidence interval.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:** $\bar{x} \pm t_{df,\,\alpha/2} \cdot \dfrac{s}{\sqrt{n}}$
+
+**Given:** $n = 15$, $\bar{x} = 5.2$, $s = 1.8$, $df = 14$, $t_{14,\,0.05} = 1.761$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**(a) Standard error:**
+$$\text{SE} = \frac{1.8}{\sqrt{15}} = \frac{1.8}{3.8730} \approx 0.4648 \text{ min}$$
+
+**Margin of error:**
+$$E = 1.761 \times 0.4648 \approx 0.8185 \text{ min}$$
+
+**90% CI:**
+$$(5.2 - 0.8185,\ 5.2 + 0.8185) = \mathbf{(4.38,\ 6.02) \text{ min}}$$
+
+We are 90% confident that the true mean waiting time lies between **4.38** and **6.02 minutes**.
+
+**(b)** The interval extends slightly above 6 minutes (upper bound $\approx 6.02$), so we cannot confidently conclude the mean is under 6 minutes at the 90% confidence level. The true mean could plausibly be just above 6 minutes.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 9</div>
+A nutrition researcher wants to compare the average sodium content between frozen meals for adults and frozen meals for children. A random sample of 20 adult meals has a mean sodium content of 720 mg with a standard deviation of 150 mg. A random sample of 18 children's meals has a mean sodium content of 610 mg with a standard deviation of 120 mg.
+
+Assume the two samples are independent, both populations are approximately normal, and the **population variances are not assumed to be equal**.
+
+Construct a **95% confidence interval** for $\mu_1 - \mu_2$, where $\mu_1$ is the mean sodium content for adult meals and $\mu_2$ is the mean sodium content for children's meals.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the Welch (unequal-variance) two-sample $t$-interval:
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{df,\,\alpha/2} \cdot \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}$$
+- Welch degrees of freedom:
+$$df = \frac{\left(\dfrac{s_1^2}{n_1} + \dfrac{s_2^2}{n_2}\right)^2}{\dfrac{(s_1^2/n_1)^2}{n_1-1} + \dfrac{(s_2^2/n_2)^2}{n_2-1}}$$
+Round $df$ down to the nearest integer.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula (Welch two-sample $t$-interval):**
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{df,\,\alpha/2} \cdot \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}$$
+
+**Given:** $n_1=20$, $\bar{x}_1=720$, $s_1=150$; $\quad n_2=18$, $\bar{x}_2=610$, $s_2=120$
+
+**Point estimate:** $\bar{x}_1 - \bar{x}_2 = 720 - 610 = 110$ mg
+
+**Component variances:**
+$$\frac{s_1^2}{n_1} = \frac{22500}{20} = 1125, \qquad \frac{s_2^2}{n_2} = \frac{14400}{18} = 800$$
+
+**Welch degrees of freedom:**
+$$df = \frac{(1125 + 800)^2}{\dfrac{1125^2}{19} + \dfrac{800^2}{17}} = \frac{1925^2}{66{,}611.8421 + 37{,}647.0588} = \frac{3{,}705{,}625}{104{,}258.9009} \approx 35.5481 \approx 35$$
+
+> 💡 **Exam tip:** If the Welch formula is too tedious, use the conservative approximation $df = \min(n_1-1,\ n_2-1) = \min(19,\ 17) = 17$. This gives a slightly larger $t^*$ and a wider (safer) interval.
+
+**Critical value:** $t_{35,\,0.025} \approx 2.030$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = \sqrt{1125 + 800} = \sqrt{1925} \approx 43.8748 \text{ mg}$$
+
+**Margin of error:**
+$$E = 2.030 \times 43.8748 \approx 89.0658 \text{ mg}$$
+
+**95% CI for $\mu_1 - \mu_2$:**
+$$(110 - 89.0658,\ 110 + 89.0658) = \mathbf{(20.9342,\ 199.0658) \text{ mg}}$$
+
+Since the entire interval is positive, we are 95% confident that adult meals have a higher mean sodium content than children's meals, with the difference ranging from about **20.9342 mg** to **199.0658 mg**.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 10</div>
+A researcher compares the average weekly screen time of university students and high school students. A random sample of 25 university students has a mean screen time of 42.5 hours with a standard deviation of 8.4 hours. A random sample of 22 high school students has a mean screen time of 36.8 hours with a standard deviation of 10.1 hours.
+
+Assume the samples are independent and the **population variances are unequal**.
+
+Construct a **90% confidence interval** for $\mu_1 - \mu_2$, where $\mu_1$ is the mean weekly screen time for university students and $\mu_2$ is the mean weekly screen time for high school students.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the Welch two-sample $t$-interval with unequal variances.
+- For 90% confidence, $\alpha = 0.10$ and use $t_{df,\,0.05}$.
+- Compute $s_i^2/n_i$ for each group, then apply the Welch $df$ formula.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula (Welch):**
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{df,\,\alpha/2} \cdot \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}$$
+
+**Given:** $n_1=25$, $\bar{x}_1=42.5$, $s_1=8.4$; $\quad n_2=22$, $\bar{x}_2=36.8$, $s_2=10.1$
+
+**Point estimate:** $42.5 - 36.8 = 5.7$ hr
+
+**Component variances:**
+$$\frac{s_1^2}{n_1} = \frac{70.56}{25} = 2.8224, \qquad \frac{s_2^2}{n_2} = \frac{102.01}{22} = 4.6368$$
+
+**Welch degrees of freedom:**
+$$df = \frac{(2.8224 + 4.6368)^2}{\dfrac{2.8224^2}{24} + \dfrac{4.6368^2}{21}} = \frac{(7.4592)^2}{0.3319 + 1.0238} = \frac{55.6397}{1.3557} \approx 41.04 \approx 41$$
+
+> 💡 **Exam tip:** If the Welch formula is too tedious, use the conservative approximation $df = \min(n_1-1,\ n_2-1) = \min(24,\ 21) = 21$. This gives a slightly larger $t^*$ and a wider (safer) interval.
+
+**Critical value:** $t_{41,\,0.05} \approx 1.683$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = \sqrt{2.8224 + 4.6368} = \sqrt{7.4592} \approx 2.7312 \text{ hr}$$
+
+**Margin of error:**
+$$E = 1.683 \times 2.7312 \approx 4.5966 \text{ hr}$$
+
+**90% CI for $\mu_1 - \mu_2$:**
+$$(5.7 - 4.5966,\ 5.7 + 4.5966) = \mathbf{(1.1034,\ 10.2966) \text{ hr}}$$
+
+We are 90% confident that university students spend, on average, between **1.1034** and **10.2966 hours** more per week on screens than high school students.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 11</div>
+A company wants to compare the average productivity score of employees who work in an open-office environment and employees who work in private offices. A random sample of 14 open-office employees has a mean productivity score of 78.4 with a standard deviation of 6.2. A random sample of 16 private-office employees has a mean productivity score of 74.1 with a standard deviation of 5.8.
+
+Assume the two samples are independent, both populations are approximately normal, and the **population variances are equal**.
+
+Construct a **95% confidence interval** for $\mu_1 - \mu_2$, where $\mu_1$ is the mean productivity score for open-office employees and $\mu_2$ is the mean productivity score for private-office employees.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the pooled two-sample $t$-interval (equal variances assumed):
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{n_1+n_2-2,\,\alpha/2} \cdot s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}$$
+- Pooled variance: $s_p^2 = \dfrac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}$.
+- $df = n_1 + n_2 - 2 = 28$; for 95%: $t_{28,\,0.025} = 2.048$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula (pooled $t$-interval):**
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{n_1+n_2-2,\,\alpha/2} \cdot s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}$$
+
+**Given:** $n_1=14$, $\bar{x}_1=78.4$, $s_1=6.2$; $\quad n_2=16$, $\bar{x}_2=74.1$, $s_2=5.8$
+
+**Point estimate:** $78.4 - 74.1 = 4.3$
+
+**Pooled variance:**
+$$s_p^2 = \frac{(13)(6.2^2) + (15)(5.8^2)}{14+16-2} = \frac{(13)(38.44) + (15)(33.64)}{28} = \frac{499.72 + 504.60}{28} = \frac{1004.32}{28} \approx 35.8686$$
+$$s_p = \sqrt{35.8686} \approx 5.9890$$
+
+**Critical value:** $df = 28$, $t_{28,\,0.025} = 2.048$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = s_p\sqrt{\frac{1}{n_1}+\frac{1}{n_2}} = 5.9890\sqrt{\frac{1}{14}+\frac{1}{16}} = 5.9890\sqrt{0.0714+0.0625} = 5.9890\sqrt{0.1339} \approx 5.9890 \times 0.3659 \approx 2.1914$$
+
+**Margin of error:**
+$$E = 2.048 \times 2.1914 \approx 4.4880$$
+
+**95% CI for $\mu_1 - \mu_2$:**
+$$(4.3 - 4.4880,\ 4.3 + 4.4880) = \mathbf{(-0.1880,\ 8.7880)}$$
+
+Since the interval contains 0, we cannot conclude at the 95% level that there is a significant difference in mean productivity between the two environments.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 12</div>
+A psychology researcher compares the average stress score of students who exercise regularly and students who do not exercise regularly. A random sample of 12 regular exercisers has a mean stress score of 41.3 with a standard deviation of 7.1. A random sample of 15 non-exercisers has a mean stress score of 48.6 with a standard deviation of 6.9.
+
+Assume the two samples are independent, both populations are approximately normal, and the **population variances are equal**.
+
+Construct a **99% confidence interval** for $\mu_1 - \mu_2$, where $\mu_1$ is the mean stress score for regular exercisers and $\mu_2$ is the mean stress score for non-exercisers.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the pooled $t$-interval with $df = n_1 + n_2 - 2 = 25$.
+- For 99% confidence: $t_{25,\,0.005} = 2.787$.
+- Compute $s_p^2$ using the pooled formula, then find SE and the margin of error.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula (pooled $t$-interval):**
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{n_1+n_2-2,\,\alpha/2} \cdot s_p\sqrt{\frac{1}{n_1} + \frac{1}{n_2}}$$
+
+**Given:** $n_1=12$, $\bar{x}_1=41.3$, $s_1=7.1$; $\quad n_2=15$, $\bar{x}_2=48.6$, $s_2=6.9$
+
+**Point estimate:** $41.3 - 48.6 = -7.3$
+
+**Pooled variance:**
+$$s_p^2 = \frac{(11)(7.1^2) + (14)(6.9^2)}{12+15-2} = \frac{(11)(50.41) + (14)(47.61)}{25} = \frac{554.51 + 666.54}{25} = \frac{1221.05}{25} \approx 48.8420$$
+$$s_p = \sqrt{48.8420} \approx 6.9887$$
+
+**Critical value:** $df = 25$, $t_{25,\,0.005} = 2.787$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Standard error:**
+$$\text{SE} = 6.9887\sqrt{\frac{1}{12}+\frac{1}{15}} = 6.9887\sqrt{0.0833+0.0667} = 6.9887\sqrt{0.1500} \approx 6.9887 \times 0.3873 \approx 2.7067$$
+
+**Margin of error:**
+$$E = 2.787 \times 2.7067 \approx 7.5436$$
+
+**99% CI for $\mu_1 - \mu_2$:**
+$$(-7.3 - 7.5436,\ -7.3 + 7.5436) = \mathbf{(-14.8436,\ 0.2436)}$$
+
+Since the interval contains 0, we cannot conclude at the 99% level that there is a significant difference in mean stress scores between the two groups.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 13</div>
+A university wants to compare the proportion of domestic students and international students who use the campus gym. In a random sample of 400 domestic students, 168 said they use the gym regularly. In a random sample of 250 international students, 130 said they use the gym regularly.
+
+Construct a **95% confidence interval** for $p_1 - p_2$, where $p_1$ is the true proportion of domestic students who use the gym regularly, and $p_2$ is the true proportion of international students who use the gym regularly.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Two-proportion $z$-interval:
+$$(\hat{p}_1 - \hat{p}_2) \pm z_{\alpha/2}\sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$$
+- Compute each $\hat{p}_i = x_i/n_i$ first, then the pooled standard error.
+- For 95%: $z_{0.025} = 1.96$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$(\hat{p}_1 - \hat{p}_2) \pm z_{\alpha/2}\sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$$
+
+**Sample proportions:**
+$$\hat{p}_1 = \frac{168}{400} = 0.420, \qquad \hat{p}_2 = \frac{130}{250} = 0.520$$
+
+**Point estimate:** $\hat{p}_1 - \hat{p}_2 = 0.420 - 0.520 = -0.100$
+
+**Standard error:**
+$$\text{SE} = \sqrt{\frac{0.4200 \times 0.5800}{400} + \frac{0.5200 \times 0.4800}{250}} = \sqrt{0.000609 + 0.000998} = \sqrt{0.001607} \approx 0.0401$$
+
+**Critical value:** $z_{0.025} = 1.96$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Margin of error:** $E = 1.96 \times 0.0401 \approx 0.0786$
+
+**95% CI for $p_1 - p_2$:**
+$$(-0.1000 - 0.0786,\ -0.1000 + 0.0786) = \mathbf{(-0.1786,\ -0.0214)}$$
+
+Since the entire interval is negative, we are 95% confident that domestic students have a **lower** proportion of regular gym users than international students, with the difference between **2.1 and 17.9 percentage points**.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 14</div>
+A health survey compares the proportion of people who get at least 7 hours of sleep per night in two cities. In City A, 312 out of 600 adults reported getting at least 7 hours of sleep. In City B, 245 out of 500 adults reported getting at least 7 hours of sleep.
+
+Construct a **90% confidence interval** for $p_1 - p_2$, where $p_1$ is the true proportion in City A, and $p_2$ is the true proportion in City B.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Compute $\hat{p}_1 = 312/600$ and $\hat{p}_2 = 245/500$.
+- Use the two-proportion $z$-interval formula with $z_{0.05} = 1.645$ for 90% confidence.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$(\hat{p}_1 - \hat{p}_2) \pm z_{\alpha/2}\sqrt{\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}}$$
+
+**Sample proportions:**
+$$\hat{p}_1 = \frac{312}{600} = 0.520, \qquad \hat{p}_2 = \frac{245}{500} = 0.490$$
+
+**Point estimate:** $0.520 - 0.490 = 0.030$
+
+**Standard error:**
+$$\text{SE} = \sqrt{\frac{0.5200 \times 0.4800}{600} + \frac{0.4900 \times 0.5100}{500}} = \sqrt{0.000416 + 0.000500} = \sqrt{0.000916} \approx 0.0303$$
+
+**Critical value:** $z_{0.05} = 1.645$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Margin of error:** $E = 1.645 \times 0.0303 \approx 0.0498$
+
+**90% CI for $p_1 - p_2$:**
+$$(0.0300 - 0.0498,\ 0.0300 + 0.0498) = \mathbf{(-0.0198,\ 0.0798)}$$
+
+Since the interval contains 0, we cannot conclude at the 90% level that the two cities differ significantly in the proportion of adults getting at least 7 hours of sleep.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 15</div>
+A nutritionist compares daily caloric intake between two dietary groups. The vegetarian group ($n_1 = 10$, $\bar{x}_1 = 1850$ kcal, $s_1 = 120$ kcal) and the omnivore group ($n_2 = 12$, $\bar{x}_2 = 2100$ kcal, $s_2 = 115$ kcal). Assume both populations are normally distributed with **equal variances**.
+
+Construct a **95% confidence interval** for $\mu_1 - \mu_2$ (vegetarian minus omnivore), using the pooled two-sample $t$-interval.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Pooled variance: $s_p^2 = \dfrac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1+n_2-2}$
+- Standard error: $\text{SE} = s_p\sqrt{\dfrac{1}{n_1}+\dfrac{1}{n_2}}$
+- Degrees of freedom: $df = n_1 + n_2 - 2 = 20$; for 95%: $t_{0.025,\,20} \approx 2.086$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{\alpha/2,\,n_1+n_2-2}\cdot s_p\sqrt{\frac{1}{n_1}+\frac{1}{n_2}}$$
+
+**Pooled variance:**
+$$s_p^2 = \frac{(10-1)(120)^2 + (12-1)(115)^2}{10+12-2} = \frac{9(14400)+11(13225)}{20} = \frac{129600+145475}{20} = \frac{275075}{20} = 13753.75$$
+$$s_p = \sqrt{13753.75} \approx 117.3$$
+
+**Standard error:**
+$$\text{SE} = 117.3\sqrt{\frac{1}{10}+\frac{1}{12}} = 117.3\sqrt{0.1833} \approx 117.3 \times 0.4282 \approx 50.2$$
+
+**Critical value:** $df = 20$, $t_{0.025,\,20} \approx 2.086$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Margin of error:** $E = 2.086 \times 50.2 \approx 104.7$
+
+**Point estimate:** $\bar{x}_1 - \bar{x}_2 = 1850 - 2100 = -250$ kcal
+
+**95% CI for $\mu_1 - \mu_2$:**
+$$(-250 - 104.7,\ -250 + 104.7) = \mathbf{(-354.7,\ -145.3) \text{ kcal}}$$
+
+Since the entire interval is negative, we are 95% confident that vegetarians consume fewer calories per day than omnivores, with the difference ranging from approximately 145 to 355 kcal/day.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 16</div>
+A study compares the daily study time (in minutes) of first-year students in two programs. Business students: $n_1 = 12$, $\bar{x}_1 = 180$ min, $s_1 = 38$ min. Engineering students: $n_2 = 15$, $\bar{x}_2 = 220$ min, $s_2 = 55$ min. The populations are approximately normal. **Do not assume equal variances.**
+
+Construct a **90% confidence interval** for $\mu_1 - \mu_2$ (Business minus Engineering) using the Welch–Satterthwaite approximation with $\nu \approx 25$ degrees of freedom.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Welch SE: $\text{SE} = \sqrt{\dfrac{s_1^2}{n_1}+\dfrac{s_2^2}{n_2}}$
+- Use $t_{0.05,\,25} \approx 1.708$ for 90% confidence.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula (Welch):**
+$$(\bar{x}_1 - \bar{x}_2) \pm t_{\alpha/2,\,\nu}\cdot\sqrt{\frac{s_1^2}{n_1}+\frac{s_2^2}{n_2}}$$
+
+**Standard error:**
+$$\text{SE} = \sqrt{\frac{38^2}{12}+\frac{55^2}{15}} = \sqrt{\frac{1444}{12}+\frac{3025}{15}} = \sqrt{120.3+201.7} = \sqrt{322} \approx 17.9$$
+
+**Critical value:** $\nu \approx 25$, $t_{0.05,\,25} \approx 1.708$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Margin of error:** $E = 1.708 \times 17.9 \approx 30.6$
+
+**Point estimate:** $\bar{x}_1 - \bar{x}_2 = 180 - 220 = -40$ min
+
+**90% CI for $\mu_1 - \mu_2$:**
+$$(-40 - 30.6,\ -40 + 30.6) = \mathbf{(-70.6,\ -9.4) \text{ min}}$$
+
+Since the entire interval is negative, we are 90% confident that engineering students study more per day than business students, with the difference ranging from approximately 9 to 71 minutes.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 17</div>
+A fitness coach wants to know whether a 6-week training program changes participants' resting heart rates. She records the resting heart rate of 10 participants before and after the program.
+
+| Participant | Before | After |
+|:-----------:|:------:|:-----:|
+| 1 | 78 | 74 |
+| 2 | 82 | 79 |
+| 3 | 76 | 73 |
+| 4 | 88 | 84 |
+| 5 | 80 | 78 |
+| 6 | 75 | 72 |
+| 7 | 84 | 81 |
+| 8 | 79 | 77 |
+| 9 | 81 | 76 |
+| 10 | 77 | 75 |
+
+Let $d = \text{Before} - \text{After}$. The Normal Q--Q plot of the 10 paired differences $d_i$ is shown below.
+
+```r
+library(ggplot2)
+before <- c(78,82,76,88,80,75,84,79,81,77)
+after  <- c(74,79,73,84,78,72,81,77,76,75)
+d_vals <- before - after
+df_d <- data.frame(d = d_vals)
+ggplot(df_d, aes(sample = d)) +
+  stat_qq(color = "#619CFF", size = 2.2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles",
+       caption = "n = 10 paired differences") +
+  theme_minimal(base_size = 12) +
+  theme(plot.caption = element_text(color = "#555", size = 9))
+```
+
+**(a)** Based on the Q--Q plot, does the normality assumption required for a paired $t$-interval appear reasonable for this small sample of differences ($n = 10$)?
+
+**(b)** Construct a **95% confidence interval** for the mean difference $\mu_d$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- A paired $t$-interval is really a **one-sample** $t$-interval applied to the differences $d_i = \text{Before}_i - \text{After}_i$, so it is the differences (not the raw Before/After scores) that need to look approximately Normal.
+- On the Q--Q plot, check whether the points lie close to the reference line without strong curvature or outliers.
+- With only $n = 10$ pairs, the Central Limit Theorem does not guarantee normality of $\bar{d}$, so the Q--Q plot is the main tool for checking the assumption.
+- Once normality is judged reasonable, find $\bar{d}$ and $s_d$, then apply the paired $t$-interval:
+$$\bar{d} \pm t_{n-1,\,\alpha/2} \cdot \frac{s_d}{\sqrt{n}}$$
+- $df = n - 1 = 9$; for 95%: $t_{9,\,0.025} = 2.262$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**(a)** The differences $d_i$ in the Q--Q plot fall close to the reference line, with no strong curvature and no obvious outliers. Even though $n = 10$ is small, there is no evidence against normality, so it is reasonable to proceed with the paired $t$-procedure.
+
+**(b)**
+
+**Key formula (paired $t$-interval):**
+$$\bar{d} \pm t_{n-1,\,\alpha/2} \cdot \frac{s_d}{\sqrt{n}}$$
+
+**Step 1 — Compute differences** $d_i = \text{Before} - \text{After}$:
+
+| Participant | $d_i$ | $d_i - \bar{d}$ | $(d_i-\bar{d})^2$ |
+|:-----------:|:-----:|:--------------:|:-----------------:|
+| 1 | 4 | 0.9 | 0.81 |
+| 2 | 3 | −0.1 | 0.01 |
+| 3 | 3 | −0.1 | 0.01 |
+| 4 | 4 | 0.9 | 0.81 |
+| 5 | 2 | −1.1 | 1.21 |
+| 6 | 3 | −0.1 | 0.01 |
+| 7 | 3 | −0.1 | 0.01 |
+| 8 | 2 | −1.1 | 1.21 |
+| 9 | 5 | 1.9 | 3.61 |
+| 10 | 2 | −1.1 | 1.21 |
+| **Sum** | **31** | | **8.90** |
+
+**Step 2 — Mean and SD of differences:**
+$$\bar{d} = \frac{31}{10} = 3.1 \text{ bpm}, \qquad s_d^2 = \frac{8.90}{9} \approx 0.9889, \qquad s_d \approx 0.9944 \text{ bpm}$$
+
+**Step 3 — Margin of error** ($t_{9,\,0.025} = 2.262$):
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+$$E = 2.262 \times \frac{0.9944}{\sqrt{10}} = 2.262 \times \frac{0.9944}{3.1623} = 2.262 \times 0.3145 \approx 0.7114 \text{ bpm}$$
+
+**95% CI for $\mu_d$:**
+$$(3.1 - 0.7114,\ 3.1 + 0.7114) = \mathbf{(2.3886,\ 3.8114) \text{ bpm}}$$
+
+We are 95% confident that the training program reduces resting heart rate by between **2.3886** and **3.8114 bpm** on average.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 18</div>
+A professor wants to compare students' quiz scores before and after a review session. The same 8 students take a quiz before and after the review.
+
+| Student | Before Review | After Review |
+|:-------:|:-------------:|:------------:|
+| 1 | 68 | 75 |
+| 2 | 72 | 78 |
+| 3 | 80 | 85 |
+| 4 | 74 | 79 |
+| 5 | 69 | 73 |
+| 6 | 77 | 83 |
+| 7 | 71 | 76 |
+| 8 | 75 | 82 |
+
+Let $d = \text{After Review} - \text{Before Review}$. Construct a **90% confidence interval** for the mean improvement $\mu_d$.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Compute $d_i = \text{After}_i - \text{Before}_i$ for each student.
+- $df = n - 1 = 7$; for 90% confidence: $t_{7,\,0.05} = 1.895$.
+- Apply the paired $t$-interval formula.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula (paired $t$-interval):**
+$$\bar{d} \pm t_{n-1,\,\alpha/2} \cdot \frac{s_d}{\sqrt{n}}$$
+
+**Step 1 — Compute differences** $d_i = \text{After} - \text{Before}$:
+
+| Student | $d_i$ | $d_i - \bar{d}$ | $(d_i-\bar{d})^2$ |
+|:-------:|:-----:|:--------------:|:-----------------:|
+| 1 | 7 | 1.375 | 1.891 |
+| 2 | 6 | 0.375 | 0.141 |
+| 3 | 5 | −0.625 | 0.391 |
+| 4 | 5 | −0.625 | 0.391 |
+| 5 | 4 | −1.625 | 2.641 |
+| 6 | 6 | 0.375 | 0.141 |
+| 7 | 5 | −0.625 | 0.391 |
+| 8 | 7 | 1.375 | 1.891 |
+| **Sum** | **45** | | **7.875** |
+
+**Step 2 — Mean and SD of differences:**
+$$\bar{d} = \frac{45}{8} = 5.625 \text{ points}, \qquad s_d^2 = \frac{7.875}{7} = 1.1250, \qquad s_d = \sqrt{1.1250} \approx 1.0607 \text{ points}$$
+
+**Step 3 — Margin of error** ($t_{7,\,0.05} = 1.895$):
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+$$E = 1.895 \times \frac{1.0607}{\sqrt{8}} = 1.895 \times \frac{1.0607}{2.8284} = 1.895 \times 0.3750 \approx 0.7106 \text{ points}$$
+
+**90% CI for $\mu_d$:**
+$$(5.625 - 0.7106,\ 5.625 + 0.7106) = \mathbf{(4.9144,\ 6.3356) \text{ points}}$$
+
+We are 90% confident that the review session improves quiz scores by between **4.9144** and **6.3356 points** on average.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 19</div>
+A factory wants to estimate the average weight of cereal boxes. Based on past production records, the population standard deviation is known to be $\sigma = 8$ grams. The manager wants the estimate to be within 2 grams of the true population mean, with **95% confidence**.
+
+How large a sample should the manager take?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the sample size formula for a CI on a mean with known $\sigma$:
+$$n = \left(\frac{z_{\alpha/2}\,\sigma}{E}\right)^2$$
+- For 95% confidence, $z_{0.025} = 1.96$; the desired margin of error is $E = 2$.
+- Always **round up** to the next whole number.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \left(\frac{z_{\alpha/2}\,\sigma}{E}\right)^2$$
+
+**Given:** $\sigma = 8$, $E = 2$, $z_{0.025} = 1.96$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Calculation:**
+$$n = \left(\frac{1.96 \times 8}{2}\right)^2 = \left(\frac{15.68}{2}\right)^2 = (7.84)^2 = 61.4656$$
+
+Since $n$ must be a whole number and we always **round up**:
+$$\boxed{n = 62}$$
+
+The manager should sample at least **62 cereal boxes** to estimate the mean weight within 2 grams with 95% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 20</div>
+What is the 92% two-sided $z^*$ critical value?
+
+Fill in the blank and click **▶ Run** to verify your answer.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="3"># 92% two-sided: upper tail probability = ___
+qnorm(___)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- For a two-sided interval at confidence level $1-\alpha$, the critical value is $z_{\alpha/2} = $ `qnorm(1 - alpha/2)`.
+- For 92% confidence, $\alpha = 0.08$, so $\alpha/2 = 0.04$ and you need `qnorm(1 - 0.04)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+qnorm(0.96)   # [1] 1.750686
+```
+The 92% two-sided $z^*$ critical value is approximately **1.7507**.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 21</div>
+Using the dataset `Academic_Performance_A.csv`, consider the variable `Exam_Score`. Assume the population standard deviation is $\sigma = 10$. Construct a 92% $z$-confidence interval for the true mean exam score.
+
+What is the **lower bound** of this interval? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="9">df <- read.csv("Academic_Performance_A.csv")
+x <- df$Exam_Score
+xbar  <- ___
+n     <- ___
+sigma <- ___
+z     <- ___
+lower <- ___
+lower</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use `mean(x)` for $\bar{x}$ and `length(x)` for $n$.
+- The critical value for 92% is `qnorm(0.96)`.
+- The lower bound formula is $\bar{x} - z^* \cdot \dfrac{\sigma}{\sqrt{n}}$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+df <- read.csv("Academic_Performance_A.csv")
+x <- df$Exam_Score
+
+xbar  <- mean(x)
+n     <- length(x)
+sigma <- 10
+z     <- qnorm(0.96)
+
+lower <- xbar - z * sigma / sqrt(n)
+lower   # [1] 74.17863
+```
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 22</div>
+Using the dataset `sleep_study.csv`, consider the variable `hours`. What is the 95% two-sided $t^*$ critical value?
+
+Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">df <- read.csv("sleep_study.csv")
+x <- df$hours
+n     <- ___
+tstar <- qt(___, df = ___)
+tstar</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use `length(x)` for $n$.
+- For a 95% two-sided interval, the upper tail probability is $1 - 0.05/2 = 0.975$.
+- The degrees of freedom for a one-sample $t$-test is $n - 1$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+df <- read.csv("sleep_study.csv")
+x <- df$hours
+
+n     <- length(x)
+tstar <- qt(0.975, df = n - 1)
+tstar   # [1] 2.093024
+```
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 23</div>
+Using the dataset `sleep_study.csv`, construct a 95% $t$-confidence interval for the true mean sleep duration. Assume the population variance is **unknown**.
+
+What is the **lower bound** of this interval? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="9">df <- read.csv("sleep_study.csv")
+x <- df$hours
+xbar  <- ___
+s     <- ___
+n     <- ___
+tstar <- qt(___, df = ___)
+lower <- ___
+lower</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use `sd(x)` for the sample standard deviation $s$.
+- The $t$-interval formula is $\bar{x} \pm t^* \cdot \dfrac{s}{\sqrt{n}}$.
+- For 95% confidence: `qt(0.975, df = n - 1)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+df <- read.csv("sleep_study.csv")
+x <- df$hours
+
+xbar  <- mean(x)
+s     <- sd(x)
+n     <- length(x)
+tstar <- qt(0.975, df = n - 1)
+
+lower <- xbar - tstar * s / sqrt(n)
+lower   # [1] 7.14573
+```
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 24</div>
+Using the dataset `student_admission.csv`, construct a 95% $z$-confidence interval for the true **admission proportion**.
+
+What is the **lower bound** of this interval? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="8">df <- read.csv("student_admission.csv")
+x <- df$admitted
+n    <- ___
+phat <- ___
+z    <- ___
+lower <- ___
+lower</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- `admitted` is coded 0/1, so `mean(x)` gives $\hat{p}$ directly.
+- The standard error for a proportion is $\sqrt{\hat{p}(1-\hat{p})/n}$.
+- For 95% confidence: `qnorm(0.975)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+df <- read.csv("student_admission.csv")
+x <- df$admitted
+
+n    <- length(x)
+phat <- mean(x)
+z    <- qnorm(0.975)
+
+lower <- phat - z * sqrt(phat * (1 - phat) / n)
+lower   # [1] 0.6133222
+```
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 25</div>
+Using the dataset `plant_yield.csv`, use `boxplot()` to compare the spreads of fertilizer A and fertilizer B. Then compute a 95% two-sided confidence interval for $\mu_A - \mu_B$. **Do not assume equal variances** (Welch's $t$-test).
+
+Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">yield_df <- read.csv("plant_yield.csv")
+boxplot(___, ___)
+t.test(___, ___,
+       var.equal  = ___,
+       conf.level = ___)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Access each group with `yield_df$fertilizer_a` and `yield_df$fertilizer_b`.
+- Set `var.equal = FALSE` to use Welch's (unequal-variance) $t$-test.
+- Set `conf.level = 0.95` for a 95% interval.
+- The `$conf.int` component of the `t.test()` output contains the bounds.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+yield_df <- read.csv("plant_yield.csv")
+
+boxplot(yield_df$fertilizer_a, yield_df$fertilizer_b)
+
+t.test(yield_df$fertilizer_a, yield_df$fertilizer_b,
+       var.equal  = FALSE,
+       conf.level = 0.95)  # 95% CI for μ_A − μ_B: (4.40, 8.40)
+```
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 26</div>
+Using the dataset `braking_dist.csv`, compute a 95% confidence interval for the **ratio of variances** $\dfrac{\sigma_Y^2}{\sigma_X^2}$.
+
+Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">brake_df <- read.csv("braking_dist.csv")
+x <- brake_df$___[brake_df$___ == "X"]
+y <- brake_df$___[brake_df$___ == "Y"]
+var.test(___, ___,
+         conf.level = ___)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Subset each group using `brake_df$distance[brake_df$car == "X"]`.
+- `var.test(y, x, ...)` gives a CI for $\sigma_Y^2 / \sigma_X^2$ (first argument in numerator).
+- Set `conf.level = 0.95`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+brake_df <- read.csv("braking_dist.csv")
+
+x <- brake_df$distance[brake_df$car == "X"]
+y <- brake_df$distance[brake_df$car == "Y"]
+
+var.test(y, x,
+         conf.level = 0.95)  # 95% CI for σ²_Y/σ²_X: (4.43, 53.47)
+```
+The `$conf.int` output gives the 95% CI for $\sigma_Y^2 / \sigma_X^2$.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 27</div>
+A researcher measures reaction time **before** and **after** a short training program for the same 6 participants:
+
+- **Before (A):** 315, 320, 305, 330, 318, 310
+- **After (B):** 300, 308, 298, 315, 306, 301
+
+Compute a two-sided **90% paired $t$-confidence interval** for the mean difference $\mu_A - \mu_B$.
+
+Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">A <- c(___)
+B <- c(___)
+t.test(___, ___,
+       paired     = ___,
+       conf.level = ___)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Enter the values using `c(315, 320, ...)`.
+- Set `paired = TRUE` so R computes the differences $d_i = A_i - B_i$ internally.
+- Set `conf.level = 0.90` for a 90% interval.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+A <- c(315, 320, 305, 330, 318, 310)
+B <- c(300, 308, 298, 315, 306, 301)
+
+t.test(A, B,
+       paired     = TRUE,
+       conf.level = 0.90)
+```
+The `$conf.int` output gives the 90% CI for $\mu_A - \mu_B$.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 28</div>
+A pilot study of 20 students found that the sample standard deviation of daily study time is $s = 7.5$ hours per week. A researcher wants to estimate the true mean study time within $E = 2$ hours with **95% confidence**. The population standard deviation $\sigma$ is unknown.
+
+How large should the sample be? Use the iterative $t$-based method.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Because $\sigma$ is unknown, use $s$ from the pilot study and the $t$-distribution:
+$$n = \left(\frac{t_{n-1,\,\alpha/2}\cdot s}{E}\right)^2$$
+- Since $n$ appears on both sides, iterate:
+  1. Start with $z_{0.025} = 1.96$ to get an initial $n_0$.
+  2. Use $\text{df} = n_0 - 1$ to find $t_{\text{df},\,0.025}$.
+  3. Recompute $n$ and repeat until convergence.
+- Always round up.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \left(\frac{t_{n-1,\,\alpha/2}\cdot s}{E}\right)^2$$
+
+**Given:** $s = 7.5$, $E = 2$, 95% confidence ($\alpha/2 = 0.025$)
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Step 1 — Initial estimate using $z_{0.025} = 1.96$:**
+$$n_0 = \left(\frac{1.96 \times 7.5}{2}\right)^2 = (7.35)^2 = 54.0225 \implies n_0 = 55$$
+
+**Step 2 — Refine with $t_{54,\,0.025} \approx 2.005$:**
+$$n_1 = \left(\frac{2.005 \times 7.5}{2}\right)^2 = (7.51875)^2 = 56.5316 \implies n_1 = 57$$
+
+**Step 3 — Check convergence with $t_{56,\,0.025} \approx 2.003$:**
+$$n_2 = \left(\frac{2.003 \times 7.5}{2}\right)^2 = (7.51125)^2 \approx 56.42 \implies n_2 = 57$$
+
+The value has stabilized at $n = 57$.
+
+$$\boxed{n = 57}$$
+
+The researcher should survey at least **57 students** to estimate the mean study time within 2 hours with 95% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 29</div>
+A small pilot survey estimates that the sample standard deviation of monthly grocery spending is $s = 14$ dollars. How large a sample is needed to estimate the population mean monthly grocery spending within $E = 3$ dollars with **90% confidence**? The population standard deviation $\sigma$ is unknown.
+
+Use the iterative $t$-based method.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the iterative formula:
+$$n = \left(\frac{t_{n-1,\,\alpha/2}\cdot s}{E}\right)^2$$
+- For 90% confidence, $\alpha/2 = 0.05$, so start with $z_{0.05} = 1.645$.
+- Always round up after each step and iterate until consecutive $n$ values agree.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \left(\frac{t_{n-1,\,\alpha/2}\cdot s}{E}\right)^2$$
+
+**Given:** $s = 14$, $E = 3$, 90% confidence ($\alpha/2 = 0.05$)
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Step 1 — Initial estimate using $z_{0.05} = 1.645$:**
+$$n_0 = \left(\frac{1.645 \times 14}{3}\right)^2 = (7.6767)^2 = 58.9317 \implies n_0 = 59$$
+
+**Step 2 — Refine with $t_{58,\,0.05} \approx 1.672$:**
+$$n_1 = \left(\frac{1.672 \times 14}{3}\right)^2 = (7.8027)^2 = 60.8821 \implies n_1 = 61$$
+
+**Step 3 — Check convergence with $t_{60,\,0.05} \approx 1.671$:**
+$$n_2 = \left(\frac{1.671 \times 14}{3}\right)^2 = (7.798)^2 \approx 60.81 \implies n_2 = 61$$
+
+The value has stabilized at $n = 61$.
+
+$$\boxed{n = 61}$$
+
+A sample of at least **61 customers** is needed to estimate the mean monthly grocery spending within \$3 with 90% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 30</div>
+A university wants to estimate the proportion of students who use public transit to commute to campus. **No previous estimate is available.** How many students should be surveyed to estimate the proportion within $E = 0.04$ with **95% confidence**?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- When no prior estimate of $p$ is available, use the **conservative** value $p^* = 0.5$, which maximises $p(1-p)$ and therefore the required sample size.
+- The formula is:
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+- For 95% confidence, $z_{0.025} = 1.96$.
+- Always round up.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+
+**Given:** $p^* = 0.5$ (no prior estimate), $E = 0.04$, $z_{0.025} = 1.96$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Calculation:**
+$$n = \frac{(1.96)^2(0.5)(0.5)}{(0.04)^2} = \frac{3.8416 \times 0.25}{0.0016} = \frac{0.9604}{0.0016} = 600.25$$
+
+Since $n$ must be a whole number and we always **round up**:
+$$\boxed{n = 601}$$
+
+The university should survey at least **601 students** to estimate the proportion within 0.04 with 95% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 31</div>
+A shopping mall wants to estimate the proportion of customers who prefer self-checkout. **No prior estimate is available.** How many customers should be surveyed to estimate the proportion within $E = 0.025$ with **90% confidence**?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- With no prior estimate, use $p^* = 0.5$.
+- For 90% confidence, $z_{0.05} = 1.645$.
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+- Always round up.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+
+**Given:** $p^* = 0.5$ (no prior estimate), $E = 0.025$, $z_{0.05} = 1.645$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Calculation:**
+$$n = \frac{(1.645)^2(0.5)(0.5)}{(0.025)^2} = \frac{2.7060 \times 0.25}{0.000625} = \frac{0.6765}{0.000625} = 1082.4$$
+
+Since $n$ must be a whole number and we always **round up**:
+$$\boxed{n = 1083}$$
+
+The mall should survey at least **1083 customers** to estimate the proportion within 0.025 with 90% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 32</div>
+A health center wants to estimate the proportion of students who sleep less than 7 hours per night. A **previous survey** found that about 32% of students sleep less than 7 hours. How many students should be surveyed to estimate the true proportion within $E = 0.03$ with **95% confidence**?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Because a prior estimate exists, use $p^* = 0.32$ instead of 0.5.
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+- For 95% confidence, $z_{0.025} = 1.96$.
+- Using the actual prior estimate (rather than 0.5) gives a **smaller** required sample size.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+
+**Given:** $p^* = 0.32$, $1 - p^* = 0.68$, $E = 0.03$, $z_{0.025} = 1.96$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Calculation:**
+$$n = \frac{(1.96)^2(0.32)(0.68)}{(0.03)^2} = \frac{3.8416 \times 0.2176}{0.0009} = \frac{0.8359}{0.0009} = 928.7\overline{7}$$
+
+Since $n$ must be a whole number and we always **round up**:
+$$\boxed{n = 929}$$
+
+The health center should survey at least **929 students** to estimate the proportion within 0.03 with 95% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 33</div>
+A government agency wants to estimate the proportion of households without home internet access. A **previous report** estimated this proportion to be 18%. How many households should be surveyed to estimate the true proportion within $E = 0.02$ with **99% confidence**?
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Use the prior estimate $p^* = 0.18$.
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+- For 99% confidence, $z_{0.005} = 2.576$.
+- Always round up.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**Key formula:**
+$$n = \frac{z_{\alpha/2}^2\,p^*(1-p^*)}{E^2}$$
+
+**Given:** $p^* = 0.18$, $1 - p^* = 0.82$, $E = 0.02$, $z_{0.005} = 2.576$
+<a href="foundations-of-inference.html#distribution-calculator" target="_blank" style="font-size:0.85em; color:#2c7bb6;">🔢 Distribution Calculator</a>
+
+**Calculation:**
+$$n = \frac{(2.576)^2(0.18)(0.82)}{(0.02)^2} = \frac{6.6358 \times 0.1476}{0.0004} = \frac{0.9794}{0.0004} \approx 2448.6$$
+
+Since $n$ must be a whole number and we always **round up**:
+$$\boxed{n = 2449}$$
+
+The agency should survey at least **2449 households** to estimate the proportion within 0.02 with 99% confidence.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 34</div>
+A researcher wants to estimate the average exam score of students. Assume the population standard deviation is known to be $\sigma = 12$. The researcher wants a **95% confidence interval** with margin of error no more than **3 points**.
+
+What is the minimum sample size required? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">sigma <- ___
+ME    <- ___
+z     <- qnorm(___)
+
+n <- (z * sigma / ME)^2
+ceiling(n)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- The sample size formula when $\sigma$ is known is $n = \left(\dfrac{z^* \cdot \sigma}{ME}\right)^2$.
+- For 95% confidence (two-sided), the upper tail probability is $1 - 0.05/2 = 0.975$, so use `qnorm(0.975)`.
+- Always round up with `ceiling()`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+sigma <- 12
+ME    <- 3
+z     <- qnorm(0.975)
+
+n <- (z * sigma / ME)^2
+ceiling(n)   # [1] 62
+```
+At least **62 students** are required.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 35</div>
+A pilot sample suggests that the sample standard deviation of daily study time is $s = 8.5$ minutes. A researcher wants to estimate the true mean daily study time with a **90% confidence interval** and margin of error no more than **2 minutes**.
+
+What is the minimum sample size required? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">s  <- ___
+ME <- ___
+z  <- qnorm(___)
+
+n <- (z * s / ME)^2
+ceiling(n)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- When $\sigma$ is unknown, substitute the pilot sample standard deviation $s$ into the formula: $n = \left(\dfrac{z^* \cdot s}{ME}\right)^2$.
+- For 90% confidence (two-sided), the upper tail probability is $1 - 0.10/2 = 0.95$, so use `qnorm(0.95)`.
+- Note: this is an approximation; strictly speaking the final CI would use a $t$-distribution, but $z$ is standard for the planning stage.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+s  <- 8.5
+ME <- 2
+z  <- qnorm(0.95)
+
+n <- (z * s / ME)^2
+ceiling(n)   # [1] 49
+```
+At least **49 students** are required.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 36</div>
+A survey wants to estimate the proportion of students who use public transportation to campus. From a previous survey, the estimated proportion is $\hat{p} = 0.42$. The researcher wants a **95% confidence interval** with margin of error no more than **0.04**.
+
+What is the minimum sample size required? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">p_hat <- ___
+ME    <- ___
+z     <- qnorm(___)
+
+n <- z^2 * p_hat * (1 - p_hat) / ME^2
+ceiling(n)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- The sample size formula for a proportion is $n = \dfrac{z^{*2}\,\hat{p}(1-\hat{p})}{ME^2}$.
+- Use the prior estimate $\hat{p} = 0.42$ (using an actual prior estimate gives a smaller $n$ than the conservative $\hat{p} = 0.5$).
+- For 95% confidence: `qnorm(0.975)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+p_hat <- 0.42
+ME    <- 0.04
+z     <- qnorm(0.975)
+
+n <- z^2 * p_hat * (1 - p_hat) / ME^2
+ceiling(n)   # [1] 585
+```
+At least **585 students** are required.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 37</div>
+A researcher wants to compare the average weekly exercise time between two groups of students. Based on previous studies, the standard deviations are approximately $s_1 = 8$ minutes and $s_2 = 10$ minutes. The researcher wants a **95% confidence interval** for the difference in means with margin of error no more than **4 minutes**. Assume equal sample sizes in both groups.
+
+What is the minimum sample size required **per group**? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="7">s1 <- ___
+s2 <- ___
+ME <- ___
+z  <- qnorm(___)
+
+n <- z^2 * (s1^2 + s2^2) / ME^2
+ceiling(n)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- For two independent groups with equal $n$, the formula is $n = \dfrac{z^{*2}(s_1^2 + s_2^2)}{ME^2}$.
+- This $n$ is the required size **per group**; total sample size is $2n$.
+- For 95% confidence: `qnorm(0.975)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+s1 <- 8
+s2 <- 10
+ME <- 4
+z  <- qnorm(0.975)
+
+n <- z^2 * (s1^2 + s2^2) / ME^2
+ceiling(n)   # [1] 40
+```
+At least **40 students per group** (80 total) are required.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 38</div>
+A researcher wants to study whether a tutoring program changes students' quiz scores. Each student takes a quiz before and after the program. From a pilot study, the standard deviation of the **paired differences** is $s_d = 6$ points. The researcher wants a **95% confidence interval** for the true mean difference with margin of error no more than **2.5 points**.
+
+What is the minimum number of pairs required? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="6">sd_diff <- ___
+ME      <- ___
+z       <- qnorm(___)
+
+n <- (z * sd_diff / ME)^2
+ceiling(n)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- For paired samples, treat the differences $d_i = A_i - B_i$ as a single sample. The formula is $n = \left(\dfrac{z^* \cdot s_d}{ME}\right)^2$.
+- $n$ here is the number of **pairs**, not the total number of observations.
+- For 95% confidence: `qnorm(0.975)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+sd_diff <- 6
+ME      <- 2.5
+z       <- qnorm(0.975)
+
+n <- (z * sd_diff / ME)^2
+ceiling(n)   # [1] 23
+```
+At least **23 pairs** (23 students measured before and after) are required.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 39</div>
+A researcher wants to compare the proportion of students who pass a statistics quiz under two different teaching methods. Based on previous data, the estimated passing rates are $p_1 = 0.35$ and $p_2 = 0.50$. The researcher wants a **95% confidence interval** for the difference in proportions with margin of error no more than **0.06**. Assume equal sample sizes in the two groups.
+
+What is the minimum sample size required **per group**? Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="7">p1 <- ___
+p2 <- ___
+ME <- ___
+z  <- qnorm(___)
+
+n <- z^2 * (p1 * (1 - p1) + p2 * (1 - p2)) / ME^2
+ceiling(n)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- For two proportions with equal $n$, the formula is $n = \dfrac{z^{*2}\left[p_1(1-p_1) + p_2(1-p_2)\right]}{ME^2}$.
+- This $n$ is the required size **per group**; total sample size is $2n$.
+- For 95% confidence: `qnorm(0.975)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+p1 <- 0.35
+p2 <- 0.50
+ME <- 0.06
+z  <- qnorm(0.975)
+
+n <- z^2 * (p1 * (1 - p1) + p2 * (1 - p2)) / ME^2
+ceiling(n)   # [1] 510
+```
+At least **510 students per group** (1020 total) are required.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 40</div>
+A researcher records the exam scores of $n = 25$ students. The Normal Q--Q plot below shows the distribution of these scores.
+
+```r
+library(ggplot2)
+scores <- c(75,82,68,90,77,85,71,88,64,79,83,70,93,76,87,66,81,74,89,72,84,69,78,91,73)
+df_scores <- data.frame(score = scores)
+ggplot(df_scores, aes(sample = score)) +
+  stat_qq(color = "#619CFF", size = 2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles",
+       caption = "n = 25 students") +
+  theme_minimal(base_size = 12) +
+  theme(plot.caption = element_text(color = "#555", size = 9))
+```
+
+**(a)** Based on the Q--Q plot, assess whether the normality assumption is reasonable for this sample, and state whether a one-sample $t$-procedure is appropriate.
+
+**(b)** Construct a **95% $t$-confidence interval** for the true mean exam score. Assume the population variance is unknown.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- On a Normal Q--Q plot, points lying close to the reference line (without strong curvature or outliers) support the normality assumption.
+- If the plot shows no strong departure from linearity, the $t$-procedure is appropriate: $\bar{x} \pm t^*_{n-1} \cdot s/\sqrt{n}$.
+- With $n = 25$: $\bar{x} = 78.6$, $s \approx 8.40$, $t^*_{24} \approx 2.064$.
+- For 95% confidence use `qt(0.975, df = 24)`.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**(a)** The points in the Q--Q plot fall close to the reference line across the whole range, with no strong curvature and no points that stand far off the line. This supports the normality assumption, so the one-sample $t$-procedure is **appropriate** here.
+
+**(b)**
+
+```r
+scores <- c(75,82,68,90,77,85,71,88,64,79,83,70,93,76,87,66,81,74,89,72,84,69,78,91,73)
+t.test(scores, conf.level = 0.95)$conf.int
+# [1] 75.1341  82.0659
+```
+
+With $\bar{x} = 78.6$, $s \approx 8.40$, $n = 25$, and $t^*_{24} \approx 2.064$:
+$$78.6 \pm 2.064 \times \frac{8.40}{\sqrt{25}} = 78.6 \pm 3.47$$
+
+The 95% $t$-CI for the true mean exam score is approximately $\mathbf{(75.13,\ 82.07)}$.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 41</div>
+Researchers record braking distances (metres) for two car models under identical conditions. The side-by-side boxplots below compare the distributions for Car X ($n = 12$) and Car Y ($n = 12$).
+
+```r
+library(ggplot2)
+x_X <- c(34.2,36.1,33.8,35.4,34.9,36.7,33.5,35.2,34.6,36.3,33.9,35.8)
+x_Y <- c(31.5,38.4,29.8,40.2,33.1,37.6,30.4,39.7,32.8,38.1,31.2,40.5)
+df_brake <- data.frame(
+  distance = c(x_X, x_Y),
+  car = rep(c("Car X", "Car Y"), each = 12)
+)
+ggplot(df_brake, aes(x = car, y = distance, fill = car)) +
+  geom_boxplot(width = 0.45, color = "grey30", outlier.shape = 16, outlier.size = 2) +
+  scale_fill_manual(values = c("Car X" = "#74b9ff", "Car Y" = "#fd79a8")) +
+  labs(x = NULL, y = "Braking distance (m)",
+       caption = "n = 12 per group  |  Car X: low variance, Car Y: high variance") +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none",
+        plot.caption = element_text(color = "#555", size = 9))
+```
+
+**(a)** What does the boxplot suggest about the variability of the two car models?
+
+The Normal Q--Q plots for each (small) group are shown below.
+
+```r
+library(ggplot2)
+library(patchwork)
+x_X <- c(34.2,36.1,33.8,35.4,34.9,36.7,33.5,35.2,34.6,36.3,33.9,35.8)
+x_Y <- c(31.5,38.4,29.8,40.2,33.1,37.6,30.4,39.7,32.8,38.1,31.2,40.5)
+df_X <- data.frame(distance = x_X)
+df_Y <- data.frame(distance = x_Y)
+p_X <- ggplot(df_X, aes(sample = distance)) +
+  stat_qq(color = "#74b9ff", size = 2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(title = "Car X", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 12)
+p_Y <- ggplot(df_Y, aes(sample = distance)) +
+  stat_qq(color = "#fd79a8", size = 2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(title = "Car Y", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 12)
+p_X + p_Y
+```
+
+**(b)** Both groups have small sample sizes ($n_X = n_Y = 12$). Based on the Q--Q plots, does the normality assumption appear reasonable for each group? Is the Welch $t$-procedure appropriate?
+
+**(c)** Construct a **95% Welch $t$-CI** for $\mu_X - \mu_Y$. Do not assume equal variances.
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Car Y's box is much wider, indicating greater spread — this justifies **not** assuming equal variances.
+- Because $n_X = n_Y = 12$ are both small, the Central Limit Theorem cannot be relied on for either group — check each group's own Q--Q plot for strong curvature or outliers.
+- Use `t.test(x_X, x_Y, var.equal = FALSE, conf.level = 0.95)$conf.int`.
+- The CI includes zero if there is no evidence of a difference in means.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**(a)** Car X has a very compact box (low variance, $s_X \approx 1.06$ m), while Car Y's box is much wider (high variance, $s_Y \approx 4.15$ m), suggesting Car Y's braking distance is far less consistent.
+
+**(b)** The Car X points fall very close to the reference line, supporting normality. The Car Y points show slightly more scatter around the line — consistent with its larger variance — but there is no strong curvature or clear outlier, so normality is still a reasonable working assumption for both small samples. Since neither group shows a serious departure from normality, the Welch $t$-procedure (which already does not assume equal variances) is **appropriate**.
+
+**(c)**
+
+```r
+x_X <- c(34.2,36.1,33.8,35.4,34.9,36.7,33.5,35.2,34.6,36.3,33.9,35.8)
+x_Y <- c(31.5,38.4,29.8,40.2,33.1,37.6,30.4,39.7,32.8,38.1,31.2,40.5)
+t.test(x_X, x_Y, var.equal = FALSE, conf.level = 0.95)$conf.int
+# 95% CI for μ_X − μ_Y: (-2.9273, 2.4440)
+```
+
+The 95% Welch CI for $\mu_X - \mu_Y$ is approximately $\mathbf{(-2.93,\ 2.44)}$. Because the interval contains zero, there is no significant evidence of a difference in mean braking distance between the two models.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 42</div>
+The histogram below shows the distribution of nightly sleep durations (hours) for $n = 20$ participants in `sleep_study.csv`. The dashed line marks the sample mean.
+
+```r
+library(ggplot2)
+sleep_hrs <- c(7.2,6.8,8.1,7.5,6.5,7.9,7.0,8.3,6.7,7.4,8.0,7.2,6.9,7.8,8.2,7.1,6.6,7.7,8.0,7.3)
+df_sleep <- data.frame(hours = sleep_hrs)
+ggplot(df_sleep, aes(x = hours)) +
+  geom_histogram(binwidth = 0.3, fill = "#55efc4", color = "white", boundary = 6.4) +
+  geom_vline(xintercept = mean(sleep_hrs), linetype = "dashed", color = "#e17055", linewidth = 0.9) +
+  annotate("text", x = mean(sleep_hrs) + 0.05, y = 4.4,
+           label = paste0("bar(x) == ", round(mean(sleep_hrs), 2)),
+           parse = TRUE, color = "#e17055", size = 4, hjust = 0) +
+  scale_x_continuous(breaks = seq(6.4, 8.4, 0.3)) +
+  labs(x = "Sleep duration (hours)", y = "Frequency",
+       caption = "n = 20 participants  |  Dashed line = sample mean") +
+  theme_minimal(base_size = 12) +
+  theme(plot.caption = element_text(color = "#555", size = 9))
+```
+
+Using the dataset `sleep_study.csv`, construct a **95% $t$-confidence interval** for the true mean sleep duration. Assume the population variance is unknown.
+
+Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="7">df    <- read.csv("sleep_study.csv")
+x     <- df$hours
+xbar  <- mean(x)
+s     <- sd(x)
+n     <- length(x)
+tstar <- qt(___, df = ___)
+c(xbar - tstar * s / sqrt(n), xbar + tstar * s / sqrt(n))</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- For a 95% two-sided CI, the upper tail probability is 0.975: `qt(0.975, df = n - 1)`.
+- The formula is $\bar{x} \pm t^* \cdot s/\sqrt{n}$.
+- With $n = 20$: $\bar{x} = 7.41$, $s \approx 0.565$, $t^*_{19} \approx 2.093$.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+```r
+df    <- read.csv("sleep_study.csv")
+x     <- df$hours
+xbar  <- mean(x)
+s     <- sd(x)
+n     <- length(x)
+tstar <- qt(0.975, df = n - 1)
+c(xbar - tstar * s / sqrt(n), xbar + tstar * s / sqrt(n))
+# [1] 7.1457  7.6743
+```
+The 95% $t$-CI for the true mean sleep duration is approximately $\mathbf{(7.15,\ 7.67)}$ hours.
+</div>
+</details>
+
+---
+
+<div class="exercise-box">
+<div class="exercise-label">Question 43</div>
+The side-by-side boxplots below compare plant yields (kg) under two fertiliser treatments from `plant_yield.csv` ($n_A = n_B = 15$).
+
+```r
+library(ggplot2)
+fa <- c(52.1,48.7,55.3,49.2,53.8,47.5,56.1,50.4,54.6,48.1,51.9,53.2,49.8,55.7,50.0)
+fb <- c(45.3,42.8,48.1,43.6,46.9,41.2,49.4,44.7,47.5,42.3,45.8,46.1,43.9,48.6,44.2)
+df_yield <- data.frame(
+  yield = c(fa, fb),
+  group = rep(c("Fertiliser A", "Fertiliser B"), each = 15)
+)
+ggplot(df_yield, aes(x = group, y = yield, fill = group)) +
+  geom_boxplot(width = 0.45, color = "grey30", outlier.shape = 16, outlier.size = 2) +
+  scale_fill_manual(values = c("Fertiliser A" = "#74b9ff", "Fertiliser B" = "#fd79a8")) +
+  labs(x = NULL, y = "Yield (kg)",
+       caption = "n = 15 per group") +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none",
+        plot.caption = element_text(color = "#555", size = 9))
+```
+
+Based on the boxplots, the two groups appear to have different means. Both groups are **small samples** ($n_A = n_B = 15$), so before comparing the means we should check the normality assumption. The Normal Q--Q plots for each group are shown below.
+
+```r
+library(ggplot2)
+library(patchwork)
+fa <- c(52.1,48.7,55.3,49.2,53.8,47.5,56.1,50.4,54.6,48.1,51.9,53.2,49.8,55.7,50.0)
+fb <- c(45.3,42.8,48.1,43.6,46.9,41.2,49.4,44.7,47.5,42.3,45.8,46.1,43.9,48.6,44.2)
+df_fa <- data.frame(yield = fa)
+df_fb <- data.frame(yield = fb)
+p_fa <- ggplot(df_fa, aes(sample = yield)) +
+  stat_qq(color = "#74b9ff", size = 2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(title = "Fertiliser A", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 12)
+p_fb <- ggplot(df_fb, aes(sample = yield)) +
+  stat_qq(color = "#fd79a8", size = 2) +
+  stat_qq_line(color = "#e17055", linewidth = 0.8) +
+  labs(title = "Fertiliser B", x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_minimal(base_size = 12)
+p_fa + p_fb
+```
+
+**(a)** Based on the Q--Q plots, does the normality assumption appear reasonable for both (small) groups? Is the Welch $t$-procedure appropriate?
+
+**(b)** Using the dataset `plant_yield.csv`, construct a **90% Welch $t$-CI** for $\mu_A - \mu_B$. Do not assume equal variances.
+
+Fill in the blanks and click **▶ Run**.
+
+<div class="webr-exercise">
+<div class="webr-exercise-header">Exercise</div>
+<textarea class="webr-editor" rows="7">yield_df <- read.csv("plant_yield.csv")
+a <- yield_df$fertilizer_a
+b <- yield_df$fertilizer_b
+
+t.test(___, ___,
+       var.equal  = ___,
+       conf.level = ___)</textarea>
+<div class="webr-controls">
+  <button class="webr-run-btn" disabled>▶ Run</button>
+  <button class="webr-reset-btn">↺ Reset</button>
+</div>
+<div class="webr-output-area"></div>
+<div class="webr-canvas-area"><canvas></canvas></div>
+</div>
+</div>
+
+<details data-type="hint">
+<summary>💡 Hint</summary>
+<div class="content">
+- Because $n_A = n_B = 15$ are both small, check each group's own Q--Q plot for strong curvature or outliers before trusting the $t$-procedure.
+- Pass `a` and `b` as the first two arguments to `t.test()`.
+- Set `var.equal = FALSE` for Welch's (unequal-variance) test.
+- Set `conf.level = 0.90` for a 90% CI.
+- The `$conf.int` component of the output gives the two bounds.
+</div>
+</details>
+
+<details data-type="answer">
+<summary>✅ Answer</summary>
+<div class="content">
+**(a)** Both the Fertiliser A and Fertiliser B points fall close to their reference lines, with no strong curvature and no clear outliers. Although each sample is small ($n=15$), neither Q--Q plot shows a serious departure from normality, so the Welch $t$-procedure is **appropriate**.
+
+**(b)**
+
+```r
+yield_df <- read.csv("plant_yield.csv")
+a <- yield_df$fertilizer_a
+b <- yield_df$fertilizer_b
+
+t.test(a, b,
+       var.equal  = FALSE,
+       conf.level = 0.90)  # 90% CI for μ_A − μ_B: (4.7388, 8.0612)
+```
+The 90% Welch CI for $\mu_A - \mu_B$ is approximately $\mathbf{(4.74,\ 8.06)}$. Since the entire interval lies above zero, we are 90% confident that Fertiliser A produces higher yields on average.
+</div>
+</details>

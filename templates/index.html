@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STA258 Ebook Agent</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body data-protected="{{ 'true' if protected else 'false' }}">
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">STA258 · Statistics with Applied Probability</div>
+        <h1>ebook_agent</h1>
+        <p>Ask about concepts, examples, exercises, R code, or possible errors in the ebook.</p>
+      </div>
+      <div class="header-actions">
+        <a class="book-link" href="https://nishanmudalige.github.io/STA258_Book/" target="_blank" rel="noopener">Open ebook ↗</a>
+        <button id="newChat" class="secondary">New chat</button>
+      </div>
+    </header>
+
+    {% if protected %}
+    <section class="access-panel" id="accessPanel">
+      <label for="accessCode">Access code</label>
+      <div class="access-row">
+        <input id="accessCode" type="password" autocomplete="current-password" placeholder="Enter access code">
+        <button id="saveCode">Use code</button>
+      </div>
+      <small>The access code is stored only in this browser session.</small>
+    </section>
+    {% endif %}
+
+    <section id="chat" class="chat" aria-live="polite">
+      <article class="message assistant welcome">
+        <div class="avatar">EA</div>
+        <div class="bubble">
+          <p><strong>Welcome.</strong> I can use the STA258 ebook as a source and also reason from general statistics and mathematics.</p>
+          <div class="suggestions">
+            <button class="suggestion">Explain the difference between a parameter and a statistic.</button>
+            <button class="suggestion">Walk me through a confidence interval example from the ebook.</button>
+            <button class="suggestion">How do I decide between Welch and pooled two-sample t procedures?</button>
+            <button class="suggestion">Check the regression chapter for a possible conceptual or caption error.</button>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <form id="composer" class="composer">
+      <textarea id="message" rows="3" placeholder="Ask a statistics or ebook question…" required></textarea>
+      <div class="composer-footer">
+        <span class="model-label">Model: {{ model }}</span>
+        <button id="send" type="submit">Send</button>
+      </div>
+    </form>
+    <p class="footnote">AI-generated explanations can be wrong. For assessed work, verify calculations and course requirements.</p>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
