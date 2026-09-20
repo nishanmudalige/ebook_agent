@@ -87,14 +87,22 @@ async function sendQuestion(question) {
   textarea.disabled = true;
 
   try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Ebook-Agent-Code': accessCode(),
-      },
-      body: JSON.stringify({ message: question, previous_response_id: previousResponseId }),
-    });
+	  const payload = {
+	    message: question
+	  };
+
+	  if (previousResponseId) {
+	    payload.previous_response_id = previousResponseId;
+	  }
+
+	  const response = await fetch('/api/chat', {
+	    method: 'POST',
+	    headers: {
+	      'Content-Type': 'application/json',
+	      'X-Ebook-Agent-Code': accessCode(),
+	    },
+	    body: JSON.stringify(payload),
+	  });
     const data = await response.json();
     thinking.remove();
     if (!response.ok) throw new Error(data.error || 'Request failed.');

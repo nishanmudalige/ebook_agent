@@ -73,9 +73,17 @@ def chat():
     if not VECTOR_STORE_ID:
         return jsonify({"error": "OPENAI_VECTOR_STORE_ID is not configured on the server."}), 500
 
+
     data = request.get_json(silent=True) or {}
+    
     message = str(data.get("message", "")).strip()
-    previous_response_id = str(data.get("previous_response_id", "")).strip() or None
+    
+    raw_previous_response_id = data.get("previous_response_id")
+    
+    if isinstance(raw_previous_response_id, str):
+        previous_response_id = raw_previous_response_id.strip() or None
+    else:
+        previous_response_id = None
 
     if not message:
         return jsonify({"error": "Please enter a question."}), 400
@@ -109,8 +117,15 @@ def chat():
         })
     except Exception as exc:
         app.logger.exception("OpenAI request failed")
-        return jsonify({"error": f"The agent request failed: {type(exc).__name__}. Check the Render logs for details."}), 500
 
+        if app.debug:
+            return jsonify({
+                "error": f"{type(exc).__name__}: {str(exc)}"
+            }), 500
+
+        return jsonify({
+            "error": f"The agent request failed: {type(exc).__name__}. Check the Render logs for details."
+        }), 500
 
 @app.post("/api/reset")
 def reset():
