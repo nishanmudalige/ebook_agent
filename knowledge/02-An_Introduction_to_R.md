@@ -24,6 +24,7 @@ To install R, follow the steps below:
 
 1. Visit the official R project website: [https://cran.r-project.org](https://cran.r-project.org)
 
+<!-- R chunk metadata: r r-homepage-img, echo=FALSE, fig.align='center', out.width='100%', fig.cap="A screenshot from official R project website (You will see this page after clicking the link from step 1)." -->
 ```r
 knitr::include_graphics("Chapters/Images/Section 2/R_homepage.png")
 ```
@@ -55,6 +56,7 @@ To install RStudio:
 
 1. Go to [https://posit.co/download/RStudio-desktop](https://posit.co/download/RStudio-desktop)
 
+<!-- R chunk metadata: r RStudio-img, echo=FALSE, fig.align='center', out.width='100%', fig.cap="A screenshot from RStudio Desktop download page." -->
 ```r
 knitr::include_graphics("Chapters/Images/Section 2/RStudio_install.png")
 ```
@@ -65,6 +67,7 @@ knitr::include_graphics("Chapters/Images/Section 2/RStudio_install.png")
 
 4. Finally, you will see the following homepage when you open RStudio:
 
+<!-- R chunk metadata: r RStudioDesktop, echo=FALSE, fig.align='center', out.width='100%', fig.cap="The RStudio integrated development environment." -->
 ```r
 knitr::include_graphics("Chapters/Images/Section 2/RStudio_desktop_IDE.png")
 ```
@@ -72,6 +75,7 @@ knitr::include_graphics("Chapters/Images/Section 2/RStudio_desktop_IDE.png")
 <br>
 5. To open a new script for coding, click on File → New File → R Script.
 
+<!-- R chunk metadata: r RStudioDesktopScript, echo=FALSE, fig.align='center', out.width='100%', fig.cap="The RStudio integrated development environment with a new script." -->
 ```r
 knitr::include_graphics("Chapters/Images/Section 2/RStudio_desktop_IDE_new_script.png")
 ```

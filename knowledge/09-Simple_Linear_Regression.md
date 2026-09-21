@@ -110,6 +110,7 @@ Let $(x_1, y_1), (x_2, y_2), \ldots, (x_n, y_n)$ be pairs of _observed_ data poi
 for independent variable $x$ and dependent variable $y$.
 Suppose we plot these points on coordinate axes (See Figure \@ref(fig:PlotPointsOnly)).
 
+<!-- R chunk metadata: r PlotPointsOnly, fig.cap="Example of points plotted on coordinate axes.", echo=FALSE, message=FALSE, warning=FALSE, fig.align='center' -->
 ```r
 library(ggplot2)
 
@@ -138,6 +139,7 @@ $$
 $$
 where $\hat{y}$ represents all fitted points on the line, $x$ is a value we can input into calculate a predicted $\hat{y}$, $\hat{\beta}_0$ is the estimate of the intercept and $\hat{\beta}_1$ is the estimate of the slope (See Figure \@ref(fig:PlotPointsLine)).
 
+<!-- R chunk metadata: r PlotPointsLine, fig.cap="The line of best fit has now been superimposed on the points in Figure \\@ref(fig:PlotPointsOnly).", message=FALSE,warning=FALSE,echo=FALSE,fig.align='center' -->
 ```r
 library(ggplot2)
 
@@ -213,6 +215,7 @@ print(p_sse)
 
 Recall in Section \@ref(sec:LeastSquaresMethod) that we discussed that the technique used to determine the line of best fit is to minimize the sum the squared distances between the observed $y_{i}$'s from our data and the fitter $\hat{y}_{i}$'s which are predicted from the line (See Figure \@ref(fig:PlotPtsLnRes)).
 
+<!-- R chunk metadata: r PlotPtsLnRes, fig.cap="The distances between each observed $y_i$ and fitted $\\hat{y}_{i}$ from Figure \\@ref(fig:PlotPointsLine).", message=FALSE,warning=FALSE,echo=FALSE,fig.align='center' -->
 ```r
 library(ggplot2)
 
@@ -588,6 +591,7 @@ variables.
 - If $r_{xy} \approx +1$, then we say that the two random variables have
   strong positive correlation (See Figure \@ref(fig:examplePositiveCorr)).
 
+<!-- R chunk metadata: r examplePositiveCorr,fig.cap="An illustration of strong negative correlation ($r_{xy} \\approx +1$).", echo=FALSE, message=FALSE, warning=FALSE, fig.align='center' -->
 ```r
 # Load necessary library
 library(plotly)
@@ -638,6 +642,7 @@ fig
   strong negative correlation. (See figure \@ref(fig:exampleNegaticeCorr))
 
 
+<!-- R chunk metadata: r exampleNegaticeCorr, fig.cap="An illustration of strong negative correlation ($r_{xy} \\approx -1$).", message=FALSE, warning=FALSE, echo=FALSE, fig.align='center' -->
 ```r
 # Load required library
 library(plotly)
@@ -688,6 +693,7 @@ fig
   but other relationship may exist (See Figure \@ref(fig:exampleNoCorr)).
   
  
+<!-- R chunk metadata: r exampleNoCorr, fig.cap="An illustration of no correlation ($r_{xy} \\approx 0$).", message=FALSE, warning=FALSE, echo=FALSE, fig.align='center' -->
 ```r
 # Load library
 library(plotly)
@@ -724,6 +730,7 @@ fig
 The interactive plot below allows us to examine the spatial arrangement of data and the resulting correlation.
 
 <center>
+<!-- R chunk metadata: r CorrShinyApp, echo=FALSE, warning=FALSE, results='asis', out.width='100%' -->
 ```r
 knitr::include_app("https://nishan-mudalige.shinyapps.io/Correlation_Shiny_App/", height = "860")
 ```
@@ -851,6 +858,7 @@ A small SSE indicates a tight fit of the model to the data.
 The SSE is the variation which is not explained by the model.
 It is illustrated in Figure \@ref(fig:SSEregression).
 
+<!-- R chunk metadata: r SSEregression, fig.cap= "An illustration of $y_i - \\hat{y}_{i}$. when these distances are squared and added together, we get the SSE.", echo=FALSE, fig.align='center', out.width='90%' -->
 ```r
 library(ggplot2)
 
@@ -944,6 +952,7 @@ data) and the mean of dependent data ($\bar{y}$).
 It is illustrated in Figure \@ref(fig:SSRregression).
 
 
+<!-- R chunk metadata: r SSRregression, fig.cap= "An illustration of $y_i - \\bar{y}$. when these distances are squared and added together, we get the SSR.", echo=FALSE, out.width='90%',fig.align='center', message=FALSE, warning=FALSE, results='hide' -->
 ```r
 library(ggplot2)
 
@@ -1035,6 +1044,7 @@ The SST is the sum of the squared differences between the
 observations and their overall mean $\bar{y}$ in the data. 
 This is illustrated in Figure \@ref(fig:SSTregression).
 
+<!-- R chunk metadata: r SSTregression, fig.cap= "An illustration of $\\hat{y}_i - \\bar{y}$. when these distances are squared and added together, we get the SST.", echo=FALSE, out.width='90%',fig.align='center' -->
 ```r
 library(ggplot2)
 
@@ -1112,6 +1122,7 @@ print(p_sst)
 The app below allows us to show or hide each of these component on one plot.
 
 <center>
+<!-- R chunk metadata: r DecompVarShinyApp, echo=FALSE, warning=FALSE, results='asis', out.width='100%' -->
 ```r
 knitr::include_app("https://nishan-mudalige.shinyapps.io/Regression_Decomposition_of_Variation/", height = "725")
 ```
@@ -1131,6 +1142,7 @@ $$.
 
 
 
+<!-- R chunk metadata: r fig.cap = "Visual representation of regression variability. The blue point represents the observed value $y_i$, the red point shows the predicted value $\\hat{y}_i$, and the dashed line represents the mean $\\bar{y}$. The green arrow illustrates the total variability (SST), the pink arrow shows the explained variability (SSR), and the orange curly bracket represents the residual (unexplained) variability (SSE).", echo=FALSE, out.width='90%',fig.align='center', message=FALSE, warning=FALSE, results='hide', -->
 ```r
 ```
 
@@ -1737,6 +1749,7 @@ dollars), area (in 100 square feet), and number of beds and baths.
          660                 7.3               2           1
   ----------------- ---------------------- ---------- -----------
 :::
+<!-- R chunk metadata: r fig.cap="Plot of Price vs Area for Apartments near UTM",echo=FALSE, fig.align='center', out.width='80%' -->
 ```r
 library(ggplot2)
 
@@ -2045,6 +2058,7 @@ satisfied, the residual plot should have the following features:
 
 <!-- # ```{r residual-stack, fig.width=6, fig.height=16, dev="png", out.width="100%", fig.align="center", message=FALSE, warning=FALSE} -->
 
+<!-- R chunk metadata: r fig.cap="Examples of residual plots which satisfy assumpations and which violate assumptions", echo=FALSE, warning=FALSE, fig.align="center", out.width='70%', fig.width=6, fig.height=16 -->
 ```r
 # Load libraries
 library(ggplot2)
@@ -3417,6 +3431,7 @@ predict(model, newdata = data.frame(size = 17))
 
 Figure \@ref(fig:ch9q21scatter) shows a scatterplot of five observations.
 
+<!-- R chunk metadata: r ch9q21scatter, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Scatterplot of five observations. Which regression equation best fits these data?", fig.width=5, fig.height=4 -->
 ```r
 library(ggplot2)
 df22 <- data.frame(x = c(1, 2, 3, 4, 5),
@@ -3642,6 +3657,7 @@ The classmate's statement is wrong: $R^2$ equals $r^2$, which is always **non-ne
 
 A researcher fits a simple linear regression model and produces the residuals-vs-fitted plot shown in Figure \@ref(fig:ch9q25residplot).
 
+<!-- R chunk metadata: r ch9q25residplot, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Residuals-vs-fitted plot from a fitted simple linear regression model.", fig.width=5.5, fig.height=4 -->
 ```r
 library(ggplot2)
 set.seed(27)
@@ -3908,6 +3924,7 @@ A health researcher records the weekly exercise hours ($x$, from 1 to 10 hours p
 
 A simple linear regression of $y$ on $x$ was fitted, giving $\hat{\beta}_0 = 4.80$ and $\hat{\beta}_1 = 0.557$. Figure \@ref(fig:ch9q30resid) shows the scatterplot with the fitted regression line **(a)** and the residual plot (residuals vs. fitted values) **(b)**.
 
+<!-- R chunk metadata: r ch9q30resid, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="(a) Scatterplot of well-being score ($y$) against weekly exercise hours ($x$) with the fitted regression line. (b) Residual plot: residuals plotted against fitted values; the dashed line marks zero.", fig.width=8.5, fig.height=3.8 -->
 ```r
 library(ggplot2)
 library(patchwork)
@@ -4081,6 +4098,7 @@ $$\text{SST} = 3600, \qquad \text{SSR} = 2880$$
 
 Figure \@ref(fig:ch9q34extrap) was produced from a dataset in which daily high temperature ($x$, °C) was recorded along with the number of visitors to an outdoor swimming pool ($y$). The vertical dashed lines mark the range of $x$ values in the training data ($x = 15$ to $x = 35$). The fitted regression line is extended beyond this range. Points **A** and **B** show two predictions made using the fitted line.
 
+<!-- R chunk metadata: r ch9q34extrap, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Fitted regression line extended beyond the observed data range. Vertical dashed lines indicate the range of the training data.", fig.width=6, fig.height=4.2 -->
 ```r
 library(ggplot2)
 set.seed(37)
@@ -4286,6 +4304,7 @@ A phone manufacturer studies how battery charge remaining ($y$, \% of full charg
 - **C** = $(4,\; 68)$
 - **D** = $(6,\; 58)$
 
+<!-- R chunk metadata: r ch9q37scatter, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Scatterplot with the fitted regression line $\\hat{y} = 100 - 8x$. Four labelled phones are shown.", fig.width=5.5, fig.height=4.2 -->
 ```r
 library(ggplot2)
 
@@ -4897,6 +4916,7 @@ Fitted equation: $\hat{y} = 27.8 - 0.36x$
 
 **(b)** Two convenient points on the fitted line: at $x=10$, $\hat{y}=27.8-0.36(10)=24.2$; at $x=50$, $\hat{y}=27.8-0.36(50)=9.8$. Plotting the five data points and drawing a straight line through $(10,\,24.2)$ and $(50,\,9.8)$ should produce a sketch similar to the reference plot below. The relationship is **negative and approximately linear**: as burning time increases, candle height decreases fairly steadily, with the points scattered closely but not exactly on the line.
 
+<!-- R chunk metadata: r ch9q45sketch, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Reference solution: scatterplot of candle height vs. time lit with the fitted regression line.", fig.width=5, fig.height=4 -->
 ```r
 library(ggplot2)
 df45 <- data.frame(x = c(10,20,30,40,50), y = c(25,20,17,12,11))
@@ -5039,6 +5059,7 @@ $\sum e_i = -3.2-1.4+10.4-3.8-2.0 = 0$ ✓
 
 **(c)** Plotting the five points $(x_i, e_i)$ from the table above, with a dashed horizontal line at $e=0$, gives the reference residual plot below:
 
+<!-- R chunk metadata: r ch9q47resid, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Reference solution: residual plot for the catalyst/yield data.", fig.width=5, fig.height=4 -->
 ```r
 library(ggplot2)
 df47 <- data.frame(x = c(1,2,3,4,5), y = c(23,29,45,35,41))
@@ -5065,6 +5086,7 @@ ggplot(df47, aes(x, resid)) +
 
 A manufacturing analyst fits a simple linear regression of per-unit production cost ($y$, \$) on production batch size ($x$, units) using $n=50$ batches. Figure \@ref(fig:ch9q48resid) shows the residuals-vs-fitted-values plot from the fitted model.
 
+<!-- R chunk metadata: r ch9q48resid, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Residuals-vs-fitted plot from a regression of per-unit production cost on batch size.", fig.width=5.5, fig.height=4 -->
 ```r
 library(ggplot2)
 set.seed(48)
@@ -5123,6 +5145,7 @@ ggplot(df48, aes(Fitted, Residuals)) +
 
 Figure \@ref(fig:ch9q49panels) shows four residuals-vs-fitted-values plots, Panels (A)–(D), each from a different simple linear regression fit to a different dataset.
 
+<!-- R chunk metadata: r ch9q49panels, echo=FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.cap="Four residual plots illustrating different diagnostic patterns.", fig.width=8, fig.height=6.5 -->
 ```r
 library(ggplot2)
 library(patchwork)

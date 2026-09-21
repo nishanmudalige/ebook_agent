@@ -104,6 +104,7 @@ Not all confidence intervals contain the true value of the parameter. This can b
 illustrated by plotting many intervals simultaneously and observing.
 
 
+<!-- R chunk metadata: r fig.cap="Simulated 95% confidence intervals for the population mean", echo=FALSE, fig.align='center', warning = FALSE -->
 ```r
 library(ggplot2)
 library(dplyr)
@@ -198,6 +199,7 @@ $z_{\alpha/2} \left( \frac{\sigma}{\sqrt{n}} \right)$
 The critical value $z_{\ast}$ is illustrated in Figure \@ref(fig:ConfLevelImg) below and
 depends on $C$.
 
+<!-- R chunk metadata: r ConfLevelImg, fig.cap="The central area under the standard normal curve with confidence level \\(C\\).", echo=FALSE, fig.align='center', warning=FALSE, message=FALSE -->
 ```r
 library(plotly)
 library(dplyr)
@@ -756,6 +758,7 @@ additional tax collected.
 
 
 
+<!-- R chunk metadata: r fig.cap="Histogram for the Taxes dataset", echo=FALSE, fig.align='center', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -791,6 +794,7 @@ ggplot(taxes_data, aes(x = Taxes)) +
 ```
 
 
+<!-- R chunk metadata: r fig.cap="Boxplot of Additional Income Tax", echo=FALSE, fig.align='center', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -818,6 +822,7 @@ ggplot(taxes_data, aes(y = Taxes)) +
 ```
 
 
+<!-- R chunk metadata: r fig.cap="Normal Q-Q Plot of Taxes", echo=FALSE, fig.align='center', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -940,6 +945,7 @@ suppose we have a valid estimation $\hat{p}$. After the entire procedure
 of confidence interval, our population proportion ($p$) should be as the
 following number line shows:\
 
+<!-- R chunk metadata: r fig.align='center', echo=FALSE, engine='tikz', out.width='90%', fig.ext=if (knitr::is_latex_output()) 'pdf' else 'png', fig.cap='Visualization of the result of confidence interval on a proportion.' -->
 ```r
 \usetikzlibrary{decorations.pathmorphing, arrows, shapes, trees, positioning, matrix, calc, backgrounds}
 \begin{tikzpicture}
@@ -1702,6 +1708,7 @@ $$6.5,\ 7.2,\ 5.8,\ 6.9,\ 7.5,\ 6.1,\ 5.9,\ 6.7,\ 7.0,\ 6.4$$
 
 The Normal Q--Q plot of these 10 values is shown below.
 
+<!-- R chunk metadata: r ch5-q3-qq, echo=FALSE, fig.height=3.5, fig.width=5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 sleep10 <- c(6.5,7.2,5.8,6.9,7.5,6.1,5.9,6.7,7.0,6.4)
@@ -2396,6 +2403,7 @@ A fitness coach wants to know whether a 6-week training program changes particip
 
 Let $d = \text{Before} - \text{After}$. The Normal Q--Q plot of the 10 paired differences $d_i$ is shown below.
 
+<!-- R chunk metadata: r ch5-q17-qq, echo=FALSE, fig.height=3.5, fig.width=5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 before <- c(78,82,76,88,80,75,84,79,81,77)
@@ -3508,6 +3516,7 @@ At least **510 students per group** (1020 total) are required.
 <div class="exercise-label">Question 40</div>
 A researcher records the exam scores of $n = 25$ students. The Normal Q--Q plot below shows the distribution of these scores.
 
+<!-- R chunk metadata: r ch5-q40-qq, echo=FALSE, fig.height=3.5, fig.width=5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 scores <- c(75,82,68,90,77,85,71,88,64,79,83,70,93,76,87,66,81,74,89,72,84,69,78,91,73)
@@ -3562,6 +3571,7 @@ The 95% $t$-CI for the true mean exam score is approximately $\mathbf{(75.13,\ 8
 <div class="exercise-label">Question 41</div>
 Researchers record braking distances (metres) for two car models under identical conditions. The side-by-side boxplots below compare the distributions for Car X ($n = 12$) and Car Y ($n = 12$).
 
+<!-- R chunk metadata: r ch5-q41-box, echo=FALSE, fig.height=3.5, fig.width=5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 x_X <- c(34.2,36.1,33.8,35.4,34.9,36.7,33.5,35.2,34.6,36.3,33.9,35.8)
@@ -3584,6 +3594,7 @@ ggplot(df_brake, aes(x = car, y = distance, fill = car)) +
 
 The Normal Q--Q plots for each (small) group are shown below.
 
+<!-- R chunk metadata: r ch5-q41-qq, echo=FALSE, fig.height=3.5, fig.width=7, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 library(patchwork)
@@ -3645,6 +3656,7 @@ The 95% Welch CI for $\mu_X - \mu_Y$ is approximately $\mathbf{(-2.93,\ 2.44)}$.
 <div class="exercise-label">Question 42</div>
 The histogram below shows the distribution of nightly sleep durations (hours) for $n = 20$ participants in `sleep_study.csv`. The dashed line marks the sample mean.
 
+<!-- R chunk metadata: r ch5-q42-hist, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 sleep_hrs <- c(7.2,6.8,8.1,7.5,6.5,7.9,7.0,8.3,6.7,7.4,8.0,7.2,6.9,7.8,8.2,7.1,6.6,7.7,8.0,7.3)
@@ -3716,6 +3728,7 @@ The 95% $t$-CI for the true mean sleep duration is approximately $\mathbf{(7.15,
 <div class="exercise-label">Question 43</div>
 The side-by-side boxplots below compare plant yields (kg) under two fertiliser treatments from `plant_yield.csv` ($n_A = n_B = 15$).
 
+<!-- R chunk metadata: r ch5-q43-box, echo=FALSE, fig.height=3.5, fig.width=5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 fa <- c(52.1,48.7,55.3,49.2,53.8,47.5,56.1,50.4,54.6,48.1,51.9,53.2,49.8,55.7,50.0)
@@ -3736,6 +3749,7 @@ ggplot(df_yield, aes(x = group, y = yield, fill = group)) +
 
 Based on the boxplots, the two groups appear to have different means. Both groups are **small samples** ($n_A = n_B = 15$), so before comparing the means we should check the normality assumption. The Normal Q--Q plots for each group are shown below.
 
+<!-- R chunk metadata: r ch5-q43-qq, echo=FALSE, fig.height=3.5, fig.width=7, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 library(patchwork)

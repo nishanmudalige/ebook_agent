@@ -6,7 +6,7 @@ const newChat = document.getElementById('newChat');
 const protectedMode = document.body.dataset.protected === 'true';
 let previousResponseId = null;
 
-const BOOK_BASE = 'https://nishanmudalige.github.io/STA258_Book/';
+const EBOOK_RAW_BASE = 'https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/';
 
 function accessCode() {
   return sessionStorage.getItem('ebook_agent_code') || '';
@@ -29,117 +29,97 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-/* ------------------------------------------------------------------------- *
- * Maths
- *
- * marked treats a backslash as a Markdown escape, so it eats the delimiters
- * before MathJax ever sees them:  \(\mu\)  ->  (\mu)  and  \[ ... \]  ->  [ ... ].
- * That is why formulas were showing as literal text.
- *
- * So: pull every maths span out first, run Markdown on what is left, then put
- * the maths back and let MathJax typeset it.
- * ------------------------------------------------------------------------- */
-
-const MATH_OPEN = '';
-const MATH_CLOSE = '';
-
-// "$12.50" and "$5 to $10" are money, not maths. Only treat $...$ as maths when
-// it looks like maths: a backslash, or a ^ _ = { } style symbol.
-function looksLikeMath(inner) {
-  if (!inner.trim()) return false;
-  if (/^[\s\d.,]+$/.test(inner)) return false;
-  return /[\\^_={}]/.test(inner) || /[A-Za-z]/.test(inner);
-}
-
+// marked.js treats backslashes as Markdown escapes. Protect LaTeX before Markdown
+// parsing, then restore it for MathJax. This fixes raw output such as (\mu).
 function protectMath(text) {
-  const store = [];
-  const keep = (raw) => MATH_OPEN + (store.push(raw) - 1) + MATH_CLOSE;
-
-  let out = text
-    // display first, so $$ is not eaten by the $ rule
-    .replace(/\$\$([\s\S]+?)\$\$/g, (m) => keep(m))
-    .replace(/\\\[([\s\S]+?)\\\]/g, (m) => keep(m))
-    .replace(/\\\(([\s\S]+?)\\\)/g, (m) => keep(m))
-    .replace(/\$([^$\n]+?)\$/g, (m, inner) => (looksLikeMath(inner) ? keep(m) : m));
-
-  return { out, store };
-}
-
-function restoreMath(html, store) {
-  return html.replace(
-    new RegExp(MATH_OPEN + '(\\d+)' + MATH_CLOSE, 'g'),
-    (_, i) => escapeHtml(store[Number(i)])   // escape so "a < b" cannot open a tag
+  const math = [];
+  const protectedText = (text || '').replace(
+    /\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$\$[\s\S]*?\$\$/g,
+    (match) => {
+      const token = `EBOOKMATHPLACEHOLDER${math.length}END`;
+      math.push(match);
+      return token;
+    }
   );
+  return { protectedText, math };
 }
-
-/* MathJax is loaded with `defer`. On a slow connection the first answer can
- * arrive before it exists, and the old code silently skipped typesetting for
- * the rest of the session. Wait for it instead. */
-let mathJaxReady = null;
-function whenMathJaxReady() {
-  if (mathJaxReady) return mathJaxReady;
-  mathJaxReady = new Promise((resolve) => {
-    const tick = () => {
-      if (window.MathJax && window.MathJax.typesetPromise) {
-        const startup = window.MathJax.startup && window.MathJax.startup.promise;
-        (startup || Promise.resolve()).then(resolve).catch(resolve);
-      } else {
-        setTimeout(tick, 120);
-      }
-    };
-    tick();
-  });
-  return mathJaxReady;
-}
-
-function typesetMath(el) {
-  whenMathJaxReady()
-    .then(() => window.MathJax.typesetPromise([el]))
-    .then(() => { chat.scrollTop = chat.scrollHeight; })
-    .catch(() => {});
-}
-
-/* ------------------------------------------------------------------------- *
- * Markdown
- * ------------------------------------------------------------------------- */
 
 function renderMarkdown(text) {
   marked.setOptions({ breaks: true, gfm: true });
-  const { out, store } = protectMath(text || '');
-  return restoreMath(marked.parse(out), store);
+  const { protectedText, math } = protectMath(text);
+  let html = marked.parse(protectedText);
+
+  math.forEach((expression, index) => {
+    const token = `EBOOKMATHPLACEHOLDER${index}END`;
+    html = html.split(token).join(expression);
+  });
+
+  // Sanitize generated HTML while preserving normal Markdown output.
+  if (window.DOMPurify) {
+    html = DOMPurify.sanitize(html, {
+      USE_PROFILES: { html: true },
+      ADD_ATTR: ['target', 'rel', 'loading', 'decoding']
+    });
+  }
+  return html;
 }
 
-// The model may cite a figure with a path relative to the ebook
-// ("Book_files/figure-html/x-1.png"). Point those at the published site.
-function absolutiseImages(bubble) {
-  bubble.querySelectorAll('img').forEach(img => {
-    const raw = img.getAttribute('src') || '';
-    if (raw && !/^(https?:)?\/\//i.test(raw) && !raw.startsWith('data:')) {
-      img.src = BOOK_BASE + raw.replace(/^\.?\//, '');
+function prepareLinks(container) {
+  container.querySelectorAll('a').forEach((a) => {
+    if (/^https?:\/\//i.test(a.href)) {
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
     }
-    img.loading = 'lazy';
-    img.addEventListener('error', () => {
-      const note = document.createElement('p');
-      note.className = 'img-missing';
-      note.textContent = img.alt
-        ? `[figure unavailable: ${img.alt}]`
-        : '[figure unavailable]';
-      img.replaceWith(note);
-    }, { once: true });
   });
+}
+
+function prepareImages(container) {
+  container.querySelectorAll('img').forEach((img) => {
+    let src = img.getAttribute('src');
+    if (!src) return;
+
+    // If the model returns an ebook-relative path, resolve it against the public
+    // repository rather than against the Flask/Render server.
+    if (!/^(https?:|data:|blob:)/i.test(src)) {
+      src = src.replace(/^(\.\.\/)+/, '').replace(/^\.\/+/, '');
+      src = src.replace(/^docs\//, '');
+      src = src.replace(/^Book_Files\//, 'Book_files/');
+      img.src = new URL(src, EBOOK_RAW_BASE).href;
+    }
+
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer';
+  });
+}
+
+function typesetMath(container, tries = 0) {
+  if (window.MathJax?.typesetPromise) {
+    if (window.MathJax.typesetClear) MathJax.typesetClear([container]);
+    MathJax.typesetPromise([container]).catch(() => {});
+  } else if (tries < 20) {
+    setTimeout(() => typesetMath(container, tries + 1), 100);
+  }
 }
 
 function addMessage(role, text, sources = []) {
   const article = document.createElement('article');
   article.className = `message ${role}`;
+
   const avatar = document.createElement('div');
   avatar.className = 'avatar';
   avatar.textContent = role === 'assistant' ? 'EA' : 'You';
 
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-  if (role === 'assistant') bubble.innerHTML = renderMarkdown(text);
-  else bubble.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
+
+  if (role === 'assistant') {
+    bubble.innerHTML = renderMarkdown(text);
+    prepareImages(bubble);
+    prepareLinks(bubble);
+  } else {
+    bubble.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
+  }
 
   if (sources && sources.length) {
     const sourceBox = document.createElement('div');
@@ -148,11 +128,12 @@ function addMessage(role, text, sources = []) {
     title.className = 'sources-title';
     title.textContent = 'Ebook sources';
     sourceBox.appendChild(title);
+
     sources.forEach(source => {
       const a = document.createElement('a');
       a.href = source.url;
       a.target = '_blank';
-      a.rel = 'noopener';
+      a.rel = 'noopener noreferrer';
       a.textContent = source.label;
       sourceBox.appendChild(a);
     });
@@ -163,17 +144,14 @@ function addMessage(role, text, sources = []) {
   chat.appendChild(article);
   chat.scrollTop = chat.scrollHeight;
 
-  if (role === 'assistant') {
-    absolutiseImages(bubble);
-    typesetMath(bubble);
-  }
+  if (role === 'assistant') typesetMath(bubble);
   return article;
 }
 
 function addThinking() {
   const article = document.createElement('article');
   article.className = 'message assistant thinking-row';
-  article.innerHTML = `<div class="avatar">EA</div><div class="bubble thinking"><span></span><span></span><span></span></div>`;
+  article.innerHTML = `<div class="avatar">EA</div><div class="bubble thinking"><span></span><span></span><span></span><span class="thinking-label">Searching ebook…</span></div>`;
   chat.appendChild(article);
   chat.scrollTop = chat.scrollHeight;
   return article;
@@ -197,9 +175,11 @@ async function sendQuestion(question) {
       },
       body: JSON.stringify(payload),
     });
+
     const data = await response.json();
     thinking.remove();
     if (!response.ok) throw new Error(data.error || 'Request failed.');
+
     previousResponseId = data.response_id;
     addMessage('assistant', data.answer, data.sources || []);
   } catch (error) {

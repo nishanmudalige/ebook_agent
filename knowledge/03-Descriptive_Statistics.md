@@ -192,6 +192,7 @@ We also may have data that is bimodal, which means that there are two distinct p
 
 Figures \@ref(fig:LeftSkewExample), \@ref(fig:RightSkewExample) and \@ref(fig:SymmetryExample) illustrate types of skewness.
 
+<!-- R chunk metadata: r LeftSkewExample, fig.cap="An illustration of a left (negative) skewed distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(ggplot2)
 # style‑guide colors
@@ -284,6 +285,7 @@ ggplot(df, aes(x = x)) +
 ```
 
 
+<!-- R chunk metadata: r RightSkewExample, fig.cap="An illustration of a right (positive) skewed distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(ggplot2)
 
@@ -362,6 +364,7 @@ ggplot(df, aes(x = x)) +
 
 <!-- rgba(0,100,200,1) #00C19A -->
 
+<!-- R chunk metadata: r SymmetryExample, fig.cap="An illustration of an approximately symmetric distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(ggplot2)
 
@@ -484,6 +487,7 @@ A histogram is constructed by dividing the range of the data into intervals (or 
 <!-- | $[a_{m}, b_{m}]$     | $f_{m}$   | $r_{m} = f_{m} / F$      |        | $f_{1} + \ldots + f_{m} = F$ | $r_{1} + \ldots + r_{m} = 1$ | -->
 <!-- |                      | $F = \displaystyle\sum_{i=1}^{m} f_{i}$       | $1$ | |                      |                              | -->
 
+<!-- R chunk metadata: r histconstruct, echo=FALSE, results='asis', warning = FALSE -->
 ```r
 library(knitr)
 library(kableExtra)
@@ -538,6 +542,7 @@ When we use the term *histogram*, we often refer to a frequency histogram unless
 
 Some examples of histograms which also illustrate the concept of skewness are shown in Figures \@ref(fig:HistExampleLeft), \@ref(fig:HistExampleRight), and \@ref(fig:HistExampleSymm). The histograms show how the distribution of data can be skewed to the left, skewed to the right, or approximately symmetric.
 
+<!-- R chunk metadata: r HistExampleLeft, fig.cap="An illustration of a histogram to have a left (or negative) skew probability distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(plotly)
 
@@ -598,6 +603,7 @@ plot_ly() %>%
   )
 ```
 
+<!-- R chunk metadata: r HistExampleRight, fig.cap="An illustration of a histogram to have a right (or positive) skew probability distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(plotly)
 
@@ -660,6 +666,7 @@ fig
 ```
 
 
+<!-- R chunk metadata: r HistExampleSymm, fig.cap="An illustration of a histogram to have a symmetric probability distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(plotly)
 
@@ -731,6 +738,7 @@ The interactive application below allows us to examine the effect of bin size on
 <h3 style="text-align: center; color: #FF2C21;">Fix appearance of shiny app</h3>
 
 <center>
+<!-- R chunk metadata: r HistShinyApp, echo=FALSE, out.width='100%', warning=FALSE -->
 ```r
 knitr::include_app("https://nishan-mudalige.shinyapps.io/Histogram-Shiny-App/", height = "810")
 ```
@@ -760,6 +768,7 @@ Box plots can be used to to get a sense of a data set.
 
 Consider the following summary data
 
+<!-- R chunk metadata: r BoxplotData, echo=FALSE, results='asis', warning = FALSE -->
 ```r
 # Load required libraries
 library(knitr)
@@ -786,6 +795,7 @@ kable(summary_wide, format = "html", booktabs = TRUE, caption = "Summary Statist
 The summary statistics in Table \@ref(tab:BoxplotData) is represented visually as an interactive boxplot in Figure \@ref(fig:BoxplotExample). 
 Hover over the boxplot to identify the median, quartiles and whiskers.
 
+<!-- R chunk metadata: r BoxplotExample, fig.cap="An illustration of an annotated box-plot with whiskers and potential outliers.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 # Load Plotly
 library(plotly)
@@ -860,6 +870,7 @@ Otherwise, if the median cuts the box with upper area equal to
 lower area, then we say that box-plot with symmetric probability
 distribution.
 
+<!-- R chunk metadata: r BoxplotNegativeExample, fig.cap="An illustration of a boxplot with a left (negative) skew.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 # Load Plotly
 library(plotly)
@@ -952,6 +963,7 @@ config(
 
 ```
 
+<!-- R chunk metadata: r BoxplotpositiveExample, fig.cap="An illustration of a boxplot with a right (positive) skew.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 # Load Plotly
 library(plotly)
@@ -1039,6 +1051,7 @@ config(
 )
 ```
 
+<!-- R chunk metadata: r BoxplotSymmetryExample, fig.cap="An illustration of a boxplot with an approximately symmetric distribution.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 # Load Plotly
 library(plotly)
@@ -1121,6 +1134,7 @@ config(
 
 ## Exercises {#sec:ch3exercises}
 
+<!-- R chunk metadata: r ch3-ex-setup, include=FALSE -->
 ```r
 library(ggplot2)
 ```
@@ -1131,6 +1145,7 @@ library(ggplot2)
 <div class="exercise-label">Question 1</div>
 The dot plot below shows the number of steps (in thousands) walked by 10 UTM students on a randomly selected day. **Each dot represents one student.**
 
+<!-- R chunk metadata: r ch3-new-q1-dot, echo=FALSE, fig.height=2.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 steps1 <- c(3, 4, 4, 5, 5, 5, 6, 6, 8, 12)
 df_steps1 <- data.frame(steps = steps1)
@@ -1185,6 +1200,7 @@ New sorted data: 3, 4, 4, 5, **5**, 5, 6, 6, 8 → Median $= 5$th value $= \math
 <div class="exercise-label">Question 2</div>
 The histogram below shows the distribution of **weekly exercise hours** for 50 UTM students. **Each bar covers a 2-hour interval; bar height = frequency.**
 
+<!-- R chunk metadata: r ch3-new-q2-hist, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(21)
 exercise2 <- c(round(rlnorm(44, log(4), 0.65)), round(rlnorm(6, log(14), 0.25)))
@@ -1232,6 +1248,7 @@ All reasonable estimates will be marked correct.
 <div class="exercise-label">Question 3</div>
 The boxplot below shows the **weekly grocery spending** (in dollars) for 23 households near UTM. **The box spans $Q_1$ to $Q_3$; the line inside the box is the median; whiskers extend to the most extreme non-outlier values; dots beyond the whiskers are outliers.**
 
+<!-- R chunk metadata: r ch3-new-q3-box, echo=FALSE, fig.height=3.8, fig.width=4.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 grocery3 <- c(52, 61, 68, 72, 75, 78, 80, 82, 85, 87, 88, 90,
               91, 93, 95, 97, 100, 103, 108, 115, 145, 158, 170)
@@ -1281,6 +1298,7 @@ The three dots above the upper whisker — at approximately **\$145, \$158, and 
 <div class="exercise-label">Question 4</div>
 The dot plot below shows the quiz scores (out of 10) for 8 students. **Each dot represents one student.**
 
+<!-- R chunk metadata: r ch3-new-q4-dot, echo=FALSE, fig.height=2.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 quiz4 <- c(4, 5, 5, 6, 6, 7, 7, 8)
 df_quiz4 <- data.frame(score = quiz4)
@@ -1348,6 +1366,7 @@ $$s^2 = \frac{12}{8-1} = \frac{12}{7} \approx \mathbf{1.714}$$
 <div class="exercise-label">Question 5</div>
 Two sections of STA258 wrote the same midterm exam (out of 100). The histograms below show the score distribution for each section. **Each bar covers a 10-point interval; bar height = frequency.**
 
+<!-- R chunk metadata: r ch3-new-q5-hist, echo=FALSE, fig.height=4.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(23)
 morning_sc <- pmax(pmin(round(rnorm(35, 68, 9)), 100), 35)
@@ -1487,6 +1506,7 @@ max(x) - min(x)
 <div class="exercise-label">Question 7</div>
 The dot plot below shows the number of cups of coffee consumed daily by 11 students. **Each dot represents one student.**
 
+<!-- R chunk metadata: r ch3-coffee-dot, echo=FALSE, fig.height=2.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 coffee2 <- c(0, 0, 0, 1, 1, 1, 1, 2, 2, 4, 7)
 df_coffee <- data.frame(cups = coffee2)
@@ -1658,6 +1678,7 @@ sd(x)
 <div class="exercise-label">Question 10</div>
 The boxplot below shows the age distribution of 12 participants in a research study. **Each dot is one participant's age. The bottom and top of the box are $Q_1$ and $Q_3$; the line inside the box is the median; whiskers extend to the most extreme non-outlier values; the red dashed lines mark the IQR outlier cutoffs.**
 
+<!-- R chunk metadata: r ch3-q9-box, echo=FALSE, fig.height=3.8, fig.width=4.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 ages9 <- c(22, 25, 19, 31, 28, 35, 24, 22, 30, 27, 40, 23)
 df_q9 <- data.frame(ages = ages9)
@@ -1904,6 +1925,7 @@ R's `summary()` gives $Q_1 = 5$ and $Q_3 = 10.5$ (slightly different from the te
 <div class="exercise-label">Question 13</div>
 The histogram below shows the distribution of daily commute times (in minutes) for a random sample of 60 UTM students. **Each bar covers a 10-minute interval; bar height = frequency.**
 
+<!-- R chunk metadata: r ch3-q12-hist, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(11)
 commute <- round(rlnorm(60, log(28), 0.45))
@@ -1950,6 +1972,7 @@ All reasonable estimates will be marked correct.
 <div class="exercise-label">Question 14</div>
 The boxplot below shows the distribution of exam scores (out of 100) for 30 students in a statistics course. **The box spans $Q_1$ to $Q_3$; the line inside the box is the median; whiskers extend to the most extreme non-outlier values; any dots beyond the whiskers are outliers.**
 
+<!-- R chunk metadata: r ch3-q13-box, echo=FALSE, fig.height=3.5, fig.width=4, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(12)
 scores12 <- c(round(rnorm(27, 72, 10)), 38, 42, 95)
@@ -1996,6 +2019,7 @@ ggplot(df_q12, aes(x = "", y = score)) +
 <div class="exercise-label">Question 15</div>
 Two sections of STA258 each wrote the same midterm exam (out of 100). Side-by-side boxplots of their scores are shown below. **Each dot is one student's score; the box spans $Q_1$ to $Q_3$; the line inside is the median.**
 
+<!-- R chunk metadata: r ch3-q14-box, echo=FALSE, fig.height=3.5, fig.width=5.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(13)
 secA <- pmax(pmin(round(rnorm(35, 74, 6)), 100), 40)
@@ -2054,6 +2078,7 @@ A researcher recorded the delivery times (in minutes) for a random sample of 80 
 
 Side-by-side boxplots and histograms of the delivery times are shown below. **The box spans $Q_1$ to $Q_3$; the line inside is the median; whiskers extend to the most extreme non-outlier values; dots beyond the whiskers are outliers.**
 
+<!-- R chunk metadata: r ch3-q15-box, echo=FALSE, fig.height=3.2, fig.width=5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(258)
 n14 <- 80
@@ -2075,6 +2100,7 @@ ggplot(df14, aes(x = restaurant, y = time, fill = restaurant)) +
         plot.caption = element_text(color = "#555", size = 9))
 ```
 
+<!-- R chunk metadata: r ch3-q15-hist, echo=FALSE, fig.height=3.8, fig.width=5.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 ggplot(df14, aes(x = time, fill = restaurant)) +
   geom_histogram(binwidth = 5, color = "white", alpha = 0.85) +
@@ -2136,6 +2162,7 @@ ggplot(df14, aes(x = time, fill = restaurant)) +
 <div class="exercise-label">Question 17</div>
 The histogram below shows the annual salaries (in thousands of dollars) of employees at a tech company.
 
+<!-- R chunk metadata: r ch3-q16-hist, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 set.seed(15)
 salaries <- c(round(rlnorm(70, log(75), 0.35)), round(rlnorm(10, log(200), 0.25)))

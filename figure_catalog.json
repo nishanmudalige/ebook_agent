@@ -1,0 +1,730 @@
+[
+  {
+    "label": "ChiSqExample",
+    "caption": "Some examples of chi-square distrubution curves with different degrees of freedom",
+    "chapter": "Foundations of Inference",
+    "filename": "Book_files/figure-html/ChiSqExample-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ChiSqExample-1.png"
+  },
+  {
+    "label": "LeftSkewExample",
+    "caption": "An illustration of a left (negative) skewed distribution.",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/LeftSkewExample-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/LeftSkewExample-1.png"
+  },
+  {
+    "label": "NormalExample",
+    "caption": "Some examples of normal distrubution curves with different means and variances",
+    "chapter": "Foundations of Inference",
+    "filename": "Book_files/figure-html/NormalExample-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/NormalExample-1.png"
+  },
+  {
+    "label": "PlotPointsLine",
+    "caption": "The line of best fit has now been superimposed on the points in Figure \\\\@ref(fig:PlotPointsOnly).",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/PlotPointsLine-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/PlotPointsLine-1.png"
+  },
+  {
+    "label": "PlotPointsOnly",
+    "caption": "Example of points plotted on coordinate axes.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/PlotPointsOnly-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/PlotPointsOnly-1.png"
+  },
+  {
+    "label": "PlotPtsLnRes",
+    "caption": "PlotPtsLnRes",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/PlotPtsLnRes-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/PlotPtsLnRes-1.png"
+  },
+  {
+    "label": "RightSkewExample",
+    "caption": "An illustration of a right (positive) skewed distribution.",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/RightSkewExample-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/RightSkewExample-1.png"
+  },
+  {
+    "label": "SSEregression",
+    "caption": "SSEregression",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/SSEregression-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/SSEregression-1.png"
+  },
+  {
+    "label": "SSRregression",
+    "caption": "SSRregression",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/SSRregression-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/SSRregression-1.png"
+  },
+  {
+    "label": "SSTregression",
+    "caption": "SSTregression",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/SSTregression-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/SSTregression-1.png"
+  },
+  {
+    "label": "SymmetryExample",
+    "caption": "An illustration of an approximately symmetric distribution.",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/SymmetryExample-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/SymmetryExample-1.png"
+  },
+  {
+    "label": "ch3-coffee-dot",
+    "caption": "ch3 coffee dot",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-coffee-dot-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-coffee-dot-1.png"
+  },
+  {
+    "label": "ch3-new-q1-dot",
+    "caption": "ch3 new q1 dot",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-new-q1-dot-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-new-q1-dot-1.png"
+  },
+  {
+    "label": "ch3-new-q2-hist",
+    "caption": "ch3 new q2 hist",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-new-q2-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-new-q2-hist-1.png"
+  },
+  {
+    "label": "ch3-new-q3-box",
+    "caption": "ch3 new q3 box",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-new-q3-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-new-q3-box-1.png"
+  },
+  {
+    "label": "ch3-new-q4-dot",
+    "caption": "ch3 new q4 dot",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-new-q4-dot-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-new-q4-dot-1.png"
+  },
+  {
+    "label": "ch3-new-q5-hist",
+    "caption": "ch3 new q5 hist",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-new-q5-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-new-q5-hist-1.png"
+  },
+  {
+    "label": "ch3-q12-hist",
+    "caption": "ch3 q12 hist",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q12-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q12-hist-1.png"
+  },
+  {
+    "label": "ch3-q13-box",
+    "caption": "ch3 q13 box",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q13-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q13-box-1.png"
+  },
+  {
+    "label": "ch3-q14-box",
+    "caption": "ch3 q14 box",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q14-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q14-box-1.png"
+  },
+  {
+    "label": "ch3-q15-box",
+    "caption": "ch3 q15 box",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q15-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q15-box-1.png"
+  },
+  {
+    "label": "ch3-q15-hist",
+    "caption": "ch3 q15 hist",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q15-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q15-hist-1.png"
+  },
+  {
+    "label": "ch3-q16-hist",
+    "caption": "ch3 q16 hist",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q16-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q16-hist-1.png"
+  },
+  {
+    "label": "ch3-q9-box",
+    "caption": "ch3 q9 box",
+    "chapter": "Descriptive Statistics",
+    "filename": "Book_files/figure-html/ch3-q9-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch3-q9-box-1.png"
+  },
+  {
+    "label": "ch5-q17-qq",
+    "caption": "ch5 q17 qq",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q17-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q17-qq-1.png"
+  },
+  {
+    "label": "ch5-q3-qq",
+    "caption": "ch5 q3 qq",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q3-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q3-qq-1.png"
+  },
+  {
+    "label": "ch5-q40-hist",
+    "caption": "ch5 q40 hist",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch5-q40-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q40-hist-1.png"
+  },
+  {
+    "label": "ch5-q40-qq",
+    "caption": "ch5 q40 qq",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q40-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q40-qq-1.png"
+  },
+  {
+    "label": "ch5-q41-box",
+    "caption": "ch5 q41 box",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q41-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q41-box-1.png"
+  },
+  {
+    "label": "ch5-q41-qq",
+    "caption": "ch5 q41 qq",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q41-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q41-qq-1.png"
+  },
+  {
+    "label": "ch5-q42-hist",
+    "caption": "ch5 q42 hist",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q42-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q42-hist-1.png"
+  },
+  {
+    "label": "ch5-q43-box",
+    "caption": "ch5 q43 box",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q43-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q43-box-1.png"
+  },
+  {
+    "label": "ch5-q43-qq",
+    "caption": "ch5 q43 qq",
+    "chapter": "Confidence Intervals",
+    "filename": "Book_files/figure-html/ch5-q43-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch5-q43-qq-1.png"
+  },
+  {
+    "label": "ch6-q13-bar",
+    "caption": "ch6 q13 bar",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q13-bar-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q13-bar-1.png"
+  },
+  {
+    "label": "ch6-q17-hist",
+    "caption": "ch6 q17 hist",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q17-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q17-hist-1.png"
+  },
+  {
+    "label": "ch6-q31-bar",
+    "caption": "ch6 q31 bar",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q31-bar-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q31-bar-1.png"
+  },
+  {
+    "label": "ch6-q34-box",
+    "caption": "ch6 q34 box",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q34-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q34-box-1.png"
+  },
+  {
+    "label": "ch6-q35-hist",
+    "caption": "ch6 q35 hist",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch6-q35-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q35-hist-1.png"
+  },
+  {
+    "label": "ch6-q36-bar",
+    "caption": "ch6 q36 bar",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch6-q36-bar-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q36-bar-1.png"
+  },
+  {
+    "label": "ch6-q37-hist",
+    "caption": "ch6 q37 hist",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch6-q37-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q37-hist-1.png"
+  },
+  {
+    "label": "ch6-q37-line",
+    "caption": "ch6 q37 line",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q37-line-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q37-line-1.png"
+  },
+  {
+    "label": "ch6-q38-bar",
+    "caption": "ch6 q38 bar",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch6-q38-bar-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q38-bar-1.png"
+  },
+  {
+    "label": "ch6-q39-box",
+    "caption": "ch6 q39 box",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch6-q39-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q39-box-1.png"
+  },
+  {
+    "label": "ch6-q40-line",
+    "caption": "ch6 q40 line",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch6-q40-line-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q40-line-1.png"
+  },
+  {
+    "label": "ch6-q41-qq",
+    "caption": "Normal Q-Q plot of the 8 repair times.",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q41-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q41-qq-1.png"
+  },
+  {
+    "label": "ch6-q42-qq",
+    "caption": "Normal Q-Q plots for Workstation 1 (left) and Workstation 2 (right).",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q42-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q42-qq-1.png"
+  },
+  {
+    "label": "ch6-q43-qq",
+    "caption": "Normal Q-Q plots for Section A (left) and Section B (right).",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q43-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q43-qq-1.png"
+  },
+  {
+    "label": "ch6-q44-qq",
+    "caption": "Normal Q-Q plot of the paired differences (Diet twin minus Control twin, mg/dL).",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q44-qq-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q44-qq-1.png"
+  },
+  {
+    "label": "ch6-q9-hist",
+    "caption": "ch6 q9 hist",
+    "chapter": "Hypothesis Tests",
+    "filename": "Book_files/figure-html/ch6-q9-hist-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch6-q9-hist-1.png"
+  },
+  {
+    "label": "ch8-p4-box",
+    "caption": "ch8 p4 box",
+    "chapter": "Analysis of Variance",
+    "filename": "Book_files/figure-html/ch8-p4-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch8-p4-box-1.png"
+  },
+  {
+    "label": "ch8-q14-box",
+    "caption": "ch8 q14 box",
+    "chapter": "Analysis of Variance",
+    "filename": "Book_files/figure-html/ch8-q14-box-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch8-q14-box-1.png"
+  },
+  {
+    "label": "ch9q21scatter",
+    "caption": "Scatterplot of five observations. Which regression equation best fits these data?",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q21scatter-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q21scatter-1.png"
+  },
+  {
+    "label": "ch9q22scatter",
+    "caption": "ch9q22scatter",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q22scatter-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q22scatter-1.png"
+  },
+  {
+    "label": "ch9q25residplot",
+    "caption": "Residuals-vs-fitted plot from a fitted simple linear regression model.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q25residplot-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q25residplot-1.png"
+  },
+  {
+    "label": "ch9q27residplot",
+    "caption": "ch9q27residplot",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q27residplot-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q27residplot-1.png"
+  },
+  {
+    "label": "ch9q30resid",
+    "caption": "(a) Scatterplot of well-being score ($y$) against weekly exercise hours ($x$) with the fitted regression line. (b) Residual plot: residuals plotted against fitted values; the dashed line marks zero.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q30resid-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q30resid-1.png"
+  },
+  {
+    "label": "ch9q30twolines",
+    "caption": "ch9q30twolines",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q30twolines-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q30twolines-1.png"
+  },
+  {
+    "label": "ch9q31outlier",
+    "caption": "ch9q31outlier",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q31outlier-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q31outlier-1.png"
+  },
+  {
+    "label": "ch9q33resid",
+    "caption": "ch9q33resid",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q33resid-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q33resid-1.png"
+  },
+  {
+    "label": "ch9q34extrap",
+    "caption": "Fitted regression line extended beyond the observed data range. Vertical dashed lines indicate the range of the training data.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q34extrap-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q34extrap-1.png"
+  },
+  {
+    "label": "ch9q34outlier",
+    "caption": "ch9q34outlier",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q34outlier-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q34outlier-1.png"
+  },
+  {
+    "label": "ch9q37extrap",
+    "caption": "ch9q37extrap",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q37extrap-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q37extrap-1.png"
+  },
+  {
+    "label": "ch9q37scatter",
+    "caption": "ch9q37scatter",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q37scatter-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q37scatter-1.png"
+  },
+  {
+    "label": "ch9q40scatter",
+    "caption": "ch9q40scatter",
+    "chapter": "",
+    "filename": "Book_files/figure-html/ch9q40scatter-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q40scatter-1.png"
+  },
+  {
+    "label": "ch9q45sketch",
+    "caption": "Reference solution: scatterplot of candle height vs. time lit with the fitted regression line.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q45sketch-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q45sketch-1.png"
+  },
+  {
+    "label": "ch9q47resid",
+    "caption": "Reference solution: residual plot for the catalyst/yield data.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q47resid-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q47resid-1.png"
+  },
+  {
+    "label": "ch9q48resid",
+    "caption": "Residuals-vs-fitted plot from a regression of per-unit production cost on batch size.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q48resid-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q48resid-1.png"
+  },
+  {
+    "label": "ch9q49panels",
+    "caption": "Four residual plots illustrating different diagnostic patterns.",
+    "chapter": "Simple Linear Regression",
+    "filename": "Book_files/figure-html/ch9q49panels-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/ch9q49panels-1.png"
+  },
+  {
+    "label": "f-densities",
+    "caption": "The F-Distribution at different degrees of freedom.",
+    "chapter": "Foundations of Inference",
+    "filename": "Book_files/figure-html/f-densities-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/f-densities-1.png"
+  },
+  {
+    "label": "t-densities",
+    "caption": "The $t-$Distributions at different degrees of freedom.",
+    "chapter": "Foundations of Inference",
+    "filename": "Book_files/figure-html/t-densities-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/t-densities-1.png"
+  },
+  {
+    "label": "unnamed-chunk-10",
+    "caption": "unnamed chunk 10",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-10-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-10-1.png"
+  },
+  {
+    "label": "unnamed-chunk-10",
+    "caption": "unnamed chunk 10",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-10-2.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-10-2.png"
+  },
+  {
+    "label": "unnamed-chunk-11",
+    "caption": "unnamed chunk 11",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-11-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-11-1.png"
+  },
+  {
+    "label": "unnamed-chunk-11",
+    "caption": "unnamed chunk 11",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-11-2.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-11-2.png"
+  },
+  {
+    "label": "unnamed-chunk-12",
+    "caption": "unnamed chunk 12",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-12-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-12-1.png"
+  },
+  {
+    "label": "unnamed-chunk-13",
+    "caption": "unnamed chunk 13",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-13-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-13-1.png"
+  },
+  {
+    "label": "unnamed-chunk-14",
+    "caption": "unnamed chunk 14",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-14-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-14-1.png"
+  },
+  {
+    "label": "unnamed-chunk-15",
+    "caption": "unnamed chunk 15",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-15-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-15-1.png"
+  },
+  {
+    "label": "unnamed-chunk-16",
+    "caption": "unnamed chunk 16",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-16-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-16-1.png"
+  },
+  {
+    "label": "unnamed-chunk-17",
+    "caption": "unnamed chunk 17",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-17-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-17-1.png"
+  },
+  {
+    "label": "unnamed-chunk-18",
+    "caption": "unnamed chunk 18",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-18-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-18-1.png"
+  },
+  {
+    "label": "unnamed-chunk-19",
+    "caption": "unnamed chunk 19",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-19-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-19-1.png"
+  },
+  {
+    "label": "unnamed-chunk-2",
+    "caption": "unnamed chunk 2",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-2-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-2-1.png"
+  },
+  {
+    "label": "unnamed-chunk-20",
+    "caption": "unnamed chunk 20",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-20-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-20-1.png"
+  },
+  {
+    "label": "unnamed-chunk-21-1 2",
+    "caption": "unnamed chunk 21 1 2",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-21-1 2.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-21-1%202.png"
+  },
+  {
+    "label": "unnamed-chunk-21",
+    "caption": "unnamed chunk 21",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-21-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-21-1.png"
+  },
+  {
+    "label": "unnamed-chunk-22",
+    "caption": "unnamed chunk 22",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-22-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-22-1.png"
+  },
+  {
+    "label": "unnamed-chunk-23",
+    "caption": "unnamed chunk 23",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-23-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-23-1.png"
+  },
+  {
+    "label": "unnamed-chunk-25",
+    "caption": "unnamed chunk 25",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-25-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-25-1.png"
+  },
+  {
+    "label": "unnamed-chunk-26",
+    "caption": "unnamed chunk 26",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-26-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-26-1.png"
+  },
+  {
+    "label": "unnamed-chunk-27",
+    "caption": "unnamed chunk 27",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-27-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-27-1.png"
+  },
+  {
+    "label": "unnamed-chunk-29",
+    "caption": "unnamed chunk 29",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-29-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-29-1.png"
+  },
+  {
+    "label": "unnamed-chunk-3",
+    "caption": "unnamed chunk 3",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-3-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-3-1.png"
+  },
+  {
+    "label": "unnamed-chunk-30",
+    "caption": "unnamed chunk 30",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-30-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-30-1.png"
+  },
+  {
+    "label": "unnamed-chunk-4",
+    "caption": "unnamed chunk 4",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-4-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-4-1.png"
+  },
+  {
+    "label": "unnamed-chunk-5",
+    "caption": "unnamed chunk 5",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-5-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-5-1.png"
+  },
+  {
+    "label": "unnamed-chunk-6",
+    "caption": "unnamed chunk 6",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-6-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-6-1.png"
+  },
+  {
+    "label": "unnamed-chunk-7",
+    "caption": "unnamed chunk 7",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-7-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-7-1.png"
+  },
+  {
+    "label": "unnamed-chunk-8",
+    "caption": "unnamed chunk 8",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-8-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-8-1.png"
+  },
+  {
+    "label": "unnamed-chunk-9",
+    "caption": "unnamed chunk 9",
+    "chapter": "",
+    "filename": "Book_files/figure-html/unnamed-chunk-9-1.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Book_files/figure-html/unnamed-chunk-9-1.png"
+  },
+  {
+    "label": "RStudio_desktop_IDE",
+    "caption": "RStudio desktop IDE",
+    "chapter": "",
+    "filename": "Chapters/Images/Section 2/RStudio_desktop_IDE.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Chapters/Images/Section%202/RStudio_desktop_IDE.png"
+  },
+  {
+    "label": "RStudio_desktop_IDE_new_script",
+    "caption": "RStudio desktop IDE new script",
+    "chapter": "",
+    "filename": "Chapters/Images/Section 2/RStudio_desktop_IDE_new_script.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Chapters/Images/Section%202/RStudio_desktop_IDE_new_script.png"
+  },
+  {
+    "label": "RStudio_install",
+    "caption": "RStudio install",
+    "chapter": "",
+    "filename": "Chapters/Images/Section 2/RStudio_install.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Chapters/Images/Section%202/RStudio_install.png"
+  },
+  {
+    "label": "R_homepage",
+    "caption": "R homepage",
+    "chapter": "",
+    "filename": "Chapters/Images/Section 2/R_homepage.png",
+    "url": "https://raw.githubusercontent.com/nishanmudalige/STA258_Book/main/Chapters/Images/Section%202/R_homepage.png"
+  }
+]

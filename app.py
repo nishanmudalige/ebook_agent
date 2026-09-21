@@ -1,5 +1,8 @@
+import json
 import os
+import re
 from collections import OrderedDict
+from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 from flask_limiter import Limiter
@@ -19,6 +22,90 @@ MAX_MESSAGE_CHARS = int(os.getenv("MAX_MESSAGE_CHARS", "12000"))
 MAX_OUTPUT_TOKENS = int(os.getenv("MAX_OUTPUT_TOKENS", "3500"))
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+BASE_DIR = Path(__file__).resolve().parent
+FIGURE_CATALOG_PATH = BASE_DIR / "figure_catalog.json"
+
+
+def _load_figure_catalog():
+    try:
+        return json.loads(FIGURE_CATALOG_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+FIGURE_CATALOG = _load_figure_catalog()
+STOPWORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "can", "do", "ebook",
+    "explain", "figure", "for", "from", "graph", "i", "image", "in", "is", "it",
+    "me", "of", "on", "or", "plot", "show", "the", "this", "to", "use", "with",
+}
+
+
+def _tokens(text):
+    # Split camelCase labels as well as ordinary words.
+    text = re.sub(r"([a-z])([A-Z])", r"\1 \2", text or "")
+    return {
+        w for w in re.findall(r"[a-z0-9]+", text.lower())
+        if len(w) > 1 and w not in STOPWORDS
+    }
+
+
+def relevant_figures(message, limit=5):
+    """Return a few locally indexed ebook figures relevant to the question.
+
+    This is intentionally local and lightweight, so image support works even when the
+    OpenAI vector store was created before figure-index.md existed.
+    """
+    q_tokens = _tokens(message)
+    if not q_tokens or not FIGURE_CATALOG:
+        return []
+
+    scored = []
+    q_lower = message.lower()
+    for fig in FIGURE_CATALOG:
+        haystack = " ".join([
+            fig.get("label", ""), fig.get("caption", ""), fig.get("chapter", ""),
+            fig.get("filename", ""),
+        ])
+        f_tokens = _tokens(haystack)
+        overlap = len(q_tokens & f_tokens)
+        score = overlap * 3
+
+        label_words = " ".join(_tokens(fig.get("label", "")))
+        caption = fig.get("caption", "").lower()
+        if label_words and label_words in q_lower:
+            score += 8
+        # Small boosts for common statistical figure types.
+        for term in ("normal", "histogram", "boxplot", "scatter", "residual", "skew", "chi", "density", "regression", "anova"):
+            if term in q_lower and term in haystack.lower():
+                score += 4
+
+        if score > 0:
+            scored.append((score, fig))
+
+    scored.sort(key=lambda x: (-x[0], x[1].get("label", "")))
+    return [fig for _, fig in scored[:limit]]
+
+
+def augment_with_figure_context(message):
+    figures = relevant_figures(message)
+    if not figures:
+        return message
+
+    lines = [
+        message,
+        "",
+        "[Internal ebook figure candidates. Use a figure only when it genuinely helps or the user asks for one. "
+        "If used, copy the exact URL in Markdown image syntax. Never invent another image URL.]",
+    ]
+    for fig in figures:
+        lines.append(
+            f"- {fig.get('caption') or fig.get('label')}"
+            f" | chapter: {fig.get('chapter') or 'ebook'}"
+            f" | URL: {fig.get('url')}"
+        )
+    return "\n".join(lines)
 
 
 def check_access(req):
@@ -59,6 +146,7 @@ def health():
         "status": "ok",
         "configured": bool(os.getenv("OPENAI_API_KEY") and VECTOR_STORE_ID),
         "model": OPENAI_MODEL,
+        "figure_catalog": len(FIGURE_CATALOG),
     })
 
 
@@ -67,19 +155,17 @@ def health():
 def chat():
     if not check_access(request):
         return jsonify({"error": "Invalid access code."}), 401
-
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({"error": "OPENAI_API_KEY is not configured on the server."}), 500
     if not VECTOR_STORE_ID:
         return jsonify({"error": "OPENAI_VECTOR_STORE_ID is not configured on the server."}), 500
 
-
     data = request.get_json(silent=True) or {}
-    
     message = str(data.get("message", "")).strip()
-    
+
+    # Important: JSON null must stay Python None. str(None) would become the invalid
+    # previous_response_id value "None".
     raw_previous_response_id = data.get("previous_response_id")
-    
     if isinstance(raw_previous_response_id, str):
         previous_response_id = raw_previous_response_id.strip() or None
     else:
@@ -94,7 +180,7 @@ def chat():
         kwargs = dict(
             model=OPENAI_MODEL,
             instructions=SYSTEM_PROMPT,
-            input=message,
+            input=augment_with_figure_context(message),
             tools=[{
                 "type": "file_search",
                 "vector_store_ids": [VECTOR_STORE_ID],
@@ -117,15 +203,12 @@ def chat():
         })
     except Exception as exc:
         app.logger.exception("OpenAI request failed")
-
         if app.debug:
-            return jsonify({
-                "error": f"{type(exc).__name__}: {str(exc)}"
-            }), 500
-
+            return jsonify({"error": f"{type(exc).__name__}: {str(exc)}"}), 500
         return jsonify({
             "error": f"The agent request failed: {type(exc).__name__}. Check the Render logs for details."
         }), 500
+
 
 @app.post("/api/reset")
 def reset():

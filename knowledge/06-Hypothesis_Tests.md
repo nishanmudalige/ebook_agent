@@ -214,6 +214,7 @@ $F$-distribution and $\chi^2$-distribution.
 
 We use the test statistic, reference distribution, and refer back to $H_a$.
 
+<!-- R chunk metadata: r fig.cap="Right-tailed test: p-value is the area to the right of the test statistic", fig.align='center', fig.show='hold', out.width='48%', echo=FALSE -->
 ```r
 
 library(ggplot2)
@@ -284,6 +285,7 @@ p2 <- ggplot() +
 print(p2)
 ```
 
+<!-- R chunk metadata: r fig.cap="Left-tailed test: p-value is the area to the left of the test statistic", fig.align='center', fig.show='hold', out.width='48%', echo=FALSE -->
 ```r
 
 # First plot (lower pink bracket)
@@ -346,6 +348,7 @@ print(p2)
 ```
 
 
+<!-- R chunk metadata: r fig.cap="Two-tailed test: p-value is the total area in both tails beyond ±test statistic", echo=FALSE, fig.align='center', out.width='70%' -->
 ```r
 library(ggplot2)
 
@@ -649,6 +652,7 @@ Reference distribution: standard normal
 **4. Calculate p-value**
 
 $$\text{p-value} = P(Z < -2.82) \approx 0.0024$$
+<!-- R chunk metadata: r fig.cap="Left-tailed p-value for the test statistic \\( z^* = -2.82 \\)", fig.align='center', echo=FALSE, out.width='70%' -->
 ```r
 library(ggplot2)
 
@@ -836,6 +840,7 @@ likely positive.
 ```
 
 
+<!-- R chunk metadata: r fig.cap="Histogram of \\( z^\\star \\) values from 10,000 simulations under \\( H_0 \\)", fig.align='center', echo=FALSE, warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -2034,6 +2039,7 @@ $S^2 = 1.44$, $n = 10$, and $$\chi^2 = \frac{(9)(1.44)}{0.81} = 16$$
 From the chi-squared table, the null hypothesis is rejected when
 $\chi^2 > 16.919$, where $\nu = 9$ degrees of freedom.
 
+<!-- R chunk metadata: r fig.cap="Right-tailed chi-squared distribution with critical value at 16.919", echo=FALSE, fig.align='center', out.width='70%', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -2381,6 +2387,7 @@ interactions".
     qqnorm(Success_Index[Group == 1]);
     qqline(Success_Index[Group == 1]);
 ```
+<!-- R chunk metadata: r fig.cap="Q-Q Plot for Group 1: Interaction with Outsiders", echo=FALSE, fig.align='center', out.width='60%', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -2408,6 +2415,7 @@ ggplot(df, aes(sample = success)) +
     qqline(Success_Index[Group == 2]);
 ```
 
+<!-- R chunk metadata: r fig.cap="Q-Q Plot for Group 2: Fewer Interactions", echo=FALSE, fig.align='center', out.width='60%', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -2436,6 +2444,7 @@ ggplot(df, aes(sample = success)) +
     boxplot(Success_Index ~ Group, col = c("red", "blue"))
 ```
 
+<!-- R chunk metadata: r fig.cap="Boxplot of Success Index by Group", echo=FALSE, fig.align='center', out.width='60%', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -2695,6 +2704,7 @@ $$H_0 : \mu_1 = \mu_2$$ $$H_a : \mu_1 > \mu_2$$
     qqnorm(treatment, pch=19, col="red", main="Treatment");
     qqline(treatment, lty=2);
 ```
+<!-- R chunk metadata: r fig.cap="Q-Q Plot for Treatment Group", echo=FALSE, fig.align='center', out.width='60%', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -2722,6 +2732,7 @@ ggplot(df, aes(sample = value)) +
     qqline(control, lty=2);
 ```
 
+<!-- R chunk metadata: r fig.cap="Q-Q Plot for Control Group", echo=FALSE, fig.align='center', out.width='60%', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 
@@ -3711,6 +3722,7 @@ A nutritionist administers a sleep supplement to a random sample of $n = 16$ vol
 
 The histogram below shows the distribution of nightly sleep durations for the 16 volunteers. The dashed line marks the hypothesized population mean $\mu_0 = 7.0$ hours.
 
+<!-- R chunk metadata: r ch6-q9-hist, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 sleep_hrs <- c(6.4, 7.2, 7.7, 9.0, 8.5, 7.3, 6.6, 8.3, 9.2, 7.8, 8.8, 6.9, 8.1, 7.4, 9.6, 7.1)
@@ -3933,6 +3945,7 @@ $$\text{p-value} = P(Z < -2.165) \approx 0.0152$$
 <div class="exercise-label">Question 13</div>
 A national survey reports that 60% of households own at least one pet ($p_0 = 0.60$). A researcher randomly selects $n = 150$ households in one city and records whether each household owns at least one pet. The bar chart below summarises the results.
 
+<!-- R chunk metadata: r ch6-q13-bar, echo=FALSE, fig.height=3.5, fig.width=4.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 df_pets <- data.frame(
@@ -4164,6 +4177,7 @@ From the $\chi^2$-table: the lower 5th percentile of $\chi^2_{15}$ is $7.26$. Si
 <div class="exercise-label">Question 17</div>
 A university study reports that the standard deviation of weekly study hours among undergraduates is $\sigma_0 = 4$ hours ($\sigma_0^2 = 16$ hr$^2$). A researcher surveys a random sample of $n = 25$ engineering students and records their weekly study hours. The histogram below shows the distribution of study hours in this sample.
 
+<!-- R chunk metadata: r ch6-q17-hist, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 study_hrs <- c(8, 10, 12, 13, 14, 15, 16, 17, 17, 18, 18,
@@ -4975,6 +4989,7 @@ $$\text{p-value} = 2 \times P(Z > 2.729) \approx 2(0.00318) = 0.00636$$
 <div class="exercise-label">Question 31</div>
 A college tracks course completion across two delivery formats. The bar chart below shows the number of students who completed and did not complete the course for the online section ($n_1 = 150$) and the in-person section ($n_2 = 120$).
 
+<!-- R chunk metadata: r ch6-q31-bar, echo=FALSE, fig.height=3.5, fig.width=6.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 df_complete <- data.frame(
@@ -5136,6 +5151,7 @@ The critical value $F_{0.05}(14,11) \approx 2.739$. Since $F^* = 4.198 > 2.739$,
 <div class="exercise-label">Question 34</div>
 Two quality inspectors each rate the same set of parts on a scale from 1 to 10. The boxplots below show the distribution of ratings given by each inspector.
 
+<!-- R chunk metadata: r ch6-q34-box, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 inspector_a <- c(2, 3, 4, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 10, 10, 11)
@@ -5345,6 +5361,7 @@ Since p-value $\approx 0.010 < \alpha = 0.05$, we **reject $H_0$**. There is suf
 <div class="exercise-label">Question 37</div>
 Seven university students complete a self-reported anxiety questionnaire (scored 0–50; higher = more anxious) before and after a six-week mindfulness course. The plot below shows each student's anxiety score before and after the program.
 
+<!-- R chunk metadata: r ch6-q37-line, echo=FALSE, fig.height=3.6, fig.width=5.5, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 df_anxiety <- data.frame(
@@ -5628,6 +5645,7 @@ qqnorm(repair)
 qqline(repair)
 ```
 
+<!-- R chunk metadata: r ch6-q41-qq, echo=FALSE, fig.height=4, fig.width=4.5, fig.align='center', message=FALSE, warning=FALSE, fig.cap="Normal Q-Q plot of the 8 repair times." -->
 ```r
 library(ggplot2)
 repair <- c(1.2, 1.5, 1.8, 2.0, 2.2, 2.5, 3.8, 6.5)
@@ -5680,6 +5698,7 @@ qqnorm(ws1); qqline(ws1)
 qqnorm(ws2); qqline(ws2)
 ```
 
+<!-- R chunk metadata: r ch6-q42-qq, echo=FALSE, fig.height=4, fig.width=8.5, fig.align='center', message=FALSE, warning=FALSE, fig.cap="Normal Q-Q plots for Workstation 1 (left) and Workstation 2 (right)." -->
 ```r
 library(ggplot2)
 library(patchwork)
@@ -5742,6 +5761,7 @@ qqnorm(sectionA); qqline(sectionA)
 qqnorm(sectionB); qqline(sectionB)
 ```
 
+<!-- R chunk metadata: r ch6-q43-qq, echo=FALSE, fig.height=4, fig.width=8.5, fig.align='center', message=FALSE, warning=FALSE, fig.cap="Normal Q-Q plots for Section A (left) and Section B (right)." -->
 ```r
 library(ggplot2)
 library(patchwork)
@@ -5825,6 +5845,7 @@ qqnorm(d)
 qqline(d)
 ```
 
+<!-- R chunk metadata: r ch6-q44-qq, echo=FALSE, fig.height=4, fig.width=4.5, fig.align='center', message=FALSE, warning=FALSE, fig.cap="Normal Q-Q plot of the paired differences (Diet twin minus Control twin, mg/dL)." -->
 ```r
 library(ggplot2)
 control <- c(140, 135, 150, 145, 138, 142, 148, 136)

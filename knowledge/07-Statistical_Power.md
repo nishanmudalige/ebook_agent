@@ -89,6 +89,7 @@ We reject $H_0$ if: $$Z^* > 1.645$$
 
 ::: center
 
+<!-- R chunk metadata: r fig.cap="Rejection region for $Z$ with $\\alpha = 0.05$", echo=FALSE, fig.align='center', out.width='60%', warning=FALSE -->
 ```r
 library(ggplot2)
 
@@ -133,6 +134,7 @@ $$P\left(Z > \frac{0.520 - 1.1}{1/\sqrt{10}}\right)
 $\mu = 1.1$.
 
 ::: center
+<!-- R chunk metadata: r fig.cap="Power curve showing shaded rejection area under \\( H_A \\)", echo=FALSE, fig.align='center', out.width='60%' -->
 ```r
 library(ggplot2)
 
@@ -175,6 +177,7 @@ This result can also be visualized using a power curve, which shows how
 the probability of correctly rejecting $H_0$ increases with the true
 mean $\mu$.
 
+<!-- R chunk metadata: r fig.cap="Power curve for a one-sided test with points at \\( \\mu = 0.52 \\) and \\( \\mu = 1.1 \\)", echo=FALSE, fig.align='center' -->
 ```r
 library(ggplot2)
 library(dplyr)

@@ -146,6 +146,7 @@ The test statistic follows an \( F \)-distribution with:
 
 **P-value**
 
+<!-- R chunk metadata: r fig.cap="F-distribution with shaded p-value area", echo=FALSE, fig.align='center', out.width='70%' -->
 ```r
 # Load library
 library(ggplot2)
@@ -161,6 +162,7 @@ y_vals <- df(x_vals, df1, df2)
 f_data <- data.frame(x = x_vals, y = y_vals)
 ```
 
+<!-- R chunk metadata: r fig.cap="F-distribution with shaded p-value area", echo=FALSE, fig.align='center', out.width='70%' -->
 ```r
 # Plot
 ggplot(f_data, aes(x, y)) +
@@ -1141,6 +1143,7 @@ result
 
 
 <div style="text-align: center;">
+<!-- R chunk metadata: r fig.cap="95% Confidence Intervals for Mean Cost by Bumper Group", echo=FALSE, message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 library(dplyr)
@@ -1263,6 +1266,7 @@ Bonferroni informs us it is **plausible** that \( \mu_1 = \mu_2 \)
 
 <div style="text-align: center;">
 
+<!-- R chunk metadata: r fig.cap="Comparison of LSD and Bonferroni Confidence Intervals for \\(\\mu_1 - \\mu_2\\). LSD is narrower; Bonferroni adjusts for multiple comparisons.", echo=FALSE, message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 
@@ -1872,6 +1876,7 @@ When group means are very different (large $MS_{\text{Treatment}}$) relative to 
 <div class="exercise-label">Question 14</div>
 The boxplot below compares completion times (minutes) for four tax return forms, based on samples of $n = 10$ per form.
 
+<!-- R chunk metadata: r ch8-q14-box, echo=FALSE, fig.height=3.5, fig.width=6, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 set.seed(258)
@@ -2809,6 +2814,7 @@ $$LSD_B = 2.9521\sqrt{40.7489 \times 0.1742} = 2.9521 \times 2.6641 = \mathbf{7.
 <div class="exercise-label">Question 34</div>
 The boxplot below compares final exam scores for five study methods. The group sizes are not all equal.
 
+<!-- R chunk metadata: r ch8-p4-box, echo=FALSE, fig.height=3.8, fig.width=7, fig.align='center', message=FALSE, warning=FALSE -->
 ```r
 library(ggplot2)
 study_method <- data.frame(

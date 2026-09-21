@@ -40,6 +40,7 @@ The normal distribution is symmetric about its mean $\mu$ and has a bell-shaped 
 It is completely characterized by two parameters which are the the mean $\mu$ and the standard deviation $\sigma$.
 Some examples are shown in Figure \@ref(fig:NormalExample).
 
+<!-- R chunk metadata: r NormalExample, fig.cap="Some examples of normal distrubution curves with different means and variances", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(ggplot2)
 library(grid)
@@ -195,6 +196,7 @@ function is true:
 
 
 <!--
+<!-- R chunk metadata: r EmpiricalRuleExample, fig.cap="An illustration of the empirical rule.", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(plotly)
 library(plotly)
@@ -304,6 +306,7 @@ The interactive application below illustrates the empirical rule.
 <h3 style="text-align: center; color: #FF2C21;">Fix appearance of shiny app</h3>
 
 <center>
+<!-- R chunk metadata: r HistEmpRuleApp, echo=FALSE, out.width='100%' -->
 ```r
 knitr::include_app("https://nishan-mudalige.shinyapps.io/Empirical_Rule_Shiny_App/", height = "750")
 ```
@@ -379,6 +382,7 @@ however we will not be covering the gamma distribution in this course.
 The shape of the chi-square distribution is determined by its degrees of freedom.
 Some examples of chi-square distributions are shown in Figure \@ref(fig:ChiSqExample).
 
+<!-- R chunk metadata: r ChiSqExample, fig.cap="Some examples of chi-square distrubution curves with different degrees of freedom", echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 # 1) Define your parameters for chi-square dfs
 df1   <- 2; df2   <- 5; df3   <- 10
@@ -489,6 +493,7 @@ Here \(\Gamma(\cdot)\) is the Gamma function as in Definition \@ref(def:GammaFun
 The t-distribution resembles the normal distribution but with heavier tails.
 
 
+<!-- R chunk metadata: r fig.cap="Comparison of the standard normal distribution and t-distributions with 2 and 9 degrees of freedom", echo=FALSE, fig.align='center', warning=FALSE, message=FALSE -->
 ```r
 library(ggplot2)
 library(dplyr)
@@ -526,6 +531,7 @@ ggplot(df, aes(x = x, y = y, color = dist, linetype = dist)) +
 
 
 <!--
+<!-- R chunk metadata: r t-densities, echo=FALSE, fig.align='center', fig.cap='The $t-$Distributions at different degrees of freedom.', out.width='90%', warning=FALSE -->
 ```r
 library(ggplot2)
 library(grid)   # for unit()
@@ -686,6 +692,7 @@ where $B(\cdot,\cdot)$ is the Beta function (see Definition \@ref(def:BetaFuncti
 :::
 
 
+<!-- R chunk metadata: r f-densities, echo=FALSE, fig.align='center', fig.cap='The F-Distribution at different degrees of freedom.', out.width='90%', warning=FALSE -->
 ```r
 library(ggplot2)
 library(grid)   # for arrow()
@@ -974,6 +981,7 @@ $$P\left( \left| \frac{X_1 + X_2 + \cdots + X_n}{n} - 3 \right| \geq \varepsilon
 **Conclusion:** $$\bar{X}_n \xrightarrow{P} 3$$
 :::
 
+<!-- R chunk metadata: r fig.cap="Simulation of running sample mean of Bernoulli \\(p = 0.5\\) trials over time", echo=FALSE, fig.align='center' -->
 ```r
 library(ggplot2)
 
@@ -1031,6 +1039,7 @@ ggplot(df, aes(x = trial, y = running_mean)) +
     abline(h = 0.5, lty = 2, col = "black")
 :::
 
+<!-- R chunk metadata: r fig.cap="A Simulation of 20 running sample means of Bernoulli \\(p = 0.5\\) trials converging over 100 trials", echo=FALSE, fig.align='center' -->
 ```r
 library(ggplot2)
 library(tidyr)

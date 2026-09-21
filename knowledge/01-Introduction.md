@@ -211,6 +211,7 @@ The picture below shows the relationship between parameters from a population an
 
 <!--  include engine='tikz' in block header for tikz images -->
 <!-- ```{r fig.align='center', echo=FALSE, out.width='100%', fig.ext=if (knitr::is_latex_output()) 'pdf' else 'png', fig.cap='Illustration of parameters in a population and statistics in a sample'} -->
+<!-- R chunk metadata: r fig.cap="Illustration of parameters in a population and statistics in a sample", out.width='90%', echo=FALSE, fig.align='center', warning=FALSE -->
 ```r
 library(plotly)
 

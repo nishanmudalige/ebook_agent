@@ -12,7 +12,6 @@ SOURCE_MAP = {
     "08-Analysis_of_Variance.md": ("Chapter 8: Analysis of Variance", BOOK_BASE + "analysis-of-variance.html"),
     "09-Simple_Linear_Regression.md": ("Chapter 9: Simple Linear Regression", BOOK_BASE + "simple-linear-regression.html"),
     "10-Analysis_of_Categorical_Data.md": ("Chapter 10: Analysis of Categorical Data", BOOK_BASE + "analysis-of-categorical-data.html"),
-    "figures.md": ("Ebook figure catalogue", BOOK_BASE),
 }
 
 def source_details(filename: str):
