@@ -1,141 +1,165 @@
-# STA258 Ebook Companion
+# ebook_agent — STA258 ebook tutor and critical reviewer
 
-An AI study companion for **STA258: Statistics with Applied Probability** at the University of Toronto Mississauga. It uses a Flask web app, OpenAI Responses API, and `file_search` over a vector store containing the ebook.
+> **November 2026 update:** Streamlined first screen with suggestions and the chat input immediately visible, a much smaller banner, no oversized welcome illustration or headline, and mobile chat displayed above the chapter guide. Compact U of T branding with the course hex sticker; dark mode, chapter navigator, and four rotating questions. The agent can create original examples and graphs beyond the ebook, with green **From the textbook**, orange **Related content**, and red **Outside scope** labels. Source provenance is checked before applying a green badge. See [COMPACT_BRANDING_AND_PROVENANCE.md](COMPACT_BRANDING_AND_PROVENANCE.md). The existing vector-store ID is retained; the `app.py` backend is updated to support structured responses and plots.
 
-- **Read the ebook:** <https://nishanmudalige.github.io/STA258_Book/>
-- **Ebook source:** <https://github.com/nishanmudalige/STA258_Book>
-- **Technical details and maintenance:** [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
+A Render-ready Flask chat application grounded in the public STA258 ebook:
 
-## What students can do
+- Ebook: https://nishanmudalige.github.io/STA258_Book/
+- Repository: https://github.com/nishanmudalige/STA258_Book
 
-- Ask about concepts, formulas, exercises, and R code; request step-by-step explanations and check calculations.
-- Follow links to relevant ebook chapters and, where available, view figures from the published book.
-- Request **original** examples, simulated data, interpretations, or statistical plots that are related to the subject but **not** present in the ebook.
-- Ask the agent to examine possible mathematical, numerical, wording, or figure/caption issues in the text. Its suggestions require independent verification.
+The app uses the OpenAI Responses API plus `file_search`. The ebook is indexed in an OpenAI vector store, while the selected base model supplies general statistics and mathematics knowledge.
 
-Responses distinguish their evidence:
+## What it can do
 
-| Label | Colour | Meaning |
-| --- | --- | --- |
-| **From the textbook** | Green | The response is attributed to ebook files retrieved during the request. |
-| **Related · beyond the textbook** | Orange | New examples, explanations, R code, or graphs based on general statistical knowledge; **not claimed to be in the book**. |
-| **Outside the ebook scope** | Red | The question is outside the academic subject area the agent supports. |
+- answer conceptual questions from the ebook;
+- explain and extend examples;
+- solve or guide users through exercises;
+- generate R code;
+- create **new illustrative statistical graphs and examples**, even when those figures/examples are not in the book;
+- separate verified book content (green), original related material (orange), and unrelated questions (red);
+- cite retrieved ebook chapters in the chat UI;
+- critically check the ebook for likely mathematical, statistical, numerical, wording, or caption errors.
 
-A response can combine a green ebook explanation with an orange, newly created example or graph. The interface does not use a green label without a matching retrieved ebook file. This is a *provenance safeguard*, not a guarantee that every statement is correct.
+## 1. Create the agent repository
 
-### Interface
+Create a new GitHub repository named `ebook_agent`, copy this project into it, then commit and push.
 
-- Compact U of T / MCS branding with STA258 hex badge and direct ebook link.
-- Four questions shown side by side on desktop, randomly selected from a bank of 24. **Shuffle**, **New chat**, and reloading select new prompts; smaller screens use fewer columns.
-- Collapsible ten-chapter guide; on mobile, the chat appears first and the chapter guide is initially collapsed.
-- Light/dark mode with saved preference; the MCS logo switches to the white transparent SVG in dark mode.
-- Enlarged, resizable question-entry box. **Enter** sends and **Shift + Enter** starts a new line.
-- Markdown, formatted equations (MathJax), original SVG plots, and links to relevant sources.
+## 2. Create an OpenAI API project and API key
 
-## Updating an existing GitHub + Render deployment
+In the OpenAI API dashboard, create/select a project and create a secret API key. API usage is billed separately from a ChatGPT subscription.
 
-If your app already works and you are **only replacing this project's interface or documentation**, you do **not** need to recreate the vector store.
+Never put the key in GitHub. Keep it in a local environment variable and later in Render's environment-variable settings.
 
-1. Unzip the application and copy the **contents of `ebook_agent/`** into the root of the existing GitHub repository, preserving any intentional project-specific customizations.
-2. Commit and push to the branch connected to Render.
-3. If auto-deployment is off, go to **Render → Manual Deploy → Deploy latest commit**.
-4. Keep your existing `OPENAI_API_KEY`, `OPENAI_VECTOR_STORE_ID`, and other Render environment variables. Do not upload the secret key to GitHub.
-5. Reload the site; hard-refresh if old styling is cached.
-
-The backend features require the coordinated files `app.py`, `prompt.py`, `provenance.py`, and `static/plots.js`. Copying only the HTML and CSS is insufficient.
-
-## Starting from scratch
-
-Run commands **inside the `ebook_agent/` directory**. Python 3 and `pip` are required.
-
-### 1. Install dependencies
-
-macOS / Linux:
+macOS/Linux:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
+export OPENAI_API_KEY="sk-..."
 ```
 
-Windows PowerShell:
+PowerShell:
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+$env:OPENAI_API_KEY="sk-..."
 ```
 
-The ZIP intentionally excludes `.venv/`; generate it on your own machine as above.
-
-### 2. Configure the API
-
-Create an OpenAI API key in the API dashboard; API charges are separate from ChatGPT subscriptions. Configure environment variables in your shell or Render, **not in committed files**.
-
-| Variable | Use |
-| --- | --- |
-| `OPENAI_API_KEY` | **Required** for model requests. |
-| `OPENAI_VECTOR_STORE_ID` | **Required** for chat; the `vs_...` value from the knowledge ingest script. |
-| `OPENAI_MODEL` | Optional override. The supplied code and Render configuration currently specify `gpt-5.6-terra`; verify that your API project supports the chosen model. |
-| `EBOOK_AGENT_ACCESS_CODE` | Optional shared access code. If empty, the site is not protected by this code. |
-| `MAX_MESSAGE_CHARS` | Optional; defaults to `12000`. |
-| `MAX_OUTPUT_TOKENS` | Optional; defaults to `3500`. |
-
-For example, in macOS / Linux:
+## 3. Install locally
 
 ```bash
-export OPENAI_API_KEY="YOUR_API_KEY"
-export OPENAI_VECTOR_STORE_ID="vs_YOUR_VECTOR_STORE_ID"
-# Optional: export OPENAI_MODEL="YOUR_SUPPORTED_MODEL"
+python -m venv .venv
+source .venv/bin/activate       # macOS/Linux
+# .venv\Scripts\Activate.ps1    # Windows PowerShell
+pip install -r requirements.txt
 ```
 
-In PowerShell use `$env:OPENAI_API_KEY="..."` and `$env:OPENAI_VECTOR_STORE_ID="..."`.
+## 4. Prepare the ebook knowledge files
 
-**If you already have a working vector-store ID, reuse it.** Otherwise, prepare and ingest the book files:
+To download the current `main` branch of the ebook automatically:
 
 ```bash
 python prepare_knowledge.py
+```
+
+Or, if you already cloned `STA258_Book` locally:
+
+```bash
+python prepare_knowledge.py --book-dir /path/to/STA258_Book
+```
+
+The script copies the `.Rmd` teaching source into supported `.md` files and converts the small CSV datasets into Markdown tables.
+
+## 5. Create and populate the OpenAI vector store
+
+```bash
 python ingest_ebook.py
 ```
 
-You can also prepare from a local clone: `python prepare_knowledge.py --book-dir /path/to/STA258_Book`. Wait for indexing to complete; the ingest script prints a `vs_...` ID to use as `OPENAI_VECTOR_STORE_ID`.
+Wait until every file reports `completed`. The script then prints a value such as:
 
-### 3. Run locally
-
-```bash
-python -m flask --app app run --debug
+```text
+OPENAI_VECTOR_STORE_ID=vs_abc123...
 ```
 
-Open <http://127.0.0.1:5000>. The page can display without API configuration; asking a question requires the API key and vector store ID.
+Save that ID.
 
-### 4. Deploy on Render
+## 6. Test locally
 
-1. Push the app files to a GitHub repository.
-2. In Render, create a **Web Service** using that repository and a Python runtime, or use the included `render.yaml` blueprint.
-3. For a manual service, use **Build command:** `pip install -r requirements.txt` and **Start command:** `gunicorn app:app`.
-4. Set `OPENAI_API_KEY` and `OPENAI_VECTOR_STORE_ID` in Render's environment settings, plus any desired optional variables.
-5. If needed, set the health check path to `/health` and deploy.
+macOS/Linux:
 
-Do not put keys or access codes in source control. `/health` reports whether the API key and vector store ID are configured; it does not verify that a live model request will succeed.
+```bash
+export OPENAI_VECTOR_STORE_ID="vs_abc123..."
+export OPENAI_MODEL="gpt-5.6-terra"
+flask --app app run --debug
+```
 
-## Quick checks
+PowerShell:
 
-- Ask: “According to the ebook, explain the difference between a parameter and a statistic.” Confirm a relevant citation when book content is shown.
-- Ask: “Invent a new two-sample t-test example and draw a suitable graph.” Ensure the new illustration is marked **Related** rather than **From the textbook**.
-- Try a question unrelated to statistics and confirm the scope label.
-- Test **Shuffle**, **New chat**, the chapter toggle, light/dark logo switching, and mobile layout.
-- Check mathematical notation, figures, and source links. Any AI-generated statistical result should be verified before reuse.
+```powershell
+$env:OPENAI_VECTOR_STORE_ID="vs_abc123..."
+$env:OPENAI_MODEL="gpt-5.6-terra"
+flask --app app run --debug
+```
 
-## Maintaining the ebook content
+Open the local address shown by Flask, usually `http://127.0.0.1:5000`.
 
-`knowledge/*.md` consists of **separate chapter, dataset, index, and figure-source files** used for retrieval. These are *not project documentation* and must **not** be merged into this README. They remain unchanged in this package.
+Useful tests:
 
-When the ebook is updated substantially, regenerate the knowledge files and create a new vector store using `prepare_knowledge.py` and `ingest_ebook.py`; update Render's `OPENAI_VECTOR_STORE_ID` after successful indexing. For existing book images, the app also uses a local figure catalog; see the technical guide.
+1. `According to the ebook, what is the difference between a parameter and a statistic?`
+2. `Explain the intuition behind a 95% confidence interval.`
+3. `Help me solve an exercise from Chapter 8 and show the ANOVA steps.`
+4. `Check the regression chapter for any caption or sign inconsistency.`
+5. `Give R code to carry out a Welch two-sample t confidence interval.`
 
-## Security, cost, and limitations
+## 7. Deploy to Render
 
-- Keep the API key server-side and use API project spending limits / alerts.
-- The Flask app limits `/api/chat` to **30 requests/hour per IP** (with an overall default limit of 120/hour per IP); this is only a basic safeguard.
-- The optional access code is a simple shared-secret check, not a full account system.
-- New graphs are *illustrations*. The model has no live general-web browsing tool in this app, and it can make mistakes or fail to retrieve relevant material.
-- A live OpenAI request must be tested in your own deployment; UI previews and mocked answers alone cannot verify model connectivity.
+1. Sign in to Render.
+2. Click **New > Web Service**.
+3. Connect the GitHub repository containing `ebook_agent`.
+4. Set the service name to `ebook-agent` or `ebook_agent`.
+5. Runtime: **Python 3**.
+6. Build command: `pip install -r requirements.txt`.
+7. Start command: `gunicorn app:app`.
+8. Add environment variables:
+   - `OPENAI_API_KEY` = your secret API key
+   - `OPENAI_VECTOR_STORE_ID` = the `vs_...` ID printed by `ingest_ebook.py`
+   - `OPENAI_MODEL` = `gpt-5.6-terra` (recommended starting point)
+   - `EBOOK_AGENT_ACCESS_CODE` = an optional shared password to prevent unrestricted public use
+9. Set health check path to `/health` if configuring manually.
+10. Deploy.
+
+Render will provide an `onrender.com` URL. The OpenAI API key remains server-side and is never sent to the browser.
+
+## 8. Updating the ebook later
+
+When the ebook changes substantially:
+
+```bash
+python prepare_knowledge.py
+python ingest_ebook.py --name "STA258 ebook knowledge base - updated"
+```
+
+This creates a new vector store. Replace `OPENAI_VECTOR_STORE_ID` in Render with the new ID and redeploy. After verifying the new version, delete the old vector store/files from the OpenAI API dashboard if you no longer need them.
+
+For small corrections, it is also possible to update only changed files through the API, but recreating this small knowledge base is simpler and less error-prone.
+
+## Model choice
+
+`gpt-5.6-terra` is the default here because it offers a strong balance of reasoning quality and cost for tutoring. For the most demanding error audits, set `OPENAI_MODEL=gpt-5.6-sol`. For a high-volume, lower-cost student deployment, you can experiment with `gpt-5.6-luna` and evaluate answer quality before switching.
+
+## Security and cost controls
+
+- Never commit `OPENAI_API_KEY` or a `.env` file.
+- Set `EBOOK_AGENT_ACCESS_CODE` if the Render URL should not be open to anyone.
+- The server rate-limits `/api/chat` to 30 requests/hour/IP as a basic safeguard.
+- Set an OpenAI project budget/usage alert.
+- Keep `max_num_results` modest (currently 8) to control retrieval latency and tokens.
+- The free Render tier may sleep after inactivity; the first request after sleep can be slower.
+
+## Important implementation files
+
+- `app.py`: Flask backend and OpenAI Responses API call
+- `prompt.py`: tutor/error-checker behavior
+- `prepare_knowledge.py`: converts the ebook repo to retrieval files
+- `ingest_ebook.py`: creates and populates the OpenAI vector store
+- `source_map.py`: maps source filenames to the live ebook pages
+- `templates/index.html`, `static/*`: chat interface with Markdown and MathJax
+- `render.yaml`: optional Render Blueprint configuration
