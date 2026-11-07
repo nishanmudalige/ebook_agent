@@ -1,6 +1,6 @@
 # ebook_agent — STA258 ebook tutor and critical reviewer
 
-> **November 2026 update:** Compact U of T branding with the course hex sticker; dark mode, chapter navigator, and four rotating questions. The agent can create original examples and graphs beyond the ebook, with green **From the textbook**, orange **Related content**, and red **Outside scope** labels. Source provenance is checked before applying a green badge. See [COMPACT_BRANDING_AND_PROVENANCE.md](COMPACT_BRANDING_AND_PROVENANCE.md). The existing vector-store ID is retained; the `app.py` backend is updated to support structured responses and plots.
+> **November 2026 update:** Streamlined first screen with suggestions and the chat input immediately visible, a much smaller banner, no oversized welcome illustration or headline, and mobile chat displayed above the chapter guide. Compact U of T branding with the course hex sticker; dark mode, chapter navigator, and four rotating questions. The agent can create original examples and graphs beyond the ebook, with green **From the textbook**, orange **Related content**, and red **Outside scope** labels. Source provenance is checked before applying a green badge. See [COMPACT_BRANDING_AND_PROVENANCE.md](COMPACT_BRANDING_AND_PROVENANCE.md). The existing vector-store ID is retained; the `app.py` backend is updated to support structured responses and plots.
 
 A Render-ready Flask chat application grounded in the public STA258 ebook:
 

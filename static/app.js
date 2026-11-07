@@ -7,6 +7,7 @@
   const sendButton = document.getElementById('send');
   const newChat = document.getElementById('newChat');
   const welcome = document.getElementById('welcome');
+  const chatPanel = document.querySelector('.chat-panel');
   const themeToggle = document.getElementById('themeToggle');
   const themeLabel = document.getElementById('themeLabel');
   const tocToggle = document.getElementById('tocToggle');
@@ -302,6 +303,7 @@
     if (isSending || !question.trim()) return;
     isSending = true;
     welcome.hidden = true;
+    chatPanel.classList.remove('is-start');
     addMessage('user', question);
     const thinking = addThinking();
     sendButton.disabled = true;
@@ -351,6 +353,7 @@
     chat.querySelectorAll('.message').forEach(item => item.remove());
     textarea.value = '';
     welcome.hidden = false;
+    chatPanel.classList.add('is-start');
     chooseQuestions();
     chat.scrollTop = 0;
     textarea.focus();

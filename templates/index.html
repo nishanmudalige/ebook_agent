@@ -46,9 +46,8 @@
 
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-copy">
-        <p class="hero-eyebrow">STA258 · STATISTICS WITH APPLIED PROBABILITY</p>
-        <h1 id="heroTitle">Ebook study companion</h1>
-        <p class="hero-description">Explore textbook concepts, ask for original examples, and generate statistical graphs.</p>
+        <h1 id="heroTitle">STA258 <span>· Ebook companion</span></h1>
+        <p class="hero-description">Book explanations, original examples and statistical graphs.</p>
       </div>
       <div class="hero-actions">
         <a class="hero-cta" href="https://nishanmudalige.github.io/STA258_Book/" target="_blank" rel="noopener noreferrer">Read the ebook <span aria-hidden="true">↗</span></a>
@@ -64,7 +63,7 @@
         <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         <span id="tocToggleLabel">Hide chapters</span>
       </button>
-      <p>Explore textbook topics or request a brand-new example or graph.</p>
+
     </div>
 
     <div class="main-grid" id="mainGrid">
@@ -89,9 +88,9 @@
         <div class="sidebar-bottom"><span class="sidebar-bottom-icon" aria-hidden="true">✦</span> Learn a concept, then test your understanding with an example.</div>
       </aside>
 
-      <main class="chat-panel" aria-label="Chat with the STA258 ebook study companion">
+      <main class="chat-panel is-start" aria-label="Chat with the STA258 ebook study companion">
         <div class="chat-heading">
-          <div class="chat-heading-copy"><p class="section-kicker">YOUR STUDY SPACE</p><h2>Ask the ebook</h2><p>Book-based answers, original examples, generated graphs, and clear source labels.</p></div>
+          <div class="chat-heading-copy"><h2>Ask the ebook</h2></div>
           <button id="newChat" class="new-chat" type="button" title="Start a new conversation">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> New chat
           </button>
@@ -107,11 +106,7 @@
 
         <section id="chat" class="chat-messages" role="log" aria-live="polite" aria-relevant="additions text">
           <div class="welcome" id="welcome">
-            <span class="welcome-emblem" aria-hidden="true">∑</span>
-            <p class="section-kicker">WHERE WOULD YOU LIKE TO BEGIN?</p>
-            <h3>Every question is a starting point.</h3>
-            <p class="welcome-description">Choose one of these four ideas, or type your own question below. New questions appear each visit or when you refresh them.</p>
-            <div class="prompt-heading"><span>TRY A QUESTION</span><button id="refreshQuestions" type="button" class="refresh-questions" aria-label="Show four different example questions"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 5.3M20 4v7h-7"/></svg> Shuffle</button></div>
+            <div class="prompt-heading"><span><strong>Try a question</strong><span class="prompt-description">, or type your own below</span></span><button id="refreshQuestions" type="button" class="refresh-questions" aria-label="Show four different example questions"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 5.3M20 4v7h-7"/></svg> Shuffle</button></div>
             <div class="suggestions" id="suggestions" aria-label="Four randomly selected example questions">
               <button class="suggestion" type="button" data-question="What is the difference between a population parameter and a sample statistic?"><span class="suggestion-tag">FOUNDATIONS</span><span class="suggestion-copy">Parameter vs. statistic?</span><span class="suggestion-arrow" aria-hidden="true">↗</span></button>
               <button class="suggestion" type="button" data-question="Explain the difference between a confidence interval and a prediction interval."><span class="suggestion-tag">INFERENCE</span><span class="suggestion-copy">Confidence vs. prediction intervals?</span><span class="suggestion-arrow" aria-hidden="true">↗</span></button>

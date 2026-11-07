@@ -1,3 +1,11 @@
+## November 2026 — streamlined initial view
+
+- Removed the oversized introductory sigma symbol, welcome headline, and explanatory paragraph. The four prompt suggestions now appear immediately under a small “Try a question” label and above the input.
+- Reduced the height of the STA258 banner and chat heading without losing the UTM MCS logo, course hex badge, or ebook link.
+- Removed the forced large empty chat area on first load: before a conversation starts, the chat panel fits its content. Once a question is sent, the regular scrollable conversation area returns.
+- On narrow screens, the chat is shown before the chapter guide. Chapters remain available using the Show/Hide chapters button.
+- Kept all backend answers, three coloured source badges, generated graphs, book citations, four rotating example questions, and light/dark modes.
+
 ## November 2026 — compact brand refresh and source labels
 
 - Simplified the U of T Blue banner and replaced duplicate university logos with the departmental MCS wordmark.
