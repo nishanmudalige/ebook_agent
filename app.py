@@ -11,6 +11,7 @@ from openai import OpenAI
 
 from prompt import SYSTEM_PROMPT
 from source_map import source_details
+from provenance import ANSWER_FORMAT, parse_answer
 
 app = Flask(__name__)
 limiter = Limiter(get_remote_address, app=app, default_limits=["120 per hour"], storage_uri="memory://")
@@ -188,6 +189,7 @@ def chat():
             }],
             include=["file_search_call.results"],
             max_output_tokens=MAX_OUTPUT_TOKENS,
+            text={"format": ANSWER_FORMAT},
             store=True,
         )
         if previous_response_id:
@@ -195,10 +197,11 @@ def chat():
 
         response = client.responses.create(**kwargs)
 
+        answer = parse_answer(response)
         return jsonify({
-            "answer": response.output_text,
+            **answer,
+            "answer": "\n\n".join(part for part in (answer["book_answer"], answer["related_answer"], answer["outside_answer"]) if part),
             "response_id": response.id,
-            "sources": extract_citations(response),
             "model": OPENAI_MODEL,
         })
     except Exception as exc:

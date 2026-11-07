@@ -1,6 +1,6 @@
 # ebook_agent — STA258 ebook tutor and critical reviewer
 
-> **UI refresh (November 2026):** This distribution includes a redesigned U of T–branded interface inspired by the KyselyTutor layout, with a chapter navigator, a dark-mode toggle, and four randomly selected questions in a horizontal row on desktop. See [UI_UPDATE.md](UI_UPDATE.md) for features and deployment instructions. The chat backend and vector store configuration are unchanged.
+> **November 2026 update:** Compact U of T branding with the course hex sticker; dark mode, chapter navigator, and four rotating questions. The agent can create original examples and graphs beyond the ebook, with green **From the textbook**, orange **Related content**, and red **Outside scope** labels. Source provenance is checked before applying a green badge. See [COMPACT_BRANDING_AND_PROVENANCE.md](COMPACT_BRANDING_AND_PROVENANCE.md). The existing vector-store ID is retained; the `app.py` backend is updated to support structured responses and plots.
 
 A Render-ready Flask chat application grounded in the public STA258 ebook:
 
@@ -15,6 +15,8 @@ The app uses the OpenAI Responses API plus `file_search`. The ebook is indexed i
 - explain and extend examples;
 - solve or guide users through exercises;
 - generate R code;
+- create **new illustrative statistical graphs and examples**, even when those figures/examples are not in the book;
+- separate verified book content (green), original related material (orange), and unrelated questions (red);
 - cite retrieved ebook chapters in the chat UI;
 - critically check the ebook for likely mathematical, statistical, numerical, wording, or caption errors.
 

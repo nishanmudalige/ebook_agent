@@ -1,3 +1,12 @@
+## November 2026 — compact brand refresh and source labels
+
+- Simplified the U of T Blue banner and replaced duplicate university logos with the departmental MCS wordmark.
+- Included the STA258 cat/μ hex sticker next to the ebook link (upstream exact sticker with local vector fallback).
+- Added new content provenance structure in `prompt.py`, `provenance.py`, and `app.py` for textbook-supported (green), related original (orange), and outside-the-ebook (red) answers.
+- Added a safe generated graph renderer in `static/plots.js`; new plots are explicitly classified as related content.
+- Kept chapter links, dark mode, question shuffle, original file search, figure links, and deployment configuration.
+- Verified desktop/mobile presentation and tested different answer categories with representative mocked responses.
+
 ## November 2026 — U of T branded KyselyTutor-inspired UI
 
 - New responsive UTM interface, 10-chapter navigation, dark mode, and supplied institutional/departmental logos.

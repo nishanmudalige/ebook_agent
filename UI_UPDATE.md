@@ -1,6 +1,6 @@
 # STA258 ebook companion — interface update (November 2026)
 
-This update redesigns **the interface only**. The Flask `/api/chat` backend, OpenAI Responses API integration, source citations, figure handling, ebook knowledge files, and Render settings are retained from the original `ebook_agent`.
+This guide describes the first visual update. The subsequent November 2026 update also changed `app.py`, `prompt.py`, `provenance.py`, and `static/plots.js` to add generated graphs and provenance badges; see `COMPACT_BRANDING_AND_PROVENANCE.md`. The API integration, stored ebook knowledge, Render settings and existing vector-store ID remain usable.
 
 ## What's new
 

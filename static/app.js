@@ -23,6 +23,7 @@
   const THEME_KEY = 'sta258_agent_theme_v1';
   const TOC_KEY = 'sta258_agent_contents_v1';
   const QUESTIONS_KEY = 'sta258_agent_previous_questions_v1';
+  let lastShownIds = [];
 
   function readStored(key, fallback = null) {
     try { return localStorage.getItem(key) ?? fallback; } catch (_) { return fallback; }
@@ -111,6 +112,7 @@
       const parsed = JSON.parse(readStored(QUESTIONS_KEY, '[]'));
       if (Array.isArray(parsed)) previousIds = parsed;
     } catch (_) { /* Invalid saved preferences should never break the interface. */ }
+    previousIds = [...new Set([...previousIds, ...lastShownIds])];
     const fresh = QUESTION_BANK.filter(item => !previousIds.includes(item.id));
     const choices = fresh.length >= 4 ? fresh : QUESTION_BANK;
     const pool = choices.slice();
@@ -119,6 +121,7 @@
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
     const selected = pool.slice(0, 4);
+    lastShownIds = selected.map(item => item.id);
     suggestions.replaceChildren();
     selected.forEach(item => {
       const button = document.createElement('button');
@@ -211,7 +214,57 @@
     }
   }
   function scrollToLatest() { chat.scrollTop = chat.scrollHeight; }
-  function addMessage(role, text, sources = []) {
+  const PROVENANCE = {
+    book: {label: 'From the textbook', cls: 'from-book', hint: 'Supported by retrieved STA258 ebook content.'},
+    related: {label: 'Related · beyond the textbook', cls: 'related-content', hint: 'New examples, explanations, or graphs based on general statistical knowledge; not verified as textbook content.'},
+    outside: {label: 'Outside the ebook scope', cls: 'out-of-scope', hint: 'This question is unrelated to the STA258 ebook and its academic topics.'}
+  };
+  function addSourceLinks(section, sources) {
+    if (!Array.isArray(sources) || !sources.length) return;
+    const box = document.createElement('div');
+    box.className = 'sources';
+    const title = document.createElement('div');
+    title.className = 'sources-title'; title.textContent = 'Supporting ebook chapters';
+    box.appendChild(title);
+    sources.forEach(source => {
+      if (!/^https:\/\//i.test(source.url || '')) return;
+      const link = document.createElement('a');
+      link.href = source.url;
+      link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.textContent = source.label || 'Ebook chapter';
+      box.appendChild(link);
+    });
+    if (box.children.length > 1) section.appendChild(box);
+  }
+  function appendAnswerSection(bubble, kind, markdown, sources = [], plot = null) {
+    if (!markdown && !plot) return;
+    const meta = PROVENANCE[kind];
+    const section = document.createElement('section');
+    section.className = `answer-section ${meta.cls}`;
+    const badge = document.createElement('span');
+    badge.className = `provenance-badge ${meta.cls}`;
+    badge.textContent = meta.label;
+    badge.title = meta.hint;
+    section.appendChild(badge);
+    if (kind === 'related') {
+      const caveat = document.createElement('p'); caveat.className = 'provenance-note';
+      caveat.textContent = 'Additional content from general statistical knowledge, not a passage or figure from the ebook.';
+      section.appendChild(caveat);
+    }
+    if (markdown) {
+      const content = document.createElement('div');
+      content.className = 'answer-markdown'; content.innerHTML = renderMarkdown(markdown);
+      prepareImages(content); prepareLinks(content);
+      section.appendChild(content);
+    }
+    if (plot && kind === 'related' && window.STA258Plots) {
+      const chart = window.STA258Plots.render(plot);
+      if (chart) section.appendChild(chart);
+    }
+    if (kind === 'book') addSourceLinks(section, sources);
+    bubble.appendChild(section);
+  }
+  function addMessage(role, text, sources = [], provenance = null) {
     const article = document.createElement('article');
     article.className = `message ${role}`;
     const avatar = document.createElement('div');
@@ -219,28 +272,18 @@
     avatar.textContent = role === 'assistant' ? 'STA' : 'You';
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    if (role === 'assistant') {
+    if (role === 'assistant' && provenance &&
+        ('book_answer' in provenance || 'related_answer' in provenance || 'outside_answer' in provenance)) {
+      appendAnswerSection(bubble, 'book', provenance.book_answer, sources);
+      appendAnswerSection(bubble, 'related', provenance.related_answer, [], provenance.plot);
+      appendAnswerSection(bubble, 'outside', provenance.outside_answer);
+      if (!bubble.childNodes.length) bubble.innerHTML = renderMarkdown(text || 'I did not receive an answer.');
+    } else if (role === 'assistant') {
       bubble.innerHTML = renderMarkdown(text);
       prepareImages(bubble); prepareLinks(bubble);
+      addSourceLinks(bubble, sources);
     } else {
       bubble.innerHTML = `<p>${escapeHtml(text).replace(/\n/g, '<br>')}</p>`;
-    }
-    if (Array.isArray(sources) && sources.length) {
-      const sourceBox = document.createElement('div');
-      sourceBox.className = 'sources';
-      const title = document.createElement('div');
-      title.className = 'sources-title'; title.textContent = 'From the STA258 ebook';
-      sourceBox.appendChild(title);
-      sources.forEach(source => {
-        // Back-end source URLs are drawn from the controlled ebook source map.
-        if (!/^https:\/\//i.test(source.url || '')) return;
-        const link = document.createElement('a');
-        link.href = source.url;
-        link.target = '_blank'; link.rel = 'noopener noreferrer';
-        link.textContent = source.label || 'Ebook chapter';
-        sourceBox.appendChild(link);
-      });
-      if (sourceBox.children.length > 1) bubble.appendChild(sourceBox);
     }
     article.append(avatar, bubble);
     chat.appendChild(article);
@@ -274,7 +317,7 @@
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Request failed.');
       previousResponseId = data.response_id || null;
-      addMessage('assistant', data.answer || 'I did not receive an answer.', data.sources || []);
+      addMessage('assistant', data.answer || 'I did not receive an answer.', data.sources || [], data);
     } catch (error) {
       addMessage('assistant', `**Error:** ${error.message || 'Unable to complete your request.'}`);
     } finally {

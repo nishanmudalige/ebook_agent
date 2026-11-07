@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="254" viewBox="0 0 220 254" role="img" aria-label="STA258 course badge with a cat and Greek letter mu">
+  <title>STA258 hex badge</title>
+  <path d="M110 4 214 66v122l-104 62L6 188V66Z" fill="#96f1ce" stroke="#00615b" stroke-width="8" stroke-linejoin="round"/>
+  <text x="110" y="94" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="39" font-weight="400" fill="#00635c">STA258</text>
+  <!-- The cat and mu are an offline vector approximation of the published STA258 sticker. -->
+  <path d="M62 139Q62 131 66 130L84 143Q110 131 136 142L153 130Q159 128 159 139L158 167Q151 194 111 198Q67 197 61 168Z" fill="#f1bf88" stroke="#252322" stroke-width="3.1" stroke-linejoin="round"/>
+  <circle cx="88" cy="159" r="5.3" fill="#252322"/><circle cx="133" cy="159" r="5.3" fill="#252322"/>
+  <path d="M105 172Q111 167 117 172Q117 179 111 181Q104 178 105 172Z" fill="#ec8b8b" stroke="#252322" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M111 181V186Q104 193 99 183M111 186Q120 193 126 183" fill="none" stroke="#252322" stroke-width="2.6" stroke-linecap="round"/>
+  <g stroke="#252322" stroke-width="2.7" stroke-linecap="round"><path d="M83 173 48 166M83 179 47 180M83 185 49 191M140 173 176 165M140 180 175 179M140 185 174 190"/></g>
+  <path d="M149 110Q157 91 181 99Q201 105 204 125Q200 150 168 150H155l-13 11 4-16Q134 133 149 110Z" fill="#96f1ce" stroke="#252322" stroke-width="3" stroke-linejoin="round"/>
+  <text x="174" y="135" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="37" fill="#252322">μ</text>
+</svg>

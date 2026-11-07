@@ -25,13 +25,14 @@
     };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script defer src="{{ url_for('static', filename='plots.js') }}"></script>
   <script defer src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 <body data-protected="{{ 'true' if protected else 'false' }}">
   <div class="page-shell">
     <header class="masthead" aria-label="University of Toronto Mississauga and interface controls">
-      <a class="institution-link" href="https://www.utm.utoronto.ca/" target="_blank" rel="noopener noreferrer" aria-label="University of Toronto Mississauga home">
-        <img src="{{ url_for('static', filename='branding/utm-logo.svg') }}" alt="University of Toronto Mississauga" class="institution-logo">
+      <a class="institution-link" href="https://www.utm.utoronto.ca/math-cs-stats/" target="_blank" rel="noopener noreferrer" aria-label="Department of Mathematical and Computational Sciences, University of Toronto Mississauga">
+        <img src="{{ url_for('static', filename='branding/utm-mcs-logo.jpg') }}" alt="Mathematical and Computational Sciences, University of Toronto Mississauga" class="institution-logo">
       </a>
       <div class="masthead-actions">
         <span class="masthead-context">STA258 <span aria-hidden="true">/</span> EBOOK COMPANION</span>
@@ -45,24 +46,16 @@
 
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-copy">
-        <p class="hero-eyebrow"><span class="hero-eyebrow-line" aria-hidden="true"></span> STATISTICS WITH APPLIED PROBABILITY</p>
-        <h1 id="heroTitle">A clearer way to <em>study statistics.</em></h1>
-        <p class="hero-description">Your AI companion to the STA258 open textbook. Explore concepts, work through examples, and find the sections that explain them.</p>
-        <div class="hero-actions">
-          <a class="hero-cta" href="https://nishanmudalige.github.io/STA258_Book/" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5c3-1.5 6-1.5 8 0v14c-2-1.5-5-1.5-8 0zM12 5.5c2-1.5 5-1.5 8 0v14c-3-1.5-6-1.5-8 0z"/></svg>
-            Read the ebook <span aria-hidden="true">↗</span>
-          </a>
-          <span class="hero-note"><span class="hero-note-dot" aria-hidden="true"></span> Open educational resource</span>
-        </div>
+        <p class="hero-eyebrow">STA258 · STATISTICS WITH APPLIED PROBABILITY</p>
+        <h1 id="heroTitle">Ebook study companion</h1>
+        <p class="hero-description">Explore textbook concepts, ask for original examples, and generate statistical graphs.</p>
       </div>
-      <div class="hero-side" aria-label="Department of Mathematical and Computational Sciences">
-        <div class="hero-academic-mark">
-          <img src="{{ url_for('static', filename='branding/utm-mcs-wordmark-white.svg') }}" alt="Mathematical and Computational Sciences, University of Toronto Mississauga">
-        </div>
-        <div class="hero-motif" aria-hidden="true">
-          <svg viewBox="0 0 330 154" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 136L42 116L81 129L120 74L157 93L207 30L247 63L285 13L330 36" stroke="#6FC7EA" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M0 148L48 122L81 140L120 83L157 106L207 41L247 76L285 26L330 49V154H0Z" fill="url(#fade)"/><g fill="#6FC7EA"><circle cx="120" cy="74" r="4"/><circle cx="207" cy="30" r="4"/><circle cx="285" cy="13" r="4"/></g><defs><linearGradient id="fade" x1="165" y1="15" x2="165" y2="154" gradientUnits="userSpaceOnUse"><stop stop-color="#6FC7EA" stop-opacity=".19"/><stop offset="1" stop-color="#6FC7EA" stop-opacity="0"/></linearGradient></defs></svg>
-        </div>
+      <div class="hero-actions">
+        <a class="hero-cta" href="https://nishanmudalige.github.io/STA258_Book/" target="_blank" rel="noopener noreferrer">Read the ebook <span aria-hidden="true">↗</span></a>
+        <a class="hex-sticker-link" href="https://nishanmudalige.github.io/STA258_Book/" target="_blank" rel="noopener noreferrer" aria-label="STA258 ebook, featuring its official course hex sticker" title="STA258 course hex sticker">
+          <img class="hex-sticker hex-sticker-local" src="{{ url_for('static', filename='branding/STA258_hex_badge_fallback.svg') }}" alt="STA258 mint-green hex badge with a cat and the Greek letter mu" loading="eager">
+          <img class="hex-sticker hex-sticker-official" src="https://raw.githubusercontent.com/nishanmudalige/STA258/main/Hex%20Badges/STA258_no_bg.png" alt="" aria-hidden="true" loading="eager" referrerpolicy="no-referrer" onload="this.style.opacity='1';" onerror="this.hidden=true;">
+        </a>
       </div>
     </section>
 
@@ -71,7 +64,7 @@
         <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         <span id="tocToggleLabel">Hide chapters</span>
       </button>
-      <p>Browse a chapter, or ask a question in your own words.</p>
+      <p>Explore textbook topics or request a brand-new example or graph.</p>
     </div>
 
     <div class="main-grid" id="mainGrid">
@@ -98,7 +91,7 @@
 
       <main class="chat-panel" aria-label="Chat with the STA258 ebook study companion">
         <div class="chat-heading">
-          <div class="chat-heading-copy"><p class="section-kicker">YOUR STUDY SPACE</p><h2>Ask the ebook</h2><p>Explanations, worked examples, R code, and source links.</p></div>
+          <div class="chat-heading-copy"><p class="section-kicker">YOUR STUDY SPACE</p><h2>Ask the ebook</h2><p>Book-based answers, original examples, generated graphs, and clear source labels.</p></div>
           <button id="newChat" class="new-chat" type="button" title="Start a new conversation">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> New chat
           </button>
@@ -133,7 +126,7 @@
           <textarea id="message" rows="2" maxlength="12000" placeholder="Ask about a concept, an example, or an exercise…" required></textarea>
           <div class="composer-footer"><span class="keyboard-hint">Press Enter to send <span aria-hidden="true">·</span> Shift + Enter for a new line</span><button id="send" type="submit" class="send-button">Send question <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
         </form>
-        <div class="chat-status"><span class="status-mark" aria-hidden="true"></span><span>Answers may draw on the ebook and general statistical knowledge.</span><span class="model-label">{{ model }}</span></div>
+        <div class="chat-status"><span class="status-mark" aria-hidden="true"></span><span>Book-supported <span class="key-dot key-book"></span> · Related / new <span class="key-dot key-related"></span> · Outside scope <span class="key-dot key-outside"></span></span><span class="model-label">{{ model }}</span></div>
       </main>
     </div>
     <footer class="page-footer"><span>University of Toronto Mississauga · Mathematical &amp; Computational Sciences</span><span>AI responses may contain errors. Verify calculations and course requirements.</span></footer>
