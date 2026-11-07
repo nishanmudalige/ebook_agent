@@ -1,99 +1,111 @@
 # STA258 Ebook Companion — Developer Guide
 
-This is the companion to [README.md](README.md). It consolidates the former `UI_UPDATE.md`, `STREAMLINED_LANDING.md`, `CHANGES.md`, and `COMPACT_BRANDING_AND_PROVENANCE.md` into a single implementation and maintenance reference.
+Technical and maintenance companion to [README.md](README.md). This document consolidates all earlier UI, branding, landing-page, provenance, and change-history notes. The `knowledge/*.md` files are **the ebook retrieval corpus** and deliberately remain separate.
 
-## Architecture and data flow
+## Architecture
 
-1. `templates/index.html` and `static/styles.css` render the interface; `static/app.js` handles the theme, chapter guide, rotating question cards, text composer, chat requests, and answer display.
-2. The browser sends `POST /api/chat` with `message` and an optional `previous_response_id`. If access control is enabled, it sends `X-Ebook-Agent-Code`.
-3. `app.py` provides Flask routes, API configuration, rate limiting, a local ebook-figure lookup, and the OpenAI Responses API call. The call uses `file_search` with `OPENAI_VECTOR_STORE_ID`, and `prompt.py` supplies the tutor's instructions.
-4. The response uses a structured schema (`provenance.ANSWER_FORMAT`) with `category`, `book_answer`, `related_answer`, `outside_answer`, `book_source_filenames`, and `plot`.
-5. `provenance.py` checks that a green book answer is associated with at least one real ebook filename found in the API's search results or file-citation annotations. If no matching retrieved file can be verified, the answer is treated as **Related** with an explicit caveat rather than labeled **From the textbook**.
-6. The browser renders the appropriate labelled sections, chapter links, sanitized Markdown/MathJax, and—when present—safe SVG plots from `static/plots.js`.
+| File / path | Role |
+| --- | --- |
+| `app.py` | Flask routes (`/`, `/health`, `/api/chat`, `/api/reset`); OpenAI Responses API call; rate limiting; indexed figure candidate lookup |
+| `prompt.py` | Book-first tutor instructions, original-material boundaries, error-review behaviour, and response format guidance |
+| `provenance.py` | Strict JSON response schema, source verification, plot normalization, provenance fallback |
+| `source_map.py` | Retrieval filename → public ebook chapter URL |
+| `figure_catalog.json` | Local catalogue of existing ebook illustrations |
+| `prepare_knowledge.py` | Converts ebook source and datasets to retrieval-ready Markdown |
+| `prepare_figures.py` | Prepares existing ebook figure metadata |
+| `ingest_ebook.py` | Creates and indexes an OpenAI vector store from `knowledge/*.md` |
+| `templates/index.html` | Main Jinja page template |
+| `templates/preview.html` | Standalone preview markup with relative static asset paths; does not itself connect to an API |
+| `static/styles.css` | U of T colours, responsive layout, composer, source badges, theme styling |
+| `static/app.js` | Chat UI, API calls, local preferences, themes, 24-question bank, keyboard and chapter controls |
+| `static/plots.js` | SVG graphs generated from validated plot data, not executable model-authored code |
+| `static/branding/` | Local SVG logos and STA258 hex-sticker fallback |
+| `render.yaml` | Render web-service build and environment settings |
 
-### Provenance contract
+### Request/response flow
 
-| Structured category | Presentation | Rule |
+1. A student enters a question or selects a suggested prompt. `static/app.js` posts it to `/api/chat` with an optional `previous_response_id` and, for protected sites, `X-Ebook-Agent-Code`.
+2. `app.py` calls the OpenAI Responses API with `prompt.SYSTEM_PROMPT`, optional candidate ebook figures, and `file_search` against `OPENAI_VECTOR_STORE_ID` (`max_num_results=8`). It requests the structured schema in `provenance.ANSWER_FORMAT`.
+3. The model returns `category`, `book_answer`, `related_answer`, `outside_answer`, `book_source_filenames`, and an optional `plot`.
+4. `provenance.parse_answer` verifies claimed filenames against retrieved ebook files or file-citation annotations. A book section lacking a verifiable supporting filename is **downgraded to Related**; a verifiable filename is not proof that each sentence is correct.
+5. The browser renders green/orange/red sections, chapter links, sanitized Markdown, MathJax equations, published ebook figures, and optional generated graphs.
+
+### Provenance semantics
+
+| Category | UI | Practical meaning |
 | --- | --- | --- |
-| `book` | Green book section | Claims should be backed by retrieved ebook files; the server verifies matching filenames. |
-| `mixed` | Green + orange sections | Distinguish ebook explanation from an original example, code, extension, or plot. |
-| `related_outside` | Orange related section | In-scope statistical material not verified in the ebook. |
-| `out_of_scope` | Red section | Unrelated to the agent's statistical / academic remit. |
+| `book` | Green `From the textbook` | A retrieved ebook file supports an attributed response |
+| `mixed` | Green + orange | Textbook material plus a distinct original extension/example/graph |
+| `related_outside` | Orange `Related · beyond the textbook` | In-scope material not verified as appearing in the book |
+| `out_of_scope` | Red `Outside the ebook scope` | Outside the statistical/academic remit |
 
-`prompt.py` instructs the model to consult the book for in-scope questions, avoid fabricated citations, and clearly separate original material. **Checking retrieved filenames does not prove every claim is correct or precisely supported by the cited passage.** Manual checks remain important, especially for error audits.
+This classification describes *provenance*, not absolute correctness. Avoid saying an example or graph is in the ebook unless the retrieval evidence supports that claim. A generated graph is always orange even when it visualizes a book topic.
 
-### Generated graphs versus ebook figures
+### Graphs, figures and safety
 
-**Original graphs** use structured numerical specifications, not generated executable plotting code. The server validates and normalizes them in `provenance.normalize_plot`; the browser uses `static/plots.js` to draw SVG. Supported types are `normal`, `t`, `chi_square`, `f`, `line`, `scatter`, and `bar`. The server calculates distribution curves, checks numerical data for other chart types, bounds input sizes and values, and marks generated graphs **Related** even when the underlying concept is in the textbook.
+The model can request `normal`, `t`, `chi_square`, `f`, `line`, `scatter`, and `bar` plot specifications. `provenance.normalize_plot` validates finite numerical inputs, limits dataset sizes, constructs reference distribution curves server-side, and returns a normalized specification. `static/plots.js` renders SVG; the app does **not** run arbitrary Python, R, or JavaScript from a model response. Separately, `figure_catalog.json` and `knowledge/figure-index.md` help refer to figures already published with the ebook.
 
-**Existing ebook figures** are different: `figure_catalog.json` gives the backend candidate figures, and the UI can show published image URLs when appropriate. `knowledge/figure-index.md` supports searchable figure context. `prepare_figures.py` helps derive figure listings from the ebook's built site, while `prepare_knowledge.py` converts teaching source and dataset content to Markdown. Regenerate and re-ingest if you want the vector store itself to reflect newly prepared source material; the local figure catalog already works independently of a new vector-store ingestion.
+`static/app.js` renders Markdown through `marked`, sanitizes it via DOMPurify, then typesets LaTeX with MathJax. Relative ebook image paths resolve to published ebook assets. Math delimiters are protected before Markdown parsing so `\(...\)` and `\[...\]` survive. Model outputs and citations should still be checked for accuracy.
 
-## Interface and branding
+## UTM branding and the white-background fix
 
-| File | Responsibility |
-| --- | --- |
-| `templates/index.html` | Main Jinja template, logos, chapter links, chat and composer. |
-| `templates/preview.html` | Standalone interface preview with relative static paths; no real API connection. |
-| `static/styles.css` | U of T branding, compact layout, dark theme, responsive sizing, provenance labels. |
-| `static/app.js` | Chat, keyboard interactions, saved preferences, prompt rotation, and theme-aware logo switching. |
-| `static/plots.js` | Generated SVG plots from validated numerical data. |
-| `static/branding/utm-mcs-logo.svg` | Light-theme MCS logo. |
-| `static/branding/utm-mcs-logo-white-transparent.svg` | White transparent MCS logo for dark mode. |
-| `static/branding/STA258_hex_badge_fallback.svg` | Local fallback for the course hex sticker. |
+The intended design is compact and follows the supplied 2023 U of T colour guide:
 
-Brand accents follow the supplied U of T colour guide: **U of T Blue `#1E3765`** (primary), **`#007FA3`** (secondary), and **`#6FC7EA`** (light accent). Dark surfaces use navy-derived colours. The official STA258 course badge is requested from its published image URL with a local vector fallback if unavailable.
+- Primary **U of T Blue** `#1E3765`; teal `#007FA3` and light blue `#6FC7EA` as accents.
+- Light-mode logo: `static/branding/utm-mcs-logo.svg` (blue artwork, transparent SVG canvas).
+- Dark-mode logo: `static/branding/utm-mcs-logo-white-transparent.svg` (white artwork, transparent SVG canvas).
+- The `#institutionLogo` element switches its `src` from the two `data-*-src` values in `static/app.js` when the theme toggles; initial stored theme is applied on load.
+- The course hex sticker sits alongside the ebook link. The UI requests the course image from its public GitHub URL and has a local vector fallback (`STA258_hex_badge_fallback.svg`).
 
-The opening screen deliberately avoids a large decorative welcome block. It shows the compact course header, four suggested questions, and a usable input area immediately. Desktop displays the four prompts in one row; narrower viewports reflow them. On mobile, the chat precedes the chapter list, and the list starts collapsed.
+**Root cause of the white block (7 November 2026):** the SVG canvases were already transparent. An earlier `.institution-link` CSS declaration had `background: #fff`, white-side padding, and rounded corners. Those styles imposed an opaque card around the transparent artwork. The corrected `static/styles.css` uses:
 
-- The **24-question bank** and rotation/shuffle logic are in `static/app.js`. The UI attempts to avoid repeating the most recently displayed group.
-- Theme and chapter visibility are saved in browser local storage; the optional access code is held in browser session storage.
-- The composer starts at **six rows** and has a larger CSS minimum height; it remains vertically resizable. Enter sends; Shift + Enter inserts a line break.
-- The decorative blue dot preceding the footer's source-status legend was removed; the three coloured category indicators remain.
-- Markdown is rendered through `marked`, sanitized using DOMPurify, with mathematical notation handled by MathJax. The application rewrites relative ebook image paths to published asset URLs.
-
-## Code map
-
-| File | Purpose |
-| --- | --- |
-| `app.py` | Routes `/`, `/health`, `/api/chat`, `/api/reset`, chat API call, figure candidates. |
-| `prompt.py` | Book-first tutoring, answer separation, graph and math instructions. |
-| `provenance.py` | Structured output schema, citation checks, plot data checks. |
-| `source_map.py` | Map chapter/source filenames to public ebook page URLs. |
-| `prepare_knowledge.py` | Generate retrieval-ready Markdown files from the source ebook. |
-| `prepare_figures.py` | Extract figure metadata from the built ebook. |
-| `ingest_ebook.py` | Create and populate a new OpenAI vector store. |
-| `knowledge/*.md` | Retrieval corpus (chapters, datasets, figure index, index). Do not consolidate. |
-| `figure_catalog.json` | Backend's local figure candidates. |
-| `render.yaml` | Optional Render Blueprint and runtime configuration. |
-| `.env.example` | Placeholder environment variable names; not a secret file. |
-
-## Maintenance and deployment notes
-
-**Interface-only updates** do not require a new vector store. Keep the current API key and vector-store environment variables in Render. **Prompt, provenance, or plot changes** require deploying the matching Python and JavaScript files together. **Knowledge changes** require generating and indexing new retrieval content if you want the hosted vector store updated.
-
-To rebuild the knowledge base:
-
-```bash
-python prepare_knowledge.py
-python ingest_ebook.py --name "STA258 ebook knowledge base - updated"
+```css
+.institution-link {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
 ```
 
-Wait for indexing before switching Render to the newly printed vector-store ID. Retire older vector stores only after confirming the replacement works.
+**Do not restore a white background on `.institution-link`**. Test on a nonwhite page to verify transparency. This is a **container/style problem**, not a reason to recolour the actual logo artwork or turn it into a raster image.
 
-To smoke-test an updated build:
+## Landing page and interaction details
 
-1. Verify `/health` and the browser console; note that `/health` does not make a real model request.
-2. Toggle light/dark and check the MCS logo changes appropriately. Refresh to check saved theme.
-3. Toggle chapters, shuffle prompts, start a new chat, and check four-card desktop / mobile presentation.
-4. Ask one book-based question, one request for a new statistical plot, and one clearly unrelated question. Check green/orange/red sections, citations and chart labels.
-5. Test LaTeX, code blocks, tables, long prompts, and published figure images; verify actual model behavior before releasing broadly.
+- Short U of T Blue STA258 band; no oversized Σ symbol, decorative plot, or verbose introduction.
+- Four distinct example-question cards chosen from a bank of 24, on a single desktop row. Shuffle, reload, and New chat rotate them, avoiding immediate repeats when possible.
+- Ten linked ebook chapters with a collapsible chapter panel. Mobile places the chat above the chapter list; the list normally starts collapsed.
+- Tall composer: six text rows, CSS minimum height of 165px on desktop and 140px on narrower screens, with vertical resizing. Enter sends; Shift+Enter adds a newline.
+- Footer status legend uses three provenance dots only; the unrelated standalone blue indicator was removed.
+- Light/dark theme and chapter visibility persist in `localStorage`; optional access code is kept in `sessionStorage`.
 
-## Consolidated change history (2026)
+## Maintaining the knowledge base
 
-- **Initial rendering fixes:** Protected mathematical delimiters before Markdown parsing; improved Markdown layout and figure handling; restored caption/chunk metadata in knowledge preparation; fixed null `previous_response_id`; sanitized HTML and kept detailed tracebacks in local debug mode only.
-- **UTM interface redesign:** U of T palette, chapter guide, theme toggle, responsive layout, and four randomized STA258 prompts from a bank of 24.
-- **Source provenance and visualizations:** Structured green/orange/red answer sections, conservative citation matching, and new validated SVG charts distinct from original ebook figures.
-- **Compact opening screen:** Removed the oversized Σ/welcome block and tall hero, reduced empty space, made the chat the first mobile element, and placed suggested prompts directly above the input.
-- **Latest composer and branding refinement:** Enlarged the text-entry area, removed the extraneous blue footer dot, and switched MCS header logos based on light/dark mode.
+When the ebook changes, regenerate `knowledge/*.md` with `prepare_knowledge.py` (either download the public source or use `--book-dir`), then re-run `ingest_ebook.py` to create a new vector store. Wait for indexing to report completion before updating `OPENAI_VECTOR_STORE_ID` on Render. Existing figures in the local catalogue can be served without rebuilding the vector store; re-ingestion matters for newly changed searchable text or figure-index metadata.
 
-The application still needs live end-to-end testing with a configured OpenAI account after deployment. Prior visual previews or simulated answers are not evidence of a working API connection.
+Avoid merging the files in `knowledge/`: their chapter and dataset filenames are used for source mapping, retrieval and chapter citations. The Markdown consolidation applies **only to root project documentation**.
+
+## Release checklist
+
+1. Confirm **two root Markdown guides only**: `README.md` and `DEVELOPER_GUIDE.md`; preserve `knowledge/*.md` intact.
+2. Confirm the MCS logo background is transparent and that the link container has no solid background, padding, or rounded white card; verify both light and dark modes and reload to check preference persistence.
+3. Check the four prompt cards on desktop and their responsive reflow on small screens; Shuffle, New chat, and chapter toggle should still work.
+4. Check the tall resizable composer, Enter/Shift+Enter, long questions, and mobile layout.
+5. Verify `/health`, Render environment variables, API permissions, and one real request from each category (book, mixed/new graph, outside scope). `/health` alone is not an end-to-end test.
+6. Inspect textbook citation links, MathJax, tables, code blocks, and graph/figure rendering. Check that a new example or plot is not mislabeled as copied from the ebook.
+
+## Consolidated changes
+
+- **Original agent:** ebook ingestion and file search; chapter links and source-aware explanations; improved handling of Markdown, MathJax, relative images, figures, and null previous-response IDs.
+- **UTM redesign:** branded blue/teal palette, responsive layout, table of contents, dark mode, course hex badge, four rotating prompts from 24 examples.
+- **Provenance and visualization:** verified-file guard for green sections, orange original content, red outside-scope classification, validated original graphs.
+- **Layout simplification:** removed the oversized welcome content, shortened the STA258 banner, brought suggestions and the composer together, prioritized mobile chat.
+- **Composer and theme refinements:** taller question area, removed unnecessary blue legend dot, theme-specific blue/white logos.
+- **Current fix:** removed the white CSS background and framing from `.institution-link` so transparent SVG logos blend directly into the page in either theme; consolidated redundant root documentation into these two guides.
+
+For current installation/deployment commands, use [README.md](README.md), not old update notes. Live OpenAI end-to-end behaviour must be tested against the configured API account before treating the release as production-verified.
