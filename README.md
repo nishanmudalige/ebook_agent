@@ -1,5 +1,7 @@
 # ebook_agent — STA258 ebook tutor and critical reviewer
 
+> **UI refresh (November 2026):** This distribution includes a redesigned U of T–branded interface inspired by the KyselyTutor layout, with a chapter navigator, a dark-mode toggle, and four randomly selected questions in a horizontal row on desktop. See [UI_UPDATE.md](UI_UPDATE.md) for features and deployment instructions. The chat backend and vector store configuration are unchanged.
+
 A Render-ready Flask chat application grounded in the public STA258 ebook:
 
 - Ebook: https://nishanmudalige.github.io/STA258_Book/

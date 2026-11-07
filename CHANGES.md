@@ -1,3 +1,10 @@
+## November 2026 — U of T branded KyselyTutor-inspired UI
+
+- New responsive UTM interface, 10-chapter navigation, dark mode, and supplied institutional/departmental logos.
+- Four horizontally arranged random question cards on desktop, cycling through a 24-question bank; Shuffle / New chat / reload refresh the examples.
+- Kept original backend, source links, Markdown/MathJax, access-code handling, and image rendering.
+- See `UI_UPDATE.md` for details and installation.
+
 # Updated ebook_agent fixes
 
 This build includes:
