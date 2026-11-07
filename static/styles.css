@@ -53,7 +53,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 /* Compact course masthead: one departmental wordmark + restrained STA258 hex badge. */
 .masthead { min-height: 65px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:7px 0; }
 .institution-link { display:inline-flex; align-items:center; background:#fff; padding:5px 7px 5px 0; border-radius:5px; flex:0 1 auto; min-width:0; }
-.institution-logo { display:block; height:auto; width: min(350px, 43vw); max-height:50px; object-fit:contain; object-position:left center; }
+.institution-logo { display:block; height:auto; width: min(350px, 43vw); max-height:50px; object-fit:contain; object-position:left center; transition: opacity .15s ease; }
 .masthead-actions { display:flex; align-items:center; gap:19px; }
 .masthead-context { color:var(--muted); font-size:11px; font-weight:750; letter-spacing:.095em; white-space:nowrap; }
 .masthead-context span { color:var(--blue-alt); padding:0 5px; }
@@ -159,14 +159,14 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
 @keyframes pulse { 0%,80%,100% { opacity:.25; transform: scale(.8); } 40% { opacity:1; transform: scale(1); } }
 .composer { margin: 0 20px 10px; border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px 9px; background: var(--surface); box-shadow: 0 2px 8px rgba(30,55,101,.04); }
 .composer:focus-within { border-color: var(--blue-alt); box-shadow: 0 0 0 3px rgba(0,127,163,.09); }
-.composer textarea { width: 100%; border: 0; padding: 3px 2px; background: transparent; color: var(--text); min-height: 37px; max-height: 160px; resize: vertical; line-height: 1.5; outline: none; display: block; font-size: 13.5px; }
+.composer textarea { width: 100%; border: 0; padding: 6px 2px; background: transparent; color: var(--text); min-height: 165px; max-height: 360px; resize: vertical; line-height: 1.55; outline: none; display: block; font-size: 14px; }
 .composer textarea::placeholder { color: var(--subtle); }
-.composer-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+.composer-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
 .keyboard-hint { color: var(--subtle); font-size: 11px; }
 .send-button { display: inline-flex; align-items: center; gap: 9px; border: 0; color: #fff; background: #1E3765; border-radius: 7px; padding: 9px 13px; min-height: 38px; font-size: 12px; font-weight: 740; }
 .send-button:hover { background: #007FA3; }
 .chat-status { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; color: var(--muted); padding: 0 20px 11px; font-size: 10.5px; }
-.status-mark { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--blue-alt); }
+.chat-status > span:first-child { display:flex; align-items:center; flex-wrap:wrap; gap: 3px; }
 .model-label { margin-left: auto; white-space: nowrap; color: var(--subtle); }
 .page-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px 0 22px; font-size: 11px; color: var(--muted); }
 @media (min-width: 1650px) { .page-shell { max-width: 1520px; } }
@@ -187,6 +187,7 @@ button:focus-visible, a:focus-visible, textarea:focus-visible, input:focus-visib
   .chat-panel:not(.is-start) { min-height:600px; }
   .chat-panel { order:-1; }
   .chat-messages { max-height:560px; }
+  .composer textarea { min-height: 140px; max-height: 300px; }
 }
 @media (max-width: 620px) {
   .hero { gap:8px; flex-wrap:nowrap; padding:8px 12px; }

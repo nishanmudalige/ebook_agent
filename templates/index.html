@@ -32,7 +32,7 @@
   <div class="page-shell">
     <header class="masthead" aria-label="University of Toronto Mississauga and interface controls">
       <a class="institution-link" href="https://www.utm.utoronto.ca/math-cs-stats/" target="_blank" rel="noopener noreferrer" aria-label="Department of Mathematical and Computational Sciences, University of Toronto Mississauga">
-        <img src="{{ url_for('static', filename='branding/utm-mcs-logo.jpg') }}" alt="Mathematical and Computational Sciences, University of Toronto Mississauga" class="institution-logo">
+        <img src="{{ url_for('static', filename='branding/utm-mcs-logo.svg') }}" alt="Mathematical and Computational Sciences, University of Toronto Mississauga" class="institution-logo" id="institutionLogo" data-light-src="{{ url_for('static', filename='branding/utm-mcs-logo.svg') }}" data-dark-src="{{ url_for('static', filename='branding/utm-mcs-logo-white-transparent.svg') }}">
       </a>
       <div class="masthead-actions">
         <span class="masthead-context">STA258 <span aria-hidden="true">/</span> EBOOK COMPANION</span>
@@ -118,10 +118,10 @@
 
         <form id="composer" class="composer">
           <label class="sr-only" for="message">Ask a question about the ebook or statistics</label>
-          <textarea id="message" rows="2" maxlength="12000" placeholder="Ask about a concept, an example, or an exercise…" required></textarea>
+          <textarea id="message" rows="6" maxlength="12000" placeholder="Ask about a concept, an example, or an exercise…" required></textarea>
           <div class="composer-footer"><span class="keyboard-hint">Press Enter to send <span aria-hidden="true">·</span> Shift + Enter for a new line</span><button id="send" type="submit" class="send-button">Send question <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
         </form>
-        <div class="chat-status"><span class="status-mark" aria-hidden="true"></span><span>Book-supported <span class="key-dot key-book"></span> · Related / new <span class="key-dot key-related"></span> · Outside scope <span class="key-dot key-outside"></span></span><span class="model-label">{{ model }}</span></div>
+        <div class="chat-status"><span>Book-supported <span class="key-dot key-book"></span> · Related / new <span class="key-dot key-related"></span> · Outside scope <span class="key-dot key-outside"></span></span><span class="model-label">{{ model }}</span></div>
       </main>
     </div>
     <footer class="page-footer"><span>University of Toronto Mississauga · Mathematical &amp; Computational Sciences</span><span>AI responses may contain errors. Verify calculations and course requirements.</span></footer>

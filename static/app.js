@@ -10,6 +10,7 @@
   const chatPanel = document.querySelector('.chat-panel');
   const themeToggle = document.getElementById('themeToggle');
   const themeLabel = document.getElementById('themeLabel');
+  const institutionLogo = document.getElementById('institutionLogo');
   const tocToggle = document.getElementById('tocToggle');
   const tocLabel = document.getElementById('tocToggleLabel');
   const tocPanel = document.getElementById('contentsPanel');
@@ -45,6 +46,10 @@
     themeLabel.textContent = dark ? 'Light mode' : 'Dark mode';
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = dark ? '#132340' : '#ffffff';
+    if (institutionLogo) {
+      const nextSrc = dark ? institutionLogo.dataset.darkSrc : institutionLogo.dataset.lightSrc;
+      if (nextSrc) institutionLogo.src = nextSrc;
+    }
     if (save) saveStored(THEME_KEY, dark ? 'dark' : 'light');
   }
   applyTheme(document.documentElement.dataset.theme, false);
